@@ -6,7 +6,7 @@
 .label {
 	margin-bottom: var(--space-1);
 	font-size: var(--font-size-sm);
-	font-weight: var(--font-weight-bold);
+	font-weight: var(--font-weight-regular);
 	color: var(--color-text-default);
 }
 
@@ -20,6 +20,14 @@
 	background: var(--color-bg-surface);
 	color: var(--color-text-default);
 	font: inherit;
+	font-size: var(--font-size-sm);
+}
+
+/* 16px on touch screens: smaller text makes iOS zoom in when the input gets focus. */
+@media (pointer: coarse) {
+	.control {
+		font-size: var(--font-size-md);
+	}
 }
 
 .control:focus-visible {

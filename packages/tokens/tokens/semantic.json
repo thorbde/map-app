@@ -110,7 +110,14 @@
 	"size": {
 		"$type": "dimension",
 		"control": {
-			"$description": "The height of buttons and inputs, so they line up side by side. Comfortable to tap (WCAG 2.5.8 asks for at least 24px).",
+			"$description": "The height of buttons and inputs with a mouse or trackpad, so they line up side by side.",
+			"$value": {
+				"value": 2,
+				"unit": "rem"
+			}
+		},
+		"control-touch": {
+			"$description": "The same on touch screens (pointer: coarse), where controls need more room to tap. @thorbde/ui/base.css swaps it in.",
 			"$value": {
 				"value": 2.5,
 				"unit": "rem"
