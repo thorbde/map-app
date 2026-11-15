@@ -10,7 +10,7 @@
 ## Decision
 - **Every story is a test.** Storybook's Vitest add-on (`@storybook/addon-vitest`) turns each story into a Vitest test that renders it in a real browser (Chromium, through Playwright).
 - **Accessibility violations fail the test.** The a11y add-on runs axe on every story, and `.storybook/preview.ts` sets `a11y.test: "error"`. A new component is checked automatically just by having stories.
-- **Interactions** go in a story's `play` function when a component needs them (keyboard use, focus), so they're tested the same way.
+- **Interactions** go in a story's `play` function when a component needs them (keyboard use, focus), so they're tested the same way. The Dialog's stories test that focus moves in, stays in on Tab, and returns to the trigger on Escape.
 - **Playgrounds are not tests.** They're design tools that deliberately show failing contrast pairs and load fonts from Google, so they carry the `!test` tag.
 - **It runs in `pnpm test`,** so it's part of `pnpm check` and CI. CI installs Chromium for it; locally, `PLAYWRIGHT_CHROMIUM_PATH` can point at one you already have, as for the e2e tests.
 
@@ -22,4 +22,5 @@
 ## Consequences
 - **A component without stories isn't tested,** so every component ships with stories covering its states (variants, disabled, and so on).
 - **`pnpm test` needs a Chromium**, like `pnpm test:e2e` already does.
+- **Vite must pre-bundle Base UI** (`optimizeDeps` in `vitest.config.ts`). Without it, a cold run discovers Base UI mid-test, re-bundles, and the stories load a second copy of React. That happens on every CI run, since CI starts with no cache.
 - **Proven:** a story with an unlabelled button failed with axe's `button-name` rule, and passed again once removed.

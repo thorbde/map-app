@@ -101,8 +101,8 @@
 			"100": {
 				"$value": {
 					"colorSpace": "srgb",
-					"components": [0.7843, 0.9255, 0.8941],
-					"hex": "#c8ece4"
+					"components": [0.8078, 0.9137, 0.8902],
+					"hex": "#cee9e3"
 				}
 			},
 			"200": {
@@ -126,6 +126,13 @@
 					"hex": "#0b7a6f"
 				}
 			},
+			"800": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.0353, 0.4157, 0.3765],
+					"hex": "#096a60"
+				}
+			},
 			"950": {
 				"$value": {
 					"colorSpace": "srgb",
@@ -136,6 +143,13 @@
 		},
 		"teal-grey": {
 			"$description": "Teal-tinted grey for secondary text.",
+			"400": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.4549, 0.5569, 0.5451],
+					"hex": "#748e8b"
+				}
+			},
 			"600": {
 				"$value": {
 					"colorSpace": "srgb",
@@ -158,6 +172,16 @@
 					"colorSpace": "srgb",
 					"components": [0.6784, 0.8392, 0.8784],
 					"hex": "#add6e0"
+				}
+			}
+		},
+		"red": {
+			"$description": "Errors only. A plain, clear red, not a brand accent.",
+			"600": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.7765, 0.1569, 0.1569],
+					"hex": "#c62828"
 				}
 			}
 		}

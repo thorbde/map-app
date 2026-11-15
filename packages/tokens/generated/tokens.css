@@ -6,7 +6,10 @@
   color-scheme: light;
   /* Buttons and links. White text on it reaches 4.5:1. */
   --color-accent-default: var(--color-teal-700);
-  --color-accent-hover: var(--color-teal-950);
+  /* One step darker than the accent: white on it reaches 6.5:1. */
+  --color-accent-hover: var(--color-teal-800);
+  /* Behind a dialog: deep teal at half opacity. */
+  --color-bg-backdrop: rgb(4.31% 18.43% 17.25% / 0.5);
   /* The dark header block on panels. */
   --color-bg-inverse: var(--color-teal-950);
   --color-bg-page: var(--color-sky-100);
@@ -15,7 +18,11 @@
   /* Hover on subtle areas, such as the secondary button. */
   --color-bg-subtle-hover: var(--color-teal-100);
   --color-bg-surface: var(--color-neutral-0);
+  /* Around inputs. Reaches 3:1 against white (WCAG 1.4.11), unlike the default border. */
+  --color-border-control: var(--color-teal-grey-400);
   --color-border-default: var(--color-neutral-200);
+  /* Around an input with an error. */
+  --color-border-error: var(--color-red-600);
   /* Focus rings. */
   --color-focus: var(--color-teal-700);
   --color-map-border: var(--color-sky-300);
@@ -37,16 +44,24 @@
   --color-neutral-800: rgb(20.78% 20.78% 20.78%);
   --color-neutral-900: rgb(14.12% 14.12% 14.12%);
   --color-neutral-950: rgb(8.63% 8.63% 8.63%);
+  --color-red-600: rgb(77.65% 15.69% 15.69%);
   --color-sky-100: rgb(82.75% 93.33% 96.08%);
   --color-sky-300: rgb(67.84% 83.92% 87.84%);
+  --color-teal-grey-400: rgb(45.49% 55.69% 54.51%);
   --color-teal-grey-600: rgb(29.02% 40% 38.82%);
   --color-teal-50: rgb(87.45% 96.08% 94.12%);
-  --color-teal-100: rgb(78.43% 92.55% 89.41%);
+  --color-teal-100: rgb(80.78% 91.37% 89.02%);
   --color-teal-200: rgb(65.88% 84.71% 81.57%);
   --color-teal-600: rgb(5.49% 54.9% 49.8%);
   --color-teal-700: rgb(4.31% 47.84% 43.53%);
+  --color-teal-800: rgb(3.53% 41.57% 37.65%);
   --color-teal-950: rgb(4.31% 18.43% 17.25%);
   --color-text-default: var(--color-teal-950);
+  /* Error messages. 5.6:1 on white. */
+  --color-text-error: var(--color-red-600);
+  /* Inline links. At least 5.1:1 on every background: white, pale teal and the ocean. */
+  --color-text-link: var(--color-teal-800);
+  --color-text-link-hover: var(--color-teal-950);
   --color-text-muted: var(--color-teal-grey-600);
   --color-text-on-accent: var(--color-neutral-0);
   --color-text-on-inverse: var(--color-neutral-0);
@@ -77,15 +92,17 @@
   --font-weight-bold: 700;
   --font-weight-regular: 400;
   /* Disabled controls. WCAG exempts them from contrast. */
-  --opacity-disabled: 0.5;
+  --opacity-disabled: 0.35;
   --radius-full: 9999px;
   --radius-lg: 16px;
   --radius-md: 10px;
   --radius-sm: 6px;
   /* Floating panels over the map. */
   --shadow-raised: 0px 1px 3px rgb(0% 0% 0% / 0.08), 0px 8px 24px rgb(0% 0% 0% / 0.1);
-  /* The smallest height for anything you tap or click (WCAG 2.5.8 asks for 24px; 44px is comfortable). */
-  --size-touch-target: 2.75rem;
+  /* The height of buttons and inputs with a mouse or trackpad, so they line up side by side. */
+  --size-control: 2rem;
+  /* The same on touch screens (pointer: coarse), where controls need more room to tap. @thorbde/ui/base.css swaps it in. */
+  --size-control-touch: 2.5rem;
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;

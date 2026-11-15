@@ -10,6 +10,13 @@ body {
 	line-height: var(--font-line-height-normal);
 }
 
+/* Touch screens get taller controls (like React Spectrum's large scale). */
+@media (pointer: coarse) {
+	:root {
+		--size-control: var(--size-control-touch);
+	}
+}
+
 :focus-visible {
 	outline: 2px solid var(--color-focus);
 	outline-offset: 2px;

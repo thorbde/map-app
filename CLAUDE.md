@@ -69,7 +69,7 @@ Look up current docs for these libraries instead of relying on memory. Their API
 - **Validate with zod at every boundary:** form input, route params, JSON columns, webhooks, env.
 - **Errors:** services throw typed errors from `app/lib/errors.ts`, and routes map them to responses.
 - **Naming:** `camelCase` in TypeScript and `snake_case` in the database (Drizzle maps between them).
-- **Style with semantic tokens only** (`var(--color-text-muted)`, `var(--font-ui)`), never primitives or raw values (ADR 0014).
+- **Style with tokens, never raw values** (ADR 0014): colours and fonts through semantic tokens only (`var(--color-text-muted)`, `var(--font-ui)`); scales such as space, radius and font size directly (`var(--space-4)`).
 - **Accessibility is not optional.** Use semantic HTML, make everything keyboard-reachable, keep focus visible, and label everything. Base UI for interactive primitives.
 - **Performance budgets:** at most 150 KB gzipped JS on reading pages, of which at most ~40 KB is our own code and the map (React and React Router are ~114 KB; ADR 0013), one database round trip per page where possible, and CodeMirror only on `/write/*`.
 - **The UI copy is English.** Keep the tone friendly, short and concrete.
