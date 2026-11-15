@@ -18,15 +18,18 @@ Rough order. Each item gets its own spec in `docs/specs/` before it's built.
 - **OG images** for public profiles and essays, showing the filled-in map.
 
 ## Public launch
+- **Email + password sign-in** (Better Auth), with email verification and password reset via Resend, and Turnstile on sign-up. See ADR 0007.
+- **Username changes:** once every 30 days, the old username redirects for 30 days and stays reserved (a `username_history` table).
 - **Supporter tier through Polar** (merchant of record).
   - **Perks:** the study tools from Iteration 3, map themes, a badge.
   - **Never paywalled:** writing, publishing, privacy, export.
-- **Open sign-up,** with Turnstile and rate limits on everything.
+- **Open sign-up,** with rate limits on everything.
 - **A real privacy policy and terms.** Cloudflare Web Analytics, which is cookie-less.
 
 ## Iteration 3: the method as product
 - **A guided writing flow:** pretest → study notes → closed-book draft (with the notes hidden) → fact check → encode.
 - **"Test me" mode** on essays: free recall, then questions and riddles, then reveal.
+- **A memorization mode:** flashcards, quizzes and hiding and revealing the country's facts (ADR 0012) and your own essay. The normal essay view keeps showing everything.
 - **A review schedule** (1 day, 1 week, 1 month, 3 months, 6 months), stored per user.
 - **A quiz page** with a riddle mode and a map mode, plus quizzing on friends' maps.
 - **Anki export.**

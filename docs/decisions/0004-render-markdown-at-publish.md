@@ -1,6 +1,6 @@
 # 0004: Render markdown to sanitized HTML at publish time
 
-- **Status:** accepted
+- **Status:** accepted. The editor preview is replaced by a formatted editor with no preview (ADR 0011); everything else stands.
 - **Date:** 2026-11-15
 
 ## Context
