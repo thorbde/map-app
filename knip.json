@@ -8,6 +8,9 @@
 		"apps/web": {},
 		"packages/tokens": {
 			"entry": ["terrazzo.config.mjs"]
+		},
+		"packages/icons": {
+			"entry": ["scripts/build.mjs"]
 		}
 	}
 }

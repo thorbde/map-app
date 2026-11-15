@@ -1,0 +1,21 @@
+{
+	"name": "@thorbde/icons",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"build": "node scripts/build.mjs",
+		"check": "node scripts/build.mjs && git diff --exit-code -- generated",
+		"typecheck": "tsc --noEmit"
+	},
+	"peerDependencies": {
+		"react": "^19.2.0"
+	},
+	"devDependencies": {
+		"@types/react": "19.3.0",
+		"react": "19.3.1",
+		"typescript": "6.0.3"
+	}
+}

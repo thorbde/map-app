@@ -33,6 +33,7 @@
 	},
 	"dependencies": {
 		"@base-ui/react": "1.9.0",
+		"@thorbde/icons": "workspace:*",
 		"@thorbde/tokens": "workspace:*"
 	}
 }

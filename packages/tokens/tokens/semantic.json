@@ -105,6 +105,12 @@
 				"$description": "Must reach 3:1 against written.",
 				"$value": "{color.teal.950}"
 			}
+		},
+		"icon": {
+			"fill": {
+				"$description": "The soft fill of duotone icons (docs/design/icons.md). A surface can set its own, such as a lighter teal on teal buttons.",
+				"$value": "{color.teal.200}"
+			}
 		}
 	},
 	"size": {
@@ -120,6 +126,27 @@
 			"$description": "The same on touch screens (pointer: coarse), where controls need more room to tap. @thorbde/ui/base.css swaps it in.",
 			"$value": {
 				"value": 2.5,
+				"unit": "rem"
+			}
+		},
+		"icon-sm": {
+			"$description": "Icons in small text and inside controls.",
+			"$value": {
+				"value": 1,
+				"unit": "rem"
+			}
+		},
+		"icon-md": {
+			"$description": "The default icon size.",
+			"$value": {
+				"value": 1.25,
+				"unit": "rem"
+			}
+		},
+		"icon-lg": {
+			"$description": "Icons in tab bars and headings.",
+			"$value": {
+				"value": 1.5,
 				"unit": "rem"
 			}
 		}
