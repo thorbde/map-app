@@ -1,6 +1,6 @@
 # Design brief
 
-Thor's direction for the look of the app. Colour and fonts are still open; this is what they should aim for. The tokens carry a greyscale placeholder until then (ADR 0014).
+Thor's direction for the look of the app. **Colour is chosen** (below); fonts are still open and carry a placeholder in the tokens (ADR 0014).
 
 ## Feel
 
@@ -12,6 +12,23 @@ Thor's direction for the look of the app. Colour and fonts are still open; this 
 - **Inspiration:** the Kurzgesagt store (its vividness, palette and illustration), and Duolingo's cartoony style with happy, optimistic, animated little details.
 - **But:** never a clone of either, and **not too playful**. It's a tool for thoughtful writing, not a game.
 - **Light mode first.** Dark mode comes later, as a second mode of the same semantic tokens.
+
+## The palette (chosen)
+
+Picked on the design canvas ("Teal, no accent, deep header"), after six rounds of comparing hues on the same essay screen.
+
+| Role | Colour | Where |
+|---|---|---|
+| Brand teal | `#0E8C7F` | Written countries on the map |
+| Button teal | `#0B7A6F` | Buttons and links (white text reaches 4.5:1) |
+| Deep teal | `#0B2F2C` | The header block on panels, the selected country, body text |
+| Pale teal | `#DFF5F0` | Quiet areas: the fact box, pills |
+| Ocean | `#D3EEF5`, borders `#ADD6E0` | The map's sea, with white land |
+| Muted text | `#4A6663` | Dates, labels, secondary text |
+
+- **No second accent colour for now.** Every one tried (coral, orange, yellow, pink, lilac, lime, blue, magenta, gold) was rejected. A second colour may come back for moments of delight (publishing, milestones), chosen in that context.
+- **Keep the dark header block** on panels; it's part of the look.
+- **Rejected:** violet and indigo with gold (too close to Kurzgesagt), violet as the base, mint or pink oceans, teal as bright green (reads like a geography quiz).
 
 ## Fonts
 

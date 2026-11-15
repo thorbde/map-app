@@ -110,7 +110,7 @@ export const Colours: StoryObj = {
 		<div style={page}>
 			<Section
 				title="Semantic colours"
-				note="What components and the app use. The palette is a greyscale placeholder until it's chosen (docs/design/brief.md)."
+				note="What components and the app use. The palette is teal (docs/design/brief.md)."
 			>
 				<Swatches tokens={tokensIn(group(semantic, "color"), ["color"])} />
 			</Section>

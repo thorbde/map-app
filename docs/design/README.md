@@ -8,7 +8,7 @@ Designs live on claude.ai as Claude Design canvases. They're private by default;
 
 ## Brief
 
-[`brief.md`](brief.md) holds the direction for colour and fonts: modern, clean and confident, light first, and what to avoid. The tokens carry placeholders until it's realised (ADR 0014).
+[`brief.md`](brief.md) holds the direction for colour and fonts: modern, clean and confident, light first, and what to avoid. The colour palette is chosen (teal); the fonts are still placeholders (ADR 0014).
 
 ## Playgrounds in Storybook
 

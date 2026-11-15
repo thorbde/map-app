@@ -1,19 +1,22 @@
-# 0014: Design tokens: two tiers, semantic names, placeholder values
+# 0014: Design tokens: two tiers, semantic names, teal palette, placeholder fonts
 
 - **Status:** accepted
 - **Date:** 2026-11-15
 - **Builds on:** ADR 0008 (the design system as packages)
 
 ## Context
-Components and the app need tokens to build on now, but the colour palette and the fonts aren't decided: the first palettes didn't work, and the direction is captured in `docs/design/brief.md`. Waiting would block the components; picking something quickly would bake in a look nobody chose.
+Components and the app need tokens to build on now. The colour palette was chosen on the design canvas (teal, `docs/design/brief.md`), but the fonts aren't decided. Waiting would block the components; picking a font quickly would bake in a look nobody chose.
 
 ## Decision
 - **Two tiers in DTCG JSON** (`packages/tokens/tokens/`):
-  - **Primitives** (`primitives.json`): raw values. A neutral grey scale, font families, the type scale, space, radius, shadow and motion.
-  - **Semantic** (`semantic.json`): what things are for: `color.bg.page`, `color.bg.surface`, `color.bg.subtle`, `color.text.default|muted|on-accent`, `color.border.default`, `color.accent.default|hover`, `color.focus`, `color.map.ocean|land|border|written|selected`, `font.ui`, `font.essay`.
+  - **Primitives** (`primitives.json`): raw values. Teal, a teal-tinted grey, sky (the ocean), a neutral grey scale, font families, the type scale, space, radius, shadow and motion.
+  - **Semantic** (`semantic.json`): what things are for: `color.bg.page|surface|subtle|inverse`, `color.text.default|muted|on-accent|on-inverse|on-inverse-muted`, `color.border.default`, `color.accent.default|hover`, `color.focus`, `color.map.ocean|land|border|written|selected`, `font.ui`, `font.essay`.
 - **Components and the app use semantic tokens only.** Primitives exist to feed the semantic tier. Component tokens are added only when a component needs a decision of its own.
 - **Naming:** dot paths in DTCG, dashes in CSS: `color.text.muted` becomes `--color-text-muted`.
-- **The values are placeholders on purpose:** a greyscale palette whose accent is near-black, and system fonts. Every pair that must pass contrast does (text 4.5:1, map shapes 3:1). Choosing the real palette and fonts changes values in these two files, not names, so nothing that uses the tokens has to change.
+- **Colour is teal** (the brief has the table and what was rejected). `inverse` is the dark header block on panels. There's no second accent colour yet. Every pair that must pass contrast does:
+  - text: body on white 14.4:1, muted on white 6.2:1 and on pale teal 5.5:1, white on the button teal 5.2:1, the header's secondary text 9.2:1;
+  - map shapes: written against land 4.1:1, selected against written 3.5:1.
+- **The fonts are placeholders on purpose:** system fonts until they're chosen. Choosing them changes values in `primitives.json`, not names, so nothing that uses the tokens has to change.
 - **Light theme only for now.** Dark mode will be a second mode of the same semantic tokens.
 - **Terrazzo builds the CSS** (`generated/tokens.css`, custom properties on `:root`). The output is **committed**, so the app and Storybook need no build step, and `pnpm tokens:check` (part of `pnpm check`) fails when it's out of step with the JSON.
 - **No TypeScript output yet.** Terrazzo's JS plugin is meant for server-side use and is heavy, and nothing needs typed tokens yet. The Tokens story reads the JSON directly.
@@ -21,11 +24,11 @@ Components and the app need tokens to build on now, but the colour palette and t
 
 ## Alternatives considered
 - **Wait for the palette before writing any tokens:** blocks the components for no gain, since the names don't depend on the values.
-- **Pick a "safe" palette now:** it would quietly become the design. A visibly unfinished greyscale doesn't.
+- **Pick a "safe" font now:** it would quietly become the design. A visibly unfinished system font doesn't.
 - **Three tiers (primitive, semantic, component) from the start:** more ceremony than one app and a handful of components need. Component tokens are added when needed.
 - **Generate the CSS at build time instead of committing it:** every consumer (dev, build, Storybook, tests) would need a pre-build step.
 
 ## Consequences
-- **The app looks unfinished until the palette and fonts land,** and that's intended.
-- **Changing the palette later** is an edit to `primitives.json` (and `semantic.json` if roles shift), followed by `pnpm tokens`.
+- **The app looks unfinished until the fonts land,** and that's intended.
+- **Changing a colour or font later** is an edit to `primitives.json` (and `semantic.json` if roles shift), followed by `pnpm tokens`.
 - **Contrast must be re-checked** whenever values change. The colour playground and the Tokens story help, and the brief lists the rules.

@@ -38,7 +38,7 @@ Maps come before auth: they need no database or login, they're the heart of the 
 | 3. Tests | Vitest (Cloudflare's Vitest plugin, in workerd) and Playwright | Unit and integration tests inside `check`, plus a separate `e2e` job against the production build. **Then make `e2e` required too** (source: GitHub Actions). |
 | 4. Boundaries | dependency-cruiser and knip | Import rules and unused code inside `check`; a dependency graph for the weekly check |
 | 5. Storybook and playgrounds | `@thorbde/ui` with Storybook, and playgrounds for comparing fonts, colour palettes (with WCAG contrast and the map) and type scales. Storybook deploys per PR and for `main` | Storybook builds inside `check` |
-| 6. Tokens | `@thorbde/tokens`: DTCG + Terrazzo, primitive and semantic tiers, light first, **placeholder values** until the palette and fonts are chosen (ADR 0014, `docs/design/brief.md`). A Tokens overview in Storybook | Generated CSS is checked against the JSON inside `check` |
+| 6. Tokens | `@thorbde/tokens`: DTCG + Terrazzo, primitive and semantic tiers, light first, the **teal palette**, and **placeholder fonts** until they're chosen (ADR 0014, `docs/design/brief.md`). A Tokens overview in Storybook | Generated CSS is checked against the JSON inside `check` |
 | 7. UI foundation | CSS Modules on tokens, Button | Accessibility checks on the components |
 | 8. Components | Field, Link, Dialog | Accessibility checks on the components |
 

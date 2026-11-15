@@ -4,25 +4,36 @@
 		"$type": "color",
 		"bg": {
 			"page": {
-				"$value": "{color.neutral.50}"
+				"$value": "{color.sky.100}"
 			},
 			"surface": {
 				"$value": "{color.neutral.0}"
 			},
 			"subtle": {
 				"$description": "Quiet areas such as the fact box.",
-				"$value": "{color.neutral.100}"
+				"$value": "{color.teal.50}"
+			},
+			"inverse": {
+				"$description": "The dark header block on panels.",
+				"$value": "{color.teal.950}"
 			}
 		},
 		"text": {
 			"default": {
-				"$value": "{color.neutral.950}"
+				"$value": "{color.teal.950}"
 			},
 			"muted": {
-				"$value": "{color.neutral.600}"
+				"$value": "{color.teal-grey.600}"
 			},
 			"on-accent": {
 				"$value": "{color.neutral.0}"
+			},
+			"on-inverse": {
+				"$value": "{color.neutral.0}"
+			},
+			"on-inverse-muted": {
+				"$description": "Secondary text on the dark header block.",
+				"$value": "{color.teal.200}"
 			}
 		},
 		"border": {
@@ -32,34 +43,34 @@
 		},
 		"accent": {
 			"default": {
-				"$description": "Placeholder: buttons and links, until the palette is chosen.",
-				"$value": "{color.neutral.900}"
+				"$description": "Buttons and links. White text on it reaches 4.5:1.",
+				"$value": "{color.teal.700}"
 			},
 			"hover": {
-				"$value": "{color.neutral.950}"
+				"$value": "{color.teal.950}"
 			}
 		},
 		"focus": {
 			"$description": "Focus rings.",
-			"$value": "{color.neutral.950}"
+			"$value": "{color.teal.700}"
 		},
 		"map": {
 			"ocean": {
-				"$value": "{color.neutral.100}"
+				"$value": "{color.sky.100}"
 			},
 			"land": {
 				"$value": "{color.neutral.0}"
 			},
 			"border": {
-				"$value": "{color.neutral.300}"
+				"$value": "{color.sky.300}"
 			},
 			"written": {
 				"$description": "Must reach 3:1 against land (WCAG 1.4.11).",
-				"$value": "{color.neutral.500}"
+				"$value": "{color.teal.600}"
 			},
 			"selected": {
 				"$description": "Must reach 3:1 against written.",
-				"$value": "{color.neutral.950}"
+				"$value": "{color.teal.950}"
 			}
 		}
 	},
