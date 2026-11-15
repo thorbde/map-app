@@ -72,7 +72,7 @@ app/
   lib/                    Shared pure utilities (errors, dates, zod helpers). No feature logic.
 scripts/
   build-maps.ts           Natural Earth → simplified static geometry
-  build-facts.ts          open data source + overrides → features/countries/facts.ts (reviewed before commit)
+  build-facts.ts          Wikidata + overrides → features/countries/facts.ts (monthly scheduled PR, reviewed before merge)
 tests/
   e2e/                    Playwright
 ```
