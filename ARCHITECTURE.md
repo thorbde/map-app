@@ -78,7 +78,8 @@ scripts/
   build-maps.ts           Natural Earth → simplified static geometry
   build-facts.ts          Wikidata + overrides → features/countries/facts.ts (monthly scheduled PR, reviewed before merge)
 tests/
-  e2e/                    Playwright
+  integration/            Vitest in workerd: requests through the real Worker and React Router
+  e2e/                    Playwright against the production build served locally
 ```
 
 ### Inside a feature
@@ -154,6 +155,6 @@ D1 has no interactive transactions. "Atomic" below means one `db.batch([...])`: 
 | Env | Where | Database |
 |---|---|---|
 | local | `pnpm dev` (workerd) | Local D1 (a SQLite file under `.wrangler/`) |
-| tests | Vitest Workers pool | An isolated D1 per test file, migrations applied |
+| tests | Vitest in workerd (`@cloudflare/vitest-plugin`); Playwright against `vite preview` | An isolated D1 per test file, migrations applied (from M2) |
 | preview | A Worker per PR, `map-app-pr-<number>`, in the **separate Previews account**, deleted when the PR closes | A D1 per PR (`map-app-pr-<number>`, from M2), created by CI and deleted when the PR closes. Can't reach production (ADR 0006). |
 | production | `main` → `wrangler deploy` (CI only, GitHub `production` environment) | The production D1 (EU jurisdiction) |

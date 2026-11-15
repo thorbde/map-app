@@ -14,7 +14,7 @@ People learn about the countries of the world by writing short essays, one count
 
 ## Stack (see ADRs 0001, 0006, 0007, 0008, 0013)
 
-React Router v8 (framework mode) · TypeScript strict · Cloudflare Workers · Cloudflare D1 (EU jurisdiction) · Drizzle ORM · Better Auth (Google sign-in) · CodeMirror 6 · remark/rehype + rehype-sanitize · Base UI · DTCG tokens + Terrazzo · CSS Modules · Vitest (Workers pool) · Playwright · Storybook · Biome · dependency-cruiser · knip · pnpm workspaces
+React Router v8 (framework mode) · TypeScript strict · Cloudflare Workers · Cloudflare D1 (EU jurisdiction) · Drizzle ORM · Better Auth (Google sign-in) · CodeMirror 6 · remark/rehype + rehype-sanitize · Base UI · DTCG tokens + Terrazzo · CSS Modules · Vitest (Cloudflare Vitest plugin, tests run in workerd) · Playwright · Storybook · Biome · dependency-cruiser · knip · pnpm workspaces
 
 Versions are pinned exactly; ADR 0013 lists every package, why it's there, and its size. Add new ones there too.
 
