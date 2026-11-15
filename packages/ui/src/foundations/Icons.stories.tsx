@@ -19,13 +19,16 @@ export const Gallery: StoryObj = {
 		>
 			<thead>
 				<tr>
-					<th scope="col" style={{ textAlign: "left", padding: 8 }}>
+					<th
+						scope="col"
+						style={{ textAlign: "left", padding: "var(--space-2)" }}
+					>
 						Icon
 					</th>
-					<th scope="col" colSpan={3} style={{ padding: 8 }}>
+					<th scope="col" colSpan={3} style={{ padding: "var(--space-2)" }}>
 						Duotone (default)
 					</th>
-					<th scope="col" colSpan={3} style={{ padding: 8 }}>
+					<th scope="col" colSpan={3} style={{ padding: "var(--space-2)" }}>
 						Solid (active)
 					</th>
 				</tr>
@@ -35,13 +38,17 @@ export const Gallery: StoryObj = {
 					<tr key={name}>
 						<th
 							scope="row"
-							style={{ textAlign: "left", padding: 8, fontWeight: 400 }}
+							style={{
+								textAlign: "left",
+								padding: "var(--space-2)",
+								fontWeight: 400,
+							}}
 						>
 							<code>{name}</code>
 						</th>
 						{(["duotone", "solid"] as const).flatMap((variant) =>
 							(["lg", "md", "sm"] as const).map((size) => (
-								<td key={variant + size} style={{ padding: 8 }}>
+								<td key={variant + size} style={{ padding: "var(--space-2)" }}>
 									<Icon variant={variant} size={size} />
 								</td>
 							)),

@@ -7,7 +7,7 @@
 	},
 	"scripts": {
 		"build": "node scripts/build.mjs",
-		"check": "node scripts/build.mjs && git diff --exit-code -- generated",
+		"check": "node scripts/build.mjs && git diff --exit-code -- generated && test -z \"$(git ls-files --others --exclude-standard -- generated)\" || (echo 'generated/ is out of step with svg/, or has files git does not track: run pnpm icons and commit generated/' && exit 1)",
 		"typecheck": "tsc --noEmit"
 	},
 	"peerDependencies": {
