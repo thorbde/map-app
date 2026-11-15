@@ -1,5 +1,6 @@
 # On every PR and on main:
-# - check: lint, typecheck, unit and integration tests, build, the JavaScript size budget
+# - check: lint, typecheck, import boundaries, knip, unit/integration/boundary tests, build,
+#          the JavaScript size budget, and (on main) the dependency graph in the run summary
 # - e2e:   Playwright against the production build served locally
 # Both job names are required status checks in the main ruleset.
 
@@ -36,11 +37,20 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Lint, typecheck, unit and integration tests
+      - name: Lint, typecheck, boundaries, knip and tests
         run: pnpm check
       - run: pnpm build
       - name: JavaScript size budget (ADR 0013)
         run: pnpm size
+      - name: Dependency graph, shown in the run summary (for the weekly check)
+        if: github.event_name == 'push'
+        run: |
+          {
+            echo "## Dependency graph"
+            echo '```mermaid'
+            pnpm --silent graph
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
   e2e:
     name: e2e

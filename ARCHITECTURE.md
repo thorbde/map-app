@@ -96,7 +96,7 @@ features/essays/
   *.test.ts
 ```
 
-## Boundaries (enforced by dependency-cruiser in CI)
+## Boundaries (enforced in CI)
 
 **The idea:** every feature, and `server/platform/`, has a front door: its `index.ts` / `index.server.ts`. Everything else in that folder is internal. Other code may only import through the front door, the same way a design-system consumer uses a component's props and never its internal markup. That way internals can be refactored without breaking anything else.
 
@@ -109,6 +109,13 @@ features/essays/
 | `app/lib/` | nothing app-specific | everything else |
 | any client code | n/a | `*.server.ts` |
 | anything outside `server/platform/` | n/a | `cloudflare:*`, Workers-specific globals |
+
+**How each rule is enforced:**
+
+- **dependency-cruiser** (`.dependency-cruiser.cjs`, run by `pnpm boundaries`): the design-system rules, feature and `server/platform/` front doors, routes not touching `server/db/`, `cloudflare:*` imports only in `server/platform/`, `lib/` staying generic, plus no circular imports, no unresolvable imports and no `devDependencies` in shipped code. `tests/boundaries/` has a fixture that breaks each rule, and a test proves every rule catches it.
+- **React Router's build:** client code importing a `*.server.ts` file fails the build.
+- **Not automated yet:** Workers-only globals (for example `HTMLRewriter` or `caches.default`). Their types are visible to all app code, so no tool stops them outside `server/platform/`; code review (and the Claude review) watches for them.
+- **knip** (`pnpm knip`): unused files, exports and dependencies.
 
 ## Data model (MVP)
 
