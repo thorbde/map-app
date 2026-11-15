@@ -7,7 +7,13 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": ["**", "!**/*.md", "!packages/tokens/generated"]
+		"includes": [
+			"**",
+			"!**/*.md",
+			"!packages/tokens/generated",
+			"!packages/icons/generated",
+			"!packages/icons/svg"
+		]
 	},
 	"formatter": {
 		"enabled": true,

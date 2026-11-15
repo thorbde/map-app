@@ -1,4 +1,5 @@
 import { Field as BaseField } from "@base-ui/react/field";
+import { ErrorIcon } from "@thorbde/icons";
 import type { ComponentPropsWithRef } from "react";
 import styles from "./Field.module.css";
 
@@ -38,6 +39,7 @@ export function Field({
 				</BaseField.Description>
 			)}
 			<BaseField.Error match={Boolean(error)} className={styles.error}>
+				<ErrorIcon variant="solid" size="sm" />
 				{error}
 			</BaseField.Error>
 		</BaseField.Root>

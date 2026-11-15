@@ -13,6 +13,8 @@
 		"build:storybook": "pnpm --filter @thorbde/ui build-storybook",
 		"tokens": "pnpm --filter @thorbde/tokens build",
 		"tokens:check": "pnpm --filter @thorbde/tokens check",
+		"icons": "pnpm --filter @thorbde/icons build",
+		"icons:check": "pnpm --filter @thorbde/icons check",
 		"size": "pnpm --filter web size",
 		"test": "pnpm --filter web test && pnpm --filter @thorbde/ui test && pnpm test:boundaries",
 		"test:e2e": "pnpm --filter web test:e2e",
@@ -23,7 +25,7 @@
 		"typecheck": "pnpm -r typecheck",
 		"lint": "biome check .",
 		"format": "biome check --write .",
-		"check": "pnpm lint && pnpm typecheck && pnpm tokens:check && pnpm boundaries && pnpm knip && pnpm test"
+		"check": "pnpm lint && pnpm typecheck && pnpm tokens:check && pnpm icons:check && pnpm boundaries && pnpm knip && pnpm test"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.6.8",

@@ -38,3 +38,7 @@ Thumbs.db
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Python virtualenv for the icon drawing tool (packages/icons/tools)
+.venv/
+__pycache__/
