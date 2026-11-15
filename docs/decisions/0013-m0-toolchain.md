@@ -62,6 +62,7 @@ Their effect on the Worker bundle is measured when they're added in M2.
 - **npm or Bun instead of pnpm:** pnpm's workspaces and strict dependency layout suit the design-system packages (ADR 0008).
 
 ## Consequences
-- **The JavaScript budget needs a decision.** React and React Router alone are about 114 KB gzipped, so "under 100 KB on reading pages" (CLAUDE.md, mvp.md) can't be met with this stack. Options for Thor: raise the budget (for example 150 KB, of which at most about 40 KB is our own code and the map), or measure only our own code on top of the framework.
+- **The JavaScript budget is 150 KB gzipped on reading pages** (decided by Thor), replacing "under 100 KB". React and React Router alone are about 114 KB, so at most **~40 KB is ours**: our code, the map shell, pan and zoom, and any Base UI components a reading page uses. The editor's CodeMirror is outside the budget, since it loads only on `/write/*`.
+- **Initial load stays fast** because pages are server-rendered: the text and the map's SVG are visible before any JavaScript runs, and the JavaScript only makes them interactive. A size check in CI (added in M0 PR 2) will fail any PR that goes over the budget, and M5's Lighthouse CI also measures load and interactivity on a mid-range phone profile.
 - **Upgrades are deliberate:** exact versions mean nothing changes until someone bumps it, ideally one tool per PR.
 - **Biome formats Markdown too** since 2.6; it's switched off for `*.md` in `biome.json`, so the docs keep their hand-written formatting.
