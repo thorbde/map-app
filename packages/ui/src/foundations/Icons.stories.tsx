@@ -41,7 +41,7 @@ export const Gallery: StoryObj = {
 							style={{
 								textAlign: "left",
 								padding: "var(--space-2)",
-								fontWeight: 400,
+								fontWeight: "var(--font-weight-regular)",
 							}}
 						>
 							<code>{name}</code>
