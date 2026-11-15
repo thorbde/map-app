@@ -7,84 +7,132 @@
 			"0": {
 				"$value": {
 					"colorSpace": "srgb",
-					"components": [1.0, 1.0, 1.0],
+					"components": [
+						1.0,
+						1.0,
+						1.0
+					],
 					"hex": "#ffffff"
 				}
 			},
 			"50": {
 				"$value": {
 					"colorSpace": "srgb",
-					"components": [0.9686, 0.9686, 0.9686],
+					"components": [
+						0.9686,
+						0.9686,
+						0.9686
+					],
 					"hex": "#f7f7f7"
 				}
 			},
 			"100": {
 				"$value": {
 					"colorSpace": "srgb",
-					"components": [0.9216, 0.9216, 0.9216],
+					"components": [
+						0.9216,
+						0.9216,
+						0.9216
+					],
 					"hex": "#ebebeb"
 				}
 			},
 			"200": {
 				"$value": {
 					"colorSpace": "srgb",
-					"components": [0.8314, 0.8314, 0.8314],
+					"components": [
+						0.8314,
+						0.8314,
+						0.8314
+					],
 					"hex": "#d4d4d4"
 				}
 			},
 			"300": {
 				"$value": {
 					"colorSpace": "srgb",
-					"components": [0.7176, 0.7176, 0.7176],
+					"components": [
+						0.7176,
+						0.7176,
+						0.7176
+					],
 					"hex": "#b7b7b7"
 				}
 			},
 			"400": {
 				"$value": {
 					"colorSpace": "srgb",
-					"components": [0.5961, 0.5961, 0.5961],
+					"components": [
+						0.5961,
+						0.5961,
+						0.5961
+					],
 					"hex": "#989898"
 				}
 			},
 			"500": {
 				"$value": {
 					"colorSpace": "srgb",
-					"components": [0.4784, 0.4784, 0.4784],
+					"components": [
+						0.4784,
+						0.4784,
+						0.4784
+					],
 					"hex": "#7a7a7a"
 				}
 			},
 			"600": {
 				"$value": {
 					"colorSpace": "srgb",
-					"components": [0.3765, 0.3765, 0.3765],
+					"components": [
+						0.3765,
+						0.3765,
+						0.3765
+					],
 					"hex": "#606060"
 				}
 			},
 			"700": {
 				"$value": {
 					"colorSpace": "srgb",
-					"components": [0.2902, 0.2902, 0.2902],
+					"components": [
+						0.2902,
+						0.2902,
+						0.2902
+					],
 					"hex": "#4a4a4a"
 				}
 			},
 			"800": {
 				"$value": {
 					"colorSpace": "srgb",
-					"components": [0.2078, 0.2078, 0.2078],
+					"components": [
+						0.2078,
+						0.2078,
+						0.2078
+					],
 					"hex": "#353535"
 				}
 			},
 			"900": {
 				"$value": {
 					"colorSpace": "srgb",
-					"components": [0.1412, 0.1412, 0.1412],
+					"components": [
+						0.1412,
+						0.1412,
+						0.1412
+					],
 					"hex": "#242424"
 				}
 			},
 			"950": {
 				"$value": {
 					"colorSpace": "srgb",
-					"components": [0.0863, 0.0863, 0.0863],
+					"components": [
+						0.0863,
+						0.0863,
+						0.0863
+					],
 					"hex": "#161616"
 				}
 			}
@@ -105,19 +153,18 @@
 			},
 			"serif": {
 				"$description": "Placeholder: until the essay font is chosen.",
-				"$value": ["Georgia", "Times New Roman", "serif"]
+				"$value": [
+					"Georgia",
+					"Times New Roman",
+					"serif"
+				]
 			}
 		},
 		"weight": {
 			"$type": "fontWeight",
+			"$description": "Two weights only (Thor's call): regular for text, bold for emphasis and headings.",
 			"regular": {
 				"$value": 400
-			},
-			"medium": {
-				"$value": 500
-			},
-			"semibold": {
-				"$value": 600
 			},
 			"bold": {
 				"$value": 700
@@ -281,7 +328,11 @@
 				{
 					"color": {
 						"colorSpace": "srgb",
-						"components": [0, 0, 0],
+						"components": [
+							0,
+							0,
+							0
+						],
 						"alpha": 0.08
 					},
 					"offsetX": {
@@ -304,7 +355,11 @@
 				{
 					"color": {
 						"colorSpace": "srgb",
-						"components": [0, 0, 0],
+						"components": [
+							0,
+							0,
+							0
+						],
 						"alpha": 0.1
 					},
 					"offsetX": {
@@ -352,7 +407,12 @@
 	"easing": {
 		"$type": "cubicBezier",
 		"standard": {
-			"$value": [0.2, 0, 0, 1]
+			"$value": [
+				0.2,
+				0,
+				0,
+				1
+			]
 		}
 	}
 }
