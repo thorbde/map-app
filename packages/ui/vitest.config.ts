@@ -19,6 +19,9 @@ export default defineConfig({
 				plugins: [
 					storybookTest({ configDir: path.join(dirname, ".storybook") }),
 				],
+				// Pre-bundle Base UI before the tests start. Otherwise Vite discovers it
+				// mid-run, re-bundles, and the stories load a second copy of React.
+				optimizeDeps: { include: ["@base-ui/react/*"] },
 				test: {
 					name: "storybook",
 					browser: {

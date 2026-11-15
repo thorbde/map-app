@@ -10,11 +10,14 @@ Components and the app need tokens to build on now. The colour palette was chose
 ## Decision
 - **Two tiers in DTCG JSON** (`packages/tokens/tokens/`):
   - **Primitives** (`primitives.json`): raw values. Teal, a teal-tinted grey, sky (the ocean), a neutral grey scale, font families, the type scale, space, radius, shadow and motion.
-  - **Semantic** (`semantic.json`): what things are for: `color.bg.page|surface|subtle|subtle-hover|inverse`, `color.text.default|muted|on-accent|on-inverse|on-inverse-muted`, `color.border.default`, `color.accent.default|hover`, `color.focus`, `color.map.ocean|land|border|written|selected`, `font.ui`, `font.essay`, `size.touch-target` (44 px) and `opacity.disabled`.
-- **Components and the app use semantic tokens only.** Primitives exist to feed the semantic tier. Component tokens are added only when a component needs a decision of its own.
+  - **Semantic** (`semantic.json`): what things are for: `color.bg.page|surface|subtle|subtle-hover|inverse|backdrop`, `color.text.default|muted|link|error|on-accent|on-inverse|on-inverse-muted`, `color.border.default|control|error`, `color.accent.default|hover`, `color.focus`, `color.map.ocean|land|border|written|selected`, `font.ui`, `font.essay`, `size.touch-target` (44 px) and `opacity.disabled`.
+- **Colours and font families: semantic tokens only.** Their primitives exist to feed the semantic tier.
+- **Scales are used directly:** space, radius, font size, font weight, line height, shadow, duration and easing. They have no semantic tier (a `space.4` doesn't mean anything more specific), so components use `var(--space-4)` or `var(--radius-md)`. Raw values (`16px`, `#fff`) are never used.
+- Component tokens are added only when a component needs a decision of its own.
 - **Naming:** dot paths in DTCG, dashes in CSS: `color.text.muted` becomes `--color-text-muted`.
-- **Colour is teal** (the brief has the table and what was rejected). `inverse` is the dark header block on panels. There's no second accent colour yet. Every pair that must pass contrast does:
-  - text: body on white 14.4:1, muted on white 6.2:1 and on pale teal 5.5:1, white on the button teal 5.2:1, the header's secondary text 9.2:1;
+- **Colour is teal** (the brief has the table and what was rejected). The only other hue is a plain red, for errors only. `inverse` is the dark header block on panels. There's no second accent colour yet. Every pair that must pass contrast does:
+  - text: body on white 14.4:1, muted on white 6.2:1 and on pale teal 5.5:1, white on the button teal 5.2:1, the header's secondary text 9.2:1, links at least 5.1:1 on every background (white, pale teal, the ocean), errors 5.6:1 on white;
+  - input borders: 3.5:1 against white (WCAG 1.4.11);
   - map shapes: written against land 4.1:1, selected against written 3.5:1.
 - **The fonts are placeholders on purpose:** system fonts until they're chosen. Choosing them changes values in `primitives.json`, not names, so nothing that uses the tokens has to change.
 - **Light theme only for now.** Dark mode will be a second mode of the same semantic tokens.

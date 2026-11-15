@@ -20,6 +20,15 @@
 			"inverse": {
 				"$description": "The dark header block on panels.",
 				"$value": "{color.teal.950}"
+			},
+			"backdrop": {
+				"$description": "Behind a dialog: deep teal at half opacity.",
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.0431, 0.1843, 0.1725],
+					"hex": "#0b2f2c",
+					"alpha": 0.5
+				}
 			}
 		},
 		"text": {
@@ -28,6 +37,10 @@
 			},
 			"muted": {
 				"$value": "{color.teal-grey.600}"
+			},
+			"link": {
+				"$description": "Inline links. At least 5.1:1 on every background: white, pale teal and the ocean.",
+				"$value": "{color.teal.800}"
 			},
 			"on-accent": {
 				"$value": "{color.neutral.0}"
@@ -38,11 +51,23 @@
 			"on-inverse-muted": {
 				"$description": "Secondary text on the dark header block.",
 				"$value": "{color.teal.200}"
+			},
+			"error": {
+				"$description": "Error messages. 5.6:1 on white.",
+				"$value": "{color.red.600}"
 			}
 		},
 		"border": {
 			"default": {
 				"$value": "{color.neutral.200}"
+			},
+			"control": {
+				"$description": "Around inputs. Reaches 3:1 against white (WCAG 1.4.11), unlike the default border.",
+				"$value": "{color.teal-grey.400}"
+			},
+			"error": {
+				"$description": "Around an input with an error.",
+				"$value": "{color.red.600}"
 			}
 		},
 		"accent": {
