@@ -99,6 +99,17 @@ All in `packages/ui`, as devDependencies:
 - **The boundary rules** allow stories to use devDependencies and allow peer dependencies in shipped code; the clean boundary fixture proves both.
 - **Storybook deploys** as a static-files-only Worker, per PR and for `main`, in the Previews account.
 
+### Added in M0 PR 6 (tokens)
+
+In `packages/tokens`, as devDependencies:
+
+| Package | Version | Why | Unpacked size |
+|---|---|---|---|
+| `@terrazzo/cli` | 2.10.0 | Builds the DTCG tokens (ADR 0008, ADR 0014) | 0.2 MB, plus `@terrazzo/parser` (0.6 MB) |
+| `@terrazzo/plugin-css` | 2.10.0 | Writes them as CSS custom properties | 0.1 MB |
+
+Nothing ships to the browser except the generated `tokens.css` (about 3 KB).
+
 ### Planned, not yet installed
 Recorded here so the sizes are known before code depends on them (ADR 0006):
 

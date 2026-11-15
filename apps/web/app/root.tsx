@@ -1,3 +1,4 @@
+import "@thorbde/tokens/tokens.css";
 import {
 	isRouteErrorResponse,
 	Links,
@@ -6,8 +7,8 @@ import {
 	Scripts,
 	ScrollRestoration,
 } from "react-router";
-
 import type { Route } from "./+types/root";
+import "./root.css";
 
 export function Layout({ children }: { children: React.ReactNode }) {
 	return (

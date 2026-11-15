@@ -27,12 +27,12 @@ Look up current docs for these libraries instead of relying on memory. Their API
 | Command | What |
 |---|---|
 | `pnpm dev` | Local dev on the Workers runtime |
-| `pnpm check` | **Run before every commit:** lint + typecheck + boundaries + knip + tests |
+| `pnpm check` | **Run before every commit:** lint + typecheck + tokens in step + boundaries + knip + tests |
 | `pnpm boundaries` / `pnpm knip` | Import rules (dependency-cruiser) / unused files, exports and dependencies |
 | `pnpm graph` | The dependency graph as a Mermaid diagram |
 | `pnpm test` / `pnpm test:e2e` | Unit and integration tests / Playwright |
 | `pnpm storybook` / `pnpm build:storybook` | Design-system workbench and playgrounds (`packages/ui`) / its static build |
-| `pnpm tokens` | Build the design tokens (`packages/tokens`) |
+| `pnpm tokens` | Build the design tokens (`packages/tokens`) after editing their JSON; commit the generated CSS |
 | `pnpm db:generate` | Generate a migration from the schema |
 | `pnpm db:migrate` | Apply migrations to the **local** D1 only |
 | `pnpm build:maps` | Regenerate the map geometry from Natural Earth |
@@ -69,6 +69,7 @@ Look up current docs for these libraries instead of relying on memory. Their API
 - **Validate with zod at every boundary:** form input, route params, JSON columns, webhooks, env.
 - **Errors:** services throw typed errors from `app/lib/errors.ts`, and routes map them to responses.
 - **Naming:** `camelCase` in TypeScript and `snake_case` in the database (Drizzle maps between them).
+- **Style with semantic tokens only** (`var(--color-text-muted)`, `var(--font-ui)`), never primitives or raw values (ADR 0014).
 - **Accessibility is not optional.** Use semantic HTML, make everything keyboard-reachable, keep focus visible, and label everything. Base UI for interactive primitives.
 - **Performance budgets:** at most 150 KB gzipped JS on reading pages, of which at most ~40 KB is our own code and the map (React and React Router are ~114 KB; ADR 0013), one database round trip per page where possible, and CodeMirror only on `/write/*`.
 - **The UI copy is English.** Keep the tone friendly, short and concrete.

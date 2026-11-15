@@ -1,0 +1,15 @@
+/* Page basics on the design tokens (@thorbde/tokens).
+   Moves into @thorbde/ui with the UI foundation (M0 PR 7). */
+body {
+	margin: 0;
+	background: var(--color-bg-page);
+	color: var(--color-text-default);
+	font-family: var(--font-ui);
+	font-size: var(--font-size-md);
+	line-height: var(--font-line-height-normal);
+}
+
+:focus-visible {
+	outline: 2px solid var(--color-focus);
+	outline-offset: 2px;
+}
