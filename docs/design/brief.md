@@ -9,7 +9,7 @@ Thor's direction for the look of the app. Colour and fonts are still open; this 
 ## Colour
 
 - **Popping, confident colours** on a clean, light base.
-- **Inspiration:** Kurzgesagt's vividness and palette, with a touch of Duolingo's friendliness.
+- **Inspiration:** the Kurzgesagt store (its vividness, palette and illustration), and Duolingo's cartoony style with happy, optimistic, animated little details.
 - **But:** never a clone of either, and **not too playful**. It's a tool for thoughtful writing, not a game.
 - **Light mode first.** Dark mode comes later, as a second mode of the same semantic tokens.
 
@@ -23,6 +23,7 @@ Thor's direction for the look of the app. Colour and fonts are still open; this 
 
 - **"Grandma" colours:** muted, dusty, beige-and-sepia palettes.
 - **The generic AI-generated look:** purple-to-blue gradients, glassy blur, Inter on slate grey, emoji as decoration, everything in rounded cards with soft shadows.
+- **Neo-brutalism:** thick black outlines on everything, hard offset shadows, chunky bordered buttons. Tried in the "Bold" canvas row and rejected.
 
 ## Constraints that don't move
 
