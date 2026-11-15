@@ -3,12 +3,13 @@
 	"include": [
 		".react-router/types/**/*",
 		"app/**/*",
+		"tests/integration/**/*",
 		"worker-configuration.d.ts"
 	],
 	"compilerOptions": {
 		"composite": true,
 		"lib": ["DOM", "DOM.Iterable", "ES2022"],
-		"types": ["vite/client"],
+		"types": ["vite/client", "@cloudflare/vitest-plugin/types"],
 		"target": "ES2022",
 		"module": "ES2022",
 		"moduleResolution": "bundler",

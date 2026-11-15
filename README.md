@@ -20,7 +20,9 @@ pnpm install
 pnpm dev
 ```
 
-Then open http://localhost:5173. The app runs locally on `workerd`, the same runtime as Cloudflare Workers, so no Cloudflare account is needed for development.
+Then open http://localhost:5173.
+
+For `pnpm test:e2e`, install Playwright's browser once with `pnpm --filter web exec playwright install chromium`, or point `PLAYWRIGHT_CHROMIUM_PATH` at a Chromium you already have. The app runs locally on `workerd`, the same runtime as Cloudflare Workers, so no Cloudflare account is needed for development.
 
 ## Commands
 
@@ -34,13 +36,16 @@ Run these from the repository root.
 | `pnpm lint` | Checks linting and formatting with Biome |
 | `pnpm format` | Fixes formatting and safe lint issues |
 | `pnpm check` | Lint + typecheck. **Run before every commit.** It grows as M0 adds tests, boundaries and knip. |
+| `pnpm test` | Unit and integration tests, inside workerd (also part of `pnpm check`) |
+| `pnpm test:e2e` | Playwright end-to-end tests against the production build, served locally |
 | `pnpm size` | Checks each page's first-load JavaScript against the 150 KB budget (after `pnpm build`) |
 
 ## Continuous integration
 
 Every PR runs:
 
-- **CI (`check`):** lint, typecheck, build, and the JavaScript budget: at most 150 KB gzipped of first-load JavaScript per page (ADR 0013). `pnpm size` runs the same check locally after `pnpm build`.
+- **CI (`check`):** lint, typecheck, unit and integration tests, build, and the JavaScript budget: at most 150 KB gzipped of first-load JavaScript per page (ADR 0013). `pnpm size` runs the same check locally after `pnpm build`.
+- **CI (`e2e`):** Playwright against the production build, served locally on workerd.
 - **Preview:** a deploy of the PR to its own Worker, `map-app-pr-<number>`, in the separate Previews Cloudflare account. A comment on the PR links to it, and the Worker is deleted when the PR closes (ADR 0006).
 - **Claude review:** when a PR is marked ready for review, or when Thor comments `@claude` (ADR 0009).
 

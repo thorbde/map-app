@@ -60,6 +60,18 @@ GitHub Actions used by the workflows:
 
 The preview deploy and cleanup run `wrangler` through `npx` at a pinned version, which must match `apps/web/package.json`, so the PR's dependencies are never installed next to the Cloudflare token.
 
+### Added in M0 PR 3 (tests)
+
+| Package | Version | Why | Unpacked size |
+|---|---|---|---|
+| `vitest` | 5.1.0 | Unit and integration tests | 2.9 MB |
+| `@cloudflare/vitest-plugin` | 1.8.2 | Runs Vitest tests inside workerd, with the real Worker and its bindings | 9.6 MB |
+| `@playwright/test` | 1.65.1 | End-to-end tests in a real browser | 14 MB with `playwright-core`, plus Chromium, downloaded in CI |
+
+- **`@cloudflare/vitest-pool-workers` is deprecated:** Cloudflare renamed it to `@cloudflare/vitest-plugin`, which also supports Vitest 5. The old package needed Vitest 4.
+- **Integration tests load React Router's Vite plugin** in `vitest.config.ts`, because the Worker entry imports the generated server build. That way a test request goes through exactly what production runs.
+- **e2e tests use the production build** (`vite preview` on workerd), never a deployed URL (ADR 0007). No retries, so a flaky test shows up instead of hiding. Traces are kept on failure and uploaded from CI.
+
 ### Planned, not yet installed
 Recorded here so the sizes are known before code depends on them (ADR 0006):
 

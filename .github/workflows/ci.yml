@@ -1,5 +1,7 @@
-# Lint, typecheck, build and the JavaScript size budget, on every PR and on main.
-# `check` is the job name to add as a required status check in the main ruleset.
+# On every PR and on main:
+# - check: lint, typecheck, unit and integration tests, build, the JavaScript size budget
+# - e2e:   Playwright against the production build served locally
+# Both job names are required status checks in the main ruleset.
 
 name: CI
 
@@ -34,8 +36,34 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Lint and typecheck
+      - name: Lint, typecheck, unit and integration tests
         run: pnpm check
       - run: pnpm build
       - name: JavaScript size budget (ADR 0013)
         run: pnpm size
+
+  e2e:
+    name: e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install Chromium for Playwright
+        run: pnpm --filter web exec playwright install --with-deps chromium
+      - name: End-to-end tests (builds, then serves the build locally)
+        run: pnpm test:e2e
+      - name: Upload the Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+          retention-days: 7

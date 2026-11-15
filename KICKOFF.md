@@ -22,7 +22,7 @@ Maps come before auth: they need no database or login, they're the heart of the 
 
 | # | Milestone | Done when |
 |---|---|---|
-| **M0** | **Foundation:** a pnpm workspace (`apps/web`, `packages/tokens`, `packages/ui`), React Router v8 on Workers, TS strict, Biome, dependency-cruiser rules from `ARCHITECTURE.md`, knip, Vitest (Workers pool), Playwright, CI (`pnpm check` + e2e), preview deploys per PR, `@thorbde/tokens` (DTCG + Terrazzo, light and dark), `@thorbde/ui` with Storybook and a first set of Base UI components (Button, Field, Link, Dialog), a README with setup | A "hello" page built from `@thorbde/ui` deploys to a preview URL, CI is green, a boundary violation fails a test in CI |
+| **M0** | **Foundation:** a pnpm workspace (`apps/web`, `packages/tokens`, `packages/ui`), React Router v8 on Workers, TS strict, Biome, dependency-cruiser rules from `ARCHITECTURE.md`, knip, Vitest (in workerd), Playwright, CI (`pnpm check` + e2e), preview deploys per PR, `@thorbde/tokens` (DTCG + Terrazzo, light and dark), `@thorbde/ui` with Storybook and a first set of Base UI components (Button, Field, Link, Dialog), a README with setup | A "hello" page built from `@thorbde/ui` deploys to a preview URL, CI is green, a boundary violation fails a test in CI |
 | **M1** | **Countries and maps:** `countries.ts` + tests, the Wikidata facts dataset with its monthly refresh PR (ADR 0012), `build-maps.ts`, the map-first shell (ADR 0010) with `<CountryMap>`, pan and zoom, URL-driven views, continent chips, small-state markers, keyboard navigation | Every country can be clicked in its continent view, the shell keeps the map mounted between pages, and the size budgets hold |
 | **M2** | **Data and auth:** Drizzle schema + migrations on D1, preview databases per PR, Better Auth with Google, the test-only sign-in for e2e, invite codes, onboarding/username | You can sign in with Google with an invite code and pick a username, on a preview deploy |
 | **M3** | **Writing:** click-a-country to write, the CodeMirror editor with its formatting toolbar (ADR 0011), the template and guide, the memory hook, autosave, the publish pipeline (render + sanitize + version), unpublish/delete | You can write and publish an essay, and the XSS tests pass |
@@ -35,7 +35,7 @@ Maps come before auth: they need no database or login, they're the heart of the 
 |---|---|---|
 | 1. Scaffold | pnpm workspace, React Router on Workers, TypeScript, Biome, README, ADR 0013 | Nothing yet (`pnpm check` runs locally) |
 | 2. CI | `ci.yml` and `preview.yml`: a preview deploy per PR in the Previews account | `check`: lint, typecheck, build, and the **150 KB JavaScript budget** per page. **Then make `check` a required status check.** |
-| 3. Tests | Vitest (Workers pool) and Playwright | Unit tests inside `check`, plus a separate `e2e` job. **Then make `e2e` required too.** |
+| 3. Tests | Vitest (Cloudflare's Vitest plugin, in workerd) and Playwright | Unit and integration tests inside `check`, plus a separate `e2e` job against the production build. **Then make `e2e` required too** (source: GitHub Actions). |
 | 4. Boundaries | dependency-cruiser and knip | Import rules and unused code inside `check`; a dependency graph for the weekly check |
 | 5. Tokens | `@thorbde/tokens`: DTCG + Terrazzo, light and dark | Tokens build inside `check` |
 | 6. UI foundation | `@thorbde/ui`: Storybook, CSS Modules, Button | Storybook builds |
