@@ -1,6 +1,6 @@
 # 0002: Feature modules with enforced boundaries
 
-- **Status:** accepted
+- **Status:** accepted. The design system moved from `app/ui/` to its own packages in ADR 0008.
 - **Date:** 2026-11-15
 
 ## Context

@@ -12,9 +12,11 @@ This app is built by agents and owned by Thor, a design systems engineer. Thor o
 
 People learn about the countries of the world by writing short essays, one country at a time, following an evidence-based method (`docs/METHOD.md`). Each user has a world map that fills in as they publish. Profiles can be public or private. Social features come later (`docs/specs/roadmap.md`). The MVP is defined in `docs/specs/mvp.md`.
 
-## Stack (see ADR 0001)
+## Stack (see ADRs 0001, 0006, 0007, 0008)
 
-React Router v7 (framework mode) · TypeScript strict · Cloudflare Workers · Neon Postgres (Frankfurt) via `@neondatabase/serverless` · Drizzle ORM · Better Auth · Resend · Turnstile · CodeMirror 6 · remark/rehype + rehype-sanitize · Radix primitives · Vitest (Workers pool) · Playwright · Storybook · Biome · dependency-cruiser · knip · pnpm
+React Router v7 (framework mode) · TypeScript strict · Cloudflare Workers · Cloudflare D1 (EU jurisdiction) · Drizzle ORM · Better Auth (Google sign-in) · CodeMirror 6 · remark/rehype + rehype-sanitize · Base UI · DTCG tokens + Terrazzo · CSS Modules · Vitest (Workers pool) · Playwright · Storybook · Biome · dependency-cruiser · knip · pnpm workspaces
+
+**Repo layout:** `apps/web/` is the app, `packages/tokens/` and `packages/ui/` are the design system (`@thorbde/tokens`, `@thorbde/ui`). Paths starting with `app/` are inside `apps/web/`.
 
 Look up current docs for these libraries instead of relying on memory. Their APIs change fast.
 
@@ -25,9 +27,10 @@ Look up current docs for these libraries instead of relying on memory. Their API
 | `pnpm dev` | Local dev on the Workers runtime |
 | `pnpm check` | **Run before every commit:** typecheck + lint + boundaries + knip + unit tests |
 | `pnpm test` / `pnpm test:e2e` | Unit and integration tests / Playwright |
-| `pnpm storybook` | Design-system workbench |
+| `pnpm storybook` | Design-system workbench (`packages/ui`) |
+| `pnpm tokens` | Build the design tokens (`packages/tokens`) |
 | `pnpm db:generate` | Generate a migration from the schema |
-| `pnpm db:migrate` | Apply migrations to the **local or dev** database only |
+| `pnpm db:migrate` | Apply migrations to the **local** D1 only |
 | `pnpm build:maps` | Regenerate the map geometry from Natural Earth |
 
 ## How to work
@@ -46,9 +49,11 @@ Look up current docs for these libraries instead of relying on memory. Their API
 - **Never bypass `server/access.server.ts`** when reading another user's data. The UI never decides visibility.
 - **Never cache viewer-dependent responses in a shared cache.** See ADR 0003.
 - **Never render user markdown at request time, or with raw HTML enabled.** See ADR 0004.
-- **Never build UI from scratch in a feature.** Compose from `app/ui/`. If a component or token is missing, propose it in the PR and **ask Thor**. Thor approves all changes to `app/ui/`.
+- **Never build UI from scratch in a feature.** Compose from `@thorbde/ui`. If a component or token is missing, propose it in the PR and **ask Thor**. Thor approves all changes to `packages/`.
+- **The design system never imports from the app.** `packages/*` must stay reusable in other apps (ADR 0008).
 - **Never push to `main`, run migrations against production, or read production secrets.**
 - **Never edit a migration that has been merged.** Write a new one.
+- **Database access goes through Drizzle only,** with app-generated IDs and `db.batch()` for atomic writes (ADR 0006).
 - **Don't import Cloudflare-specific APIs outside `app/server/platform/`.** The app must stay portable to Node.
 - **YAGNI.** Build what the spec asks for. No speculative abstractions, no "while I'm here" refactors outside the PR's scope.
 
@@ -59,7 +64,7 @@ Look up current docs for these libraries instead of relying on memory. Their API
 - **Validate with zod at every boundary:** form input, route params, JSON columns, webhooks, env.
 - **Errors:** services throw typed errors from `app/lib/errors.ts`, and routes map them to responses.
 - **Naming:** `camelCase` in TypeScript and `snake_case` in the database (Drizzle maps between them).
-- **Accessibility is not optional.** Use semantic HTML, make everything keyboard-reachable, keep focus visible, and label everything. Radix for interactive primitives.
+- **Accessibility is not optional.** Use semantic HTML, make everything keyboard-reachable, keep focus visible, and label everything. Base UI for interactive primitives.
 - **Performance budgets:** under 100 KB gzipped JS on reading pages, one database round trip per page where possible, and CodeMirror only on `/write/*`.
 - **The UI copy is English.** Keep the tone friendly, short and concrete.
 

@@ -2,28 +2,30 @@
 
 ## 1. Before you start (Thor, by hand)
 
-- [ ] Create an empty GitHub repo and push this folder to `main`.
-- [ ] Turn on branch protection for `main`: require a PR, require CI to pass, require your approval.
-- [ ] Cloudflare account: note the account ID and create an API token for Workers deploys.
-- [ ] Neon account: create a project in **eu-central-1 (Frankfurt)**, and create a `dev` branch for local development.
-- [ ] Resend account: verify a sending domain (or use the test sender for local development).
-- [ ] Google Cloud console: create an OAuth client. Add the redirect URIs once the dev and prod URLs are known.
-- [ ] Turnstile: create a site (the test keys work for local development).
+- [x] Create an empty GitHub repo and push this folder to `main`.
+- [x] Turn on branch protection for `main` (a ruleset): require a PR, block force pushes and deletions, linear history, squash merges. Approvals are set to 0, because GitHub doesn't let you approve PRs opened from your own account; Thor merging is the approval.
+- [ ] Add the required status checks `check` and `e2e` to the ruleset once CI has run them for the first time (M0).
+- [ ] Cloudflare: note the account ID and create an API token with **Workers Scripts: Edit** and **D1: Edit**. Store both as GitHub Actions secrets (`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`).
+- [ ] Google Cloud console: create an OAuth client (M2). Add the redirect URIs once the dev and prod URLs are known.
 - [ ] Optional: pick a domain name.
 
 Claude Code will tell you which secrets go where (`.dev.vars` locally, GitHub Actions secrets, `wrangler secret`).
+
+No Neon, Resend or Turnstile accounts are needed for the MVP (ADRs 0006 and 0007).
 
 ## 2. Milestones
 
 Each milestone is several small PRs, and each PR starts with a plan you approve.
 
+Maps come before auth: they need no database or login, they're the heart of the product, and they carry the most UX risk.
+
 | # | Milestone | Done when |
 |---|---|---|
-| **M0** | **Foundation:** React Router v7 on Workers, TS strict, Biome, dependency-cruiser rules from `ARCHITECTURE.md`, knip, Vitest (Workers pool), Playwright, Storybook, CI (`pnpm check` + e2e), preview deploys per PR, `app/ui/tokens.css` with a first set of components (Button, Field, Link, Dialog), a README with setup | A "hello" page deploys to a preview URL, CI is green, a deliberate boundary violation fails CI |
-| **M1** | **Data and auth:** Drizzle schema + migrations, Neon client, Better Auth (email/password + verification + reset, Google), Turnstile, invite codes, onboarding/username | You can sign up, verify, sign in with Google and pick a username, on a preview deploy |
-| **M2** | **Countries and maps:** `countries.ts` + tests, `build-maps.ts`, `<CountryMap>` for the world and continents, small-state markers, keyboard navigation | Every country can be clicked in its continent view, and the size budgets hold |
+| **M0** | **Foundation:** a pnpm workspace (`apps/web`, `packages/tokens`, `packages/ui`), React Router v7 on Workers, TS strict, Biome, dependency-cruiser rules from `ARCHITECTURE.md`, knip, Vitest (Workers pool), Playwright, CI (`pnpm check` + e2e), preview deploys per PR, `@thorbde/tokens` (DTCG + Terrazzo, light and dark), `@thorbde/ui` with Storybook and a first set of Base UI components (Button, Field, Link, Dialog), a README with setup | A "hello" page built from `@thorbde/ui` deploys to a preview URL, CI is green, a boundary violation fails a test in CI |
+| **M1** | **Countries and maps:** `countries.ts` + tests, `build-maps.ts`, `<CountryMap>` for the world and continents, small-state markers, keyboard navigation | Every country can be clicked in its continent view, and the size budgets hold |
+| **M2** | **Data and auth:** Drizzle schema + migrations on D1, preview databases per PR, Better Auth with Google, the test-only sign-in for e2e, invite codes, onboarding/username | You can sign in with Google with an invite code and pick a username, on a preview deploy |
 | **M3** | **Writing:** `/write`, the country picker, the CodeMirror editor with the template and guide, the facts form, autosave, the publish pipeline (render + sanitize + version), unpublish/delete | You can write and publish an essay, and the XSS tests pass |
-| **M4** | **Reading and privacy:** profile, continent and essay pages, `access.server.ts` + the full test matrix, settings (profile, username, visibility), export, delete account | The e2e flow from the MVP spec passes, including the private/logged-out checks |
+| **M4** | **Reading and privacy:** profile, continent and essay pages, `access.server.ts` + the full test matrix, settings (profile, visibility), export, delete account | The e2e flow from the MVP spec passes, including the private/logged-out checks |
 | **M5** | **Launch prep:** minimal admin, privacy and terms placeholders, Lighthouse CI budgets, accessibility pass, production deploy | Live on production with invite-only sign-up |
 
 ## 3. The first prompt for Claude Code

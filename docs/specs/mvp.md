@@ -48,8 +48,9 @@
 
 ## 3. Auth and onboarding (`features/auth`)
 
-- **Better Auth:** email + password, with email verification and password reset via Resend, plus Google sign-in.
-- **Turnstile** on sign-up. The invite code is required when `SIGNUP_MODE=invite`.
+- **Better Auth with Google sign-in only** (ADR 0007). Email + password is on the roadmap.
+- The invite code is required when `SIGNUP_MODE=invite`.
+- **e2e tests** use a test-only sign-in path that exists only when `AUTH_TEST_MODE=1` (ADR 0007).
 - **Better Auth's rate limiting** on the auth routes.
 - **`/onboarding`** after the first sign-in: pick a username (3–30 chars, `[a-z0-9_-]`, unique, not on the reserved list: admin, api, write, settings, explore, method, u, login, signup…) and a display name.
 - **The first admin** is set with a one-off script documented in the README.
@@ -88,7 +89,7 @@
 ## 6. Settings (`features/profiles`)
 
 - **Profile:** display name, bio, `current_continent`.
-- **Username:** can change once every 30 days, and the old username redirects for 30 days.
+- **Username:** shown, but can't be changed in the MVP. Changing it, with redirects from the old one, is on the roadmap.
 - **"Who can see your map":**
 
   | Value | Label | Helper text |
@@ -96,7 +97,7 @@
   | `public` | **Everyone** | Anyone can see your map and published essays, even without an account. |
   | `private` | **Only me** | Your map and essays are hidden. Others can see your name and username, nothing else. |
 
-- **Password** and the connected Google account.
+- **The connected Google account** (shown, for reference).
 - **Export:** a zip of all essays as markdown with YAML frontmatter, plus `profile.json`.
 - **Delete account:** confirm by typing your username. Hard-deletes everything and signs out everywhere.
 
@@ -118,14 +119,14 @@
   - labels everywhere
   - respects `prefers-reduced-motion`
 - **Design:**
-  - tokens in `app/ui/tokens.css`, with light and dark mode
-  - every screen built from `app/ui` components
+  - tokens in `@thorbde/tokens` (DTCG + Terrazzo), with light and dark mode (ADR 0008)
+  - every screen built from `@thorbde/ui` components
   - Storybook stories for every `ui` component
 - **Tests:**
   - unit tests for country data, rendering and sanitization, and username rules
   - the access matrix from ADR 0003
-  - **e2e:** sign up → onboard → write → publish → view as logged out → set private → verify hidden → export → delete account
+  - **e2e:** sign in (test mode) → onboard → write → publish → view as logged out → set private → verify hidden → export → delete account
 
 ## Out of scope for the MVP
 
-Followers, friends visibility, stars, Explore, version-history UI, cities and the locator map, recall questions and riddles, "Test me", review and quiz, translations, the supporter tier and payments, OG images, notifications, the map redesign. See `roadmap.md`.
+Email + password sign-in, username changes, followers, friends visibility, stars, Explore, version-history UI, cities and the locator map, recall questions and riddles, "Test me", review and quiz, translations, the supporter tier and payments, OG images, notifications, the map redesign. See `roadmap.md`.
