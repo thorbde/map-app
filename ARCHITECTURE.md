@@ -151,5 +151,5 @@ D1 has no interactive transactions. "Atomic" below means one `db.batch([...])`: 
 |---|---|---|
 | local | `pnpm dev` (workerd) | Local D1 (a SQLite file under `.wrangler/`) |
 | tests | Vitest Workers pool | An isolated D1 per test file, migrations applied |
-| preview | Workers preview URL per PR | A D1 per PR, created by CI and deleted when the PR closes. Never the production database. |
-| production | `main` → `wrangler deploy` (CI only) | The production D1 (EU jurisdiction) |
+| preview | Workers preview URL per PR, in a **separate Cloudflare account** | A D1 per PR (`map-app-pr-<number>`), created by CI and deleted when the PR closes. Can't reach production (ADR 0006). |
+| production | `main` → `wrangler deploy` (CI only, GitHub `production` environment) | The production D1 (EU jurisdiction) |

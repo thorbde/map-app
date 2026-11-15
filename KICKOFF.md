@@ -5,7 +5,8 @@
 - [x] Create an empty GitHub repo and push this folder to `main`.
 - [x] Turn on branch protection for `main` (a ruleset): require a PR, block force pushes and deletions, linear history, squash merges. Approvals are set to 0, because GitHub doesn't let you approve PRs opened from your own account; Thor merging is the approval.
 - [ ] Add the required status checks `check` and `e2e` to the ruleset once CI has run them for the first time (M0).
-- [ ] Cloudflare: note the account ID and create an API token with **Workers Scripts: Edit** and **D1: Edit**. Store both as GitHub Actions secrets (`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`).
+- [ ] Cloudflare **production** account: note the account ID and create an API token with **Workers Scripts: Edit** and **D1: Edit**. Store both as secrets of a GitHub **`production` environment** that only allows `main` (Settings → Environments), not as repository secrets (ADR 0006).
+- [ ] Cloudflare **preview** account (a second, free account): the same kind of token. Store as repository secrets `CLOUDFLARE_PREVIEW_ACCOUNT_ID` and `CLOUDFLARE_PREVIEW_API_TOKEN`.
 - [ ] Google Cloud console: create an OAuth client (M2). Add the redirect URIs once the dev and prod URLs are known.
 - [ ] Optional: pick a domain name.
 
