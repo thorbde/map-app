@@ -1,6 +1,6 @@
 # 0001: Stack: React Router v7 on Cloudflare Workers, Neon Postgres
 
-- **Status:** accepted, partly superseded: the database by ADR 0006, email/password, Resend and Turnstile by ADR 0007, Radix by ADR 0008
+- **Status:** accepted, partly superseded: the database by ADR 0006, email/password, Resend and Turnstile by ADR 0007, Radix by ADR 0008, React Router v7 → v8 by ADR 0013
 - **Date:** 2026-11-15
 
 ## Context

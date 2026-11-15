@@ -26,7 +26,7 @@ The first design sketches were a traditional website: a header, then a page with
 
 ## Alternatives considered
 - **A traditional page layout** (the first sketches): simpler, but the map becomes decoration instead of the way you use the app.
-- **MapLibre GL or Leaflet:** built for tiled street maps, and far heavier (hundreds of KB of JavaScript), which would break the 100 KB budget. We only need ~200 country shapes.
+- **MapLibre GL or Leaflet:** built for tiled street maps, and far heavier (hundreds of KB of JavaScript), which would break the JavaScript budget (ADR 0013). We only need ~200 country shapes.
 - **A small zoom helper library such as `d3-zoom`:** possible if hand-written pan and zoom turns out fiddly. Decided in the maps milestone's plan, with an ADR entry if added.
 
 ## Consequences

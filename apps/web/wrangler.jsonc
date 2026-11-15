@@ -1,0 +1,12 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "map-app",
+	// The Worker entry lives in platform/: the only place that may use Workers APIs (ARCHITECTURE.md).
+	"main": "./app/server/platform/worker.ts",
+	"compatibility_date": "2026-11-01",
+	"compatibility_flags": ["nodejs_compat"],
+	// Runs the Worker near its data source (the database, from M2). ADR 0001.
+	"placement": { "mode": "smart" },
+	"observability": { "enabled": true },
+	"upload_source_maps": true
+}

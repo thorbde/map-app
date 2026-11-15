@@ -124,7 +124,8 @@ Every page below is a panel over the map (§2).
 ## 8. Quality bar
 
 - **Performance:**
-  - under 100 KB gzipped JS on reading pages, **including the map shell and its pan and zoom**, and CodeMirror only on `/write/*`
+  - at most 150 KB gzipped JS on reading pages, of which at most ~40 KB is our own code, **including the map shell and its pan and zoom** (ADR 0013) and CodeMirror only on `/write/*`
+  - fast first load: the page content and the map's SVG are server-rendered, so they're visible before any JavaScript runs
   - `prefetch="intent"` on map countries, prev/next and profile links
   - Smart Placement on
   - no layout shift around the map or the fact box

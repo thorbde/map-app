@@ -31,11 +31,11 @@ Thor is a design systems engineer and owns the design system. It should be reusa
 ## Alternatives considered
 - **Radix primitives (ADR 0001):** still widely used, but Thor prefers Base UI. Base UI reached 1.0 in December 2025, maintained by MUI with contributors from Radix and Floating UI.
 - **Style Dictionary** instead of Terrazzo: more flexible, more configuration. Terrazzo is DTCG-native and needs less setup. Moving later is mostly a configuration change, since both read DTCG.
-- **Tailwind, vanilla-extract or another CSS-in-JS library:** each adds a dependency or a runtime. CSS Modules are built into Vite and cost nothing at runtime, which helps the 100 KB JavaScript budget.
+- **Tailwind, vanilla-extract or another CSS-in-JS library:** each adds a dependency or a runtime. CSS Modules are built into Vite and cost nothing at runtime, which helps the JavaScript budget (ADR 0013).
 - **A separate repo for the design system now:** two repos, versioning and publishing before there's a second consumer. Deferred.
 
 ## Consequences
 - The app's paths move under `apps/web/`.
 - Tooling must be workspace-aware: TypeScript project references, Biome, knip, dependency-cruiser and Vitest all need configuring per package.
-- **Bundle budget:** Base UI is tree-shaken per component, but every interactive component used on a reading page counts towards the 100 KB budget.
+- **Bundle budget:** Base UI is tree-shaken per component, but every interactive component used on a reading page counts towards the JavaScript budget (ADR 0013).
 - The package sizes and exact dependencies are recorded in the M0 toolchain ADR.
