@@ -11,6 +11,7 @@
 	font-size: var(--font-size-sm);
 	font-weight: var(--font-weight-bold);
 	line-height: var(--font-line-height-tight);
+	text-decoration: none; /* also styles links that look like buttons (Link) */
 	cursor: pointer;
 	transition: background-color var(--duration-fast) var(--easing-standard);
 }
