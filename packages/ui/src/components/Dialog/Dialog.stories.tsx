@@ -61,9 +61,12 @@ export const Keyboard: Story = {
 
 		await step("Tab stays inside the dialog", async () => {
 			const dialog = page(canvasElement).getByRole("dialog");
+			// Base UI traps focus with invisible guard elements on either side of the
+			// dialog: Tab lands on one for a moment, then it sends focus back inside.
+			// So wait for focus to settle. If it ever escaped, it would stay outside.
 			for (let i = 0; i < 4; i++) {
 				await userEvent.tab();
-				await expect(dialog).toContainElement(focused(doc));
+				await waitFor(() => expect(dialog).toContainElement(focused(doc)));
 			}
 		});
 

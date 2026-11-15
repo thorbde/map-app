@@ -10,7 +10,7 @@ Components and the app need tokens to build on now. The colour palette was chose
 ## Decision
 - **Two tiers in DTCG JSON** (`packages/tokens/tokens/`):
   - **Primitives** (`primitives.json`): raw values. Teal, a teal-tinted grey, sky (the ocean), a neutral grey scale, font families, the type scale, space, radius, shadow and motion.
-  - **Semantic** (`semantic.json`): what things are for: `color.bg.page|surface|subtle|subtle-hover|inverse|backdrop`, `color.text.default|muted|link|error|on-accent|on-inverse|on-inverse-muted`, `color.border.default|control|error`, `color.accent.default|hover`, `color.focus`, `color.map.ocean|land|border|written|selected`, `font.ui`, `font.essay`, `size.touch-target` (44 px) and `opacity.disabled`.
+  - **Semantic** (`semantic.json`): what things are for: `color.bg.page|surface|subtle|subtle-hover|inverse|backdrop`, `color.text.default|muted|link|link-hover|error|on-accent|on-inverse|on-inverse-muted`, `color.border.default|control|error`, `color.accent.default|hover`, `color.focus`, `color.map.ocean|land|border|written|selected`, `font.ui`, `font.essay`, `size.touch-target` (44 px) and `opacity.disabled`.
 - **Colours and font families: semantic tokens only.** Their primitives exist to feed the semantic tier.
 - **Scales are used directly:** space, radius, font size, font weight, line height, shadow, duration and easing. They have no semantic tier (a `space.4` doesn't mean anything more specific), so components use `var(--space-4)` or `var(--radius-md)`. Raw values (`16px`, `#fff`) are never used.
 - Component tokens are added only when a component needs a decision of its own.

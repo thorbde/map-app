@@ -7,7 +7,7 @@
 }
 
 .inline:hover {
-	color: var(--color-accent-hover);
+	color: var(--color-text-link-hover);
 }
 
 .inline:focus-visible {
