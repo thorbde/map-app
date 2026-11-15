@@ -45,6 +45,21 @@ CLAUDE.md requires an ADR for every dependency: why, the alternatives, and its s
 
 The whole `node_modules` is about 735 MB, most of it the `workerd` binaries that Wrangler and the Vite plugin bring.
 
+### Added in M0 PR 2 (CI)
+
+No new npm packages. The JavaScript budget is checked by a small script, `apps/web/scripts/check-bundle-size.mjs`. It reads React Router's route tree and Vite's client manifest, then gzips each page's first-load files. `vite.config.ts` keeps that manifest with `build.manifest: true`; the manifest also ends up as a public file at `/.vite/manifest.json`, which is harmless because it only lists files that are already public.
+
+GitHub Actions used by the workflows:
+
+| Action | Version | Why |
+|---|---|---|
+| `actions/checkout` | v7 | Gets the code |
+| `actions/setup-node` | v7 | Node from `.nvmrc`, with the pnpm cache |
+| `pnpm/action-setup` | v6.1.1, pinned to its commit | Installs the pnpm version from `packageManager`. Third-party, so it's pinned to an exact commit that can't be changed under us |
+| `actions/upload-artifact`, `actions/download-artifact` | v7, v8 | Hand the preview build from the job without secrets to the deploy job |
+
+The preview deploy and cleanup run `wrangler` through `npx` at a pinned version, which must match `apps/web/package.json`, so the PR's dependencies are never installed next to the Cloudflare token.
+
 ### Planned, not yet installed
 Recorded here so the sizes are known before code depends on them (ADR 0006):
 

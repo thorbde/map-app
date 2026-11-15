@@ -1,0 +1,41 @@
+# Lint, typecheck, build and the JavaScript size budget, on every PR and on main.
+# `check` is the job name to add as a required status check in the main ruleset.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    # Explicit bash adds -o pipefail, so a failing command piped into tee fails the step.
+    shell: bash
+
+jobs:
+  check:
+    name: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      # Third-party action, pinned to a commit (v6.1.1). Reads pnpm's version from package.json.
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Lint and typecheck
+        run: pnpm check
+      - run: pnpm build
+      - name: JavaScript size budget (ADR 0013)
+        run: pnpm size
