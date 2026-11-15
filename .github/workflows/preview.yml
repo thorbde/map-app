@@ -119,9 +119,12 @@ jobs:
         with:
           sparse-checkout: .github/scripts
       - name: Delete the preview Workers
+        # Try both, then fail if either failed, so one failure can't leave the other behind.
         run: |
-          bash .github/scripts/delete-worker.sh "$APP_WORKER"
-          bash .github/scripts/delete-worker.sh "$STORYBOOK_WORKER"
+          rc=0
+          bash .github/scripts/delete-worker.sh "$APP_WORKER" || rc=1
+          bash .github/scripts/delete-worker.sh "$STORYBOOK_WORKER" || rc=1
+          exit "$rc"
       - name: Update the preview comment
         env:
           GH_TOKEN: ${{ github.token }}
