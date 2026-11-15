@@ -39,10 +39,11 @@ apps/
 packages/
   tokens/                 @thorbde/tokens: DTCG token JSON → Terrazzo → CSS custom properties + TS types
   ui/                     @thorbde/ui: Base UI components styled with CSS Modules, plus Storybook
+    src/playgrounds/      Storybook playgrounds for design decisions (fonts, colour, type scale); never shipped
 docs/
   METHOD.md               The writing method (product content)
   decisions/              ADRs
-  design/                 links to the design canvases (README.md)
+  design/                 links to the design canvases and Storybook (README.md)
   specs/                  mvp.md, roadmap.md, future feature specs
 ```
 
@@ -163,5 +164,5 @@ D1 has no interactive transactions. "Atomic" below means one `db.batch([...])`: 
 |---|---|---|
 | local | `pnpm dev` (workerd) | Local D1 (a SQLite file under `.wrangler/`) |
 | tests | Vitest in workerd (`@cloudflare/vitest-plugin`); Playwright against `vite preview` | An isolated D1 per test file, migrations applied (from M2) |
-| preview | A Worker per PR, `map-app-pr-<number>`, in the **separate Previews account**, deleted when the PR closes | A D1 per PR (`map-app-pr-<number>`, from M2), created by CI and deleted when the PR closes. Can't reach production (ADR 0006). |
+| preview | Two Workers per PR in the **separate Previews account**, deleted when the PR closes: the app (`map-app-pr-<number>`) and Storybook (`map-app-storybook-pr-<number>`). Storybook for `main` stays at `map-app-storybook` | A D1 per PR (`map-app-pr-<number>`, from M2), created by CI and deleted when the PR closes. Can't reach production (ADR 0006). |
 | production | `main` → `wrangler deploy` (CI only, GitHub `production` environment) | The production D1 (EU jurisdiction) |
