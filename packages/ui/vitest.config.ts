@@ -10,7 +10,7 @@ const executablePath = process.env.PLAYWRIGHT_CHROMIUM_PATH;
 
 // Every story is a test: it must render in a real browser (Chromium, through
 // Playwright), and its accessibility checks (axe, via the a11y add-on) must pass.
-// Stories opt out with `parameters.a11y.test: "todo"` only on purpose (playgrounds).
+// Stories opt out with `tags: ["!test"]`, only on purpose (playgrounds, ADR 0015).
 export default defineConfig({
 	test: {
 		projects: [
