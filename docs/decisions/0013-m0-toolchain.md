@@ -110,6 +110,20 @@ In `packages/tokens`, as devDependencies:
 
 Nothing ships to the browser except the generated `tokens.css` (about 3 KB).
 
+### Added in M0 PR 7 (UI foundation)
+
+In `packages/ui`:
+
+| Package | Version | Why | Size |
+|---|---|---|---|
+| `@base-ui/react` | 1.9.0 | Unstyled, accessible components (ADR 0008). Was `@base-ui-components/react` before 1.0 | 20 MB unpacked, but tree-shaken: the Button costs about 3 KB gzipped |
+| `@storybook/addon-vitest` | 10.6.7 | Turns every story into a test (ADR 0015) | 0.6 MB |
+| `vitest` | 5.1.0 | Runs those tests, the same version as `apps/web` | already installed |
+| `@vitest/browser-playwright` | 5.1.0 | Runs them in a real browser | 0.1 MB, plus `@vitest/browser` (0.8 MB) |
+| `playwright` | 1.65.1 | The browser driver it needs, the same version as `@playwright/test` in `apps/web` | 5 MB, plus `playwright-core` (already installed) |
+
+Only Base UI is a runtime dependency; the rest are devDependencies. The Button isn't on any page yet, so the home page is unchanged at 113.4 KB.
+
 ### Planned, not yet installed
 Recorded here so the sizes are known before code depends on them (ADR 0006):
 

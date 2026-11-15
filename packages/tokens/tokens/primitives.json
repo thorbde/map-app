@@ -98,6 +98,13 @@
 					"hex": "#dff5f0"
 				}
 			},
+			"100": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.7843, 0.9255, 0.8941],
+					"hex": "#c8ece4"
+				}
+			},
 			"200": {
 				"$value": {
 					"colorSpace": "srgb",

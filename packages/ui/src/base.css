@@ -1,5 +1,6 @@
-/* Page basics on the design tokens (@thorbde/tokens).
-   Moves into @thorbde/ui with the UI foundation (M0 PR 7). */
+/* Page basics on the design tokens. Apps import this once, after the tokens:
+   import "@thorbde/tokens/tokens.css";
+   import "@thorbde/ui/base.css"; */
 body {
 	margin: 0;
 	background: var(--color-bg-page);
