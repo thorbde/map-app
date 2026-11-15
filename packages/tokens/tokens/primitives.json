@@ -1,5 +1,5 @@
 {
-	"$description": "Primitives: raw values. Components and the app never use these directly; they use the semantic tokens. Colour: teal, chosen on the design canvas (docs/design/brief.md). Fonts are still placeholders.",
+	"$description": "Primitives: raw values. Components and the app never use these directly; they use the semantic tokens. Colour: teal, chosen on the design canvas (docs/design/brief.md).",
 	"color": {
 		"$type": "color",
 		"neutral": {
@@ -190,8 +190,9 @@
 		"family": {
 			"$type": "fontFamily",
 			"sans": {
-				"$description": "Placeholder: the system UI font until the interface font is chosen.",
+				"$description": "Montserrat, self-hosted by @thorbde/ui/fonts.css (ADR 0017). The rest is the fallback while it loads.",
 				"$value": [
+					"Montserrat",
 					"system-ui",
 					"-apple-system",
 					"Segoe UI",
@@ -200,8 +201,8 @@
 				]
 			},
 			"serif": {
-				"$description": "Placeholder: until the essay font is chosen.",
-				"$value": ["Georgia", "Times New Roman", "serif"]
+				"$description": "Source Serif 4, self-hosted by @thorbde/ui/fonts.css (ADR 0017). The rest is the fallback while it loads.",
+				"$value": ["Source Serif 4", "Georgia", "Times New Roman", "serif"]
 			}
 		},
 		"weight": {

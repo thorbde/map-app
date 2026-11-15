@@ -1,6 +1,6 @@
 # Design brief
 
-Thor's direction for the look of the app. **Colour is chosen** (below); fonts are still open and carry a placeholder in the tokens (ADR 0014).
+Thor's direction for the look of the app. **Colour and fonts are chosen** (below).
 
 ## Feel
 
@@ -32,9 +32,12 @@ Picked on the design canvas ("Teal, no accent, deep header"), after six rounds o
 
 ## Fonts
 
-- Friendly, geometric sans-serifs fit the brief (the font playground has candidates: Plus Jakarta Sans, Manrope, Sora, DM Sans, Outfit, Lexend…).
+Chosen (ADR 0017):
+
+- **Interface: Montserrat,** in two weights, 400 and 700. A friendly, geometric sans-serif.
+- **Essays: Source Serif 4,** for comfortable long reading. Essay headings stay in Montserrat.
 - **Inter is out:** it renders poorly on Windows.
-- Chosen fonts are **self-hosted**, never loaded from Google's servers (GDPR).
+- Fonts are **self-hosted**, never loaded from Google's servers (GDPR).
 
 ## Avoid
 

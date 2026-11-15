@@ -73,10 +73,10 @@
   --easing-standard: cubic-bezier(0.2, 0, 0, 1);
   /* Essay body text. */
   --font-essay: var(--font-family-serif);
-  /* Placeholder: the system UI font until the interface font is chosen. */
-  --font-family-sans: system-ui, -apple-system, "Segoe UI", "Roboto", sans-serif;
-  /* Placeholder: until the essay font is chosen. */
-  --font-family-serif: "Georgia", "Times New Roman", serif;
+  /* Montserrat, self-hosted by @thorbde/ui/fonts.css (ADR 0017). The rest is the fallback while it loads. */
+  --font-family-sans: "Montserrat", system-ui, -apple-system, "Segoe UI", "Roboto", sans-serif;
+  /* Source Serif 4, self-hosted by @thorbde/ui/fonts.css (ADR 0017). The rest is the fallback while it loads. */
+  --font-family-serif: "Source Serif 4", "Georgia", "Times New Roman", serif;
   --font-line-height-normal: 1.5;
   --font-line-height-relaxed: 1.65;
   --font-line-height-tight: 1.15;

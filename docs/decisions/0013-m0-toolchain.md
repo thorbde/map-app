@@ -124,6 +124,15 @@ In `packages/ui`:
 
 Only Base UI is a runtime dependency; the rest are devDependencies. The Button isn't on any page yet, so the home page is unchanged at 113.4 KB.
 
+### Added with the fonts (ADR 0017)
+
+In `packages/ui`, as dependencies:
+
+| Package | Version | Why | Size |
+|---|---|---|---|
+| `@fontsource/montserrat` | 5.3.0 | The interface font, self-hosted | About 19 KB per weight downloaded (Latin, WOFF2); we use two |
+| `@fontsource/source-serif-4` | 5.3.1 | The essay font, self-hosted | About 20 KB per face downloaded; we use three |
+
 ### Planned, not yet installed
 Recorded here so the sizes are known before code depends on them (ADR 0006):
 

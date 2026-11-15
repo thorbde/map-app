@@ -8,6 +8,12 @@
 		"apps/web": {},
 		"packages/tokens": {
 			"entry": ["terrazzo.config.mjs"]
+		},
+		"packages/ui": {
+			"ignoreDependencies": [
+				"@fontsource/montserrat",
+				"@fontsource/source-serif-4"
+			]
 		}
 	}
 }

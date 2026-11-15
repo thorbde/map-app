@@ -1,0 +1,12 @@
+/* The fonts, self-hosted (ADR 0017): no requests to Google or any other third party.
+   Apps import this once, with the tokens and base.css.
+
+   Montserrat for the interface, Source Serif 4 for essays. Two weights each (400, 700),
+   plus italic for essays. Each file below lists every script the font supports (Latin,
+   extended Latin, Cyrillic, Vietnamese, Greek) with a unicode-range, so a browser only
+   downloads the scripts a page actually uses. */
+@import "@fontsource/montserrat/400.css";
+@import "@fontsource/montserrat/700.css";
+@import "@fontsource/source-serif-4/400.css";
+@import "@fontsource/source-serif-4/400-italic.css";
+@import "@fontsource/source-serif-4/700.css";

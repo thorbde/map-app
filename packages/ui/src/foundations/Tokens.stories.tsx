@@ -130,7 +130,7 @@ export const Typography: StoryObj = {
 			<div style={page}>
 				<Section
 					title="Font roles"
-					note="Placeholders until the fonts are chosen."
+					note="Montserrat for the interface, Source Serif 4 for essays (ADR 0017)."
 				>
 					{tokensIn(group(semantic, "font"), ["font"]).map((token) => (
 						<div key={token.path.join(".")} style={{ display: "grid", gap: 4 }}>

@@ -42,6 +42,7 @@ packages/
   ui/                     @thorbde/ui: Base UI components styled with CSS Modules, plus Storybook
     src/index.ts          the public API: apps import from "@thorbde/ui", never from src/ paths
     src/base.css          page basics (background, text, font, focus ring): "@thorbde/ui/base.css"
+    src/fonts.css         the self-hosted fonts (ADR 0017): "@thorbde/ui/fonts.css"
     src/components/<Name>/  <Name>.tsx, <Name>.module.css, <Name>.stories.tsx (the stories are its tests, ADR 0015)
     src/foundations/      Storybook pages that show the tokens
     src/playgrounds/      Storybook playgrounds for design decisions (fonts, colour, type scale); never shipped or tested

@@ -29,3 +29,29 @@ test("the design tokens reach the page", async ({ page }) => {
 	expect(token).not.toBe("");
 	expect(background).not.toBe("rgba(0, 0, 0, 0)");
 });
+
+test("the fonts are self-hosted: Montserrat loads, and nothing is requested from another site", async ({
+	page,
+	baseURL,
+}) => {
+	const elsewhere: string[] = [];
+	page.on("request", (request) => {
+		const url = new URL(request.url());
+		if (url.protocol.startsWith("http") && url.origin !== baseURL) {
+			elsewhere.push(request.url());
+		}
+	});
+
+	await page.goto("/");
+	const loaded = await page.evaluate(async () => {
+		await document.fonts.ready;
+		return {
+			family: getComputedStyle(document.body).fontFamily,
+			montserrat: document.fonts.check('16px "Montserrat"'),
+		};
+	});
+
+	expect(loaded.family).toMatch(/^"?Montserrat"?/);
+	expect(loaded.montserrat).toBe(true);
+	expect(elsewhere).toEqual([]);
+});
