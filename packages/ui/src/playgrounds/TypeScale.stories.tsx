@@ -30,6 +30,8 @@ type Args = {
 
 const meta: Meta<Args> = {
 	title: "Playgrounds/Type scale",
+	// A design tool, not a component: not part of the tests (see Colour palettes).
+	tags: ["!test"],
 	args: {
 		base: 16,
 		ratio: 1.25,

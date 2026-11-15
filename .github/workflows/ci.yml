@@ -1,5 +1,6 @@
 # On every PR and on main:
-# - check: lint, typecheck, import boundaries, knip, unit/integration/boundary tests, build,
+# - check: lint, typecheck, import boundaries, knip, unit/integration/boundary tests,
+#          component tests (every Storybook story, with accessibility checks), build,
 #          the JavaScript size budget, and (on main) the dependency graph in the run summary
 # - e2e:   Playwright against the production build served locally
 # Both job names are required status checks in the main ruleset.
@@ -37,6 +38,8 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Install Chromium for the component tests (Storybook stories run in a browser)
+        run: pnpm --filter @thorbde/ui exec playwright install --with-deps chromium
       - name: Lint, typecheck, boundaries, knip and tests
         run: pnpm check
       - run: pnpm build

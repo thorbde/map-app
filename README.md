@@ -22,7 +22,7 @@ pnpm dev
 
 Then open http://localhost:5173.
 
-For `pnpm test:e2e`, install Playwright's browser once with `pnpm --filter web exec playwright install chromium`, or point `PLAYWRIGHT_CHROMIUM_PATH` at a Chromium you already have. The app runs locally on `workerd`, the same runtime as Cloudflare Workers, so no Cloudflare account is needed for development.
+For `pnpm test` and `pnpm test:e2e`, install Playwright's browser once with `pnpm --filter web exec playwright install chromium`, or point `PLAYWRIGHT_CHROMIUM_PATH` at a Chromium you already have. The app runs locally on `workerd`, the same runtime as Cloudflare Workers, so no Cloudflare account is needed for development.
 
 ## Commands
 
@@ -37,7 +37,7 @@ Run these from the repository root.
 | `pnpm format` | Fixes formatting and safe lint issues |
 | `pnpm check` | Lint, typecheck, tokens in step with their JSON, import boundaries, knip and all tests except e2e. **Run before every commit.** |
 | `pnpm tokens` | Builds the design tokens into CSS (`packages/tokens/generated/`); commit the result |
-| `pnpm test` | Unit and integration tests inside workerd, plus the boundary-rule tests |
+| `pnpm test` | Unit and integration tests inside workerd, component tests (every Storybook story in Chromium, with accessibility checks), plus the boundary-rule tests |
 | `pnpm boundaries` | Checks the import rules from ARCHITECTURE.md (dependency-cruiser) |
 | `pnpm knip` | Finds unused files, exports and dependencies |
 | `pnpm graph` | Prints the dependency graph as a Mermaid diagram |

@@ -14,7 +14,7 @@
 		"tokens": "pnpm --filter @thorbde/tokens build",
 		"tokens:check": "pnpm --filter @thorbde/tokens check",
 		"size": "pnpm --filter web size",
-		"test": "pnpm --filter web test && pnpm test:boundaries",
+		"test": "pnpm --filter web test && pnpm --filter @thorbde/ui test && pnpm test:boundaries",
 		"test:e2e": "pnpm --filter web test:e2e",
 		"test:boundaries": "node --test \"tests/boundaries/*.test.mjs\"",
 		"boundaries": "depcruise . --config .dependency-cruiser.cjs",

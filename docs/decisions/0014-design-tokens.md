@@ -10,7 +10,7 @@ Components and the app need tokens to build on now. The colour palette was chose
 ## Decision
 - **Two tiers in DTCG JSON** (`packages/tokens/tokens/`):
   - **Primitives** (`primitives.json`): raw values. Teal, a teal-tinted grey, sky (the ocean), a neutral grey scale, font families, the type scale, space, radius, shadow and motion.
-  - **Semantic** (`semantic.json`): what things are for: `color.bg.page|surface|subtle|inverse`, `color.text.default|muted|on-accent|on-inverse|on-inverse-muted`, `color.border.default`, `color.accent.default|hover`, `color.focus`, `color.map.ocean|land|border|written|selected`, `font.ui`, `font.essay`.
+  - **Semantic** (`semantic.json`): what things are for: `color.bg.page|surface|subtle|subtle-hover|inverse`, `color.text.default|muted|on-accent|on-inverse|on-inverse-muted`, `color.border.default`, `color.accent.default|hover`, `color.focus`, `color.map.ocean|land|border|written|selected`, `font.ui`, `font.essay`, `size.touch-target` (44 px) and `opacity.disabled`.
 - **Components and the app use semantic tokens only.** Primitives exist to feed the semantic tier. Component tokens are added only when a component needs a decision of its own.
 - **Naming:** dot paths in DTCG, dashes in CSS: `color.text.muted` becomes `--color-text-muted`.
 - **Colour is teal** (the brief has the table and what was rejected). `inverse` is the dark header block on panels. There's no second accent colour yet. Every pair that must pass contrast does:

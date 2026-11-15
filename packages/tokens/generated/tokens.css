@@ -12,6 +12,8 @@
   --color-bg-page: var(--color-sky-100);
   /* Quiet areas such as the fact box. */
   --color-bg-subtle: var(--color-teal-50);
+  /* Hover on subtle areas, such as the secondary button. */
+  --color-bg-subtle-hover: var(--color-teal-100);
   --color-bg-surface: var(--color-neutral-0);
   --color-border-default: var(--color-neutral-200);
   /* Focus rings. */
@@ -39,6 +41,7 @@
   --color-sky-300: rgb(67.84% 83.92% 87.84%);
   --color-teal-grey-600: rgb(29.02% 40% 38.82%);
   --color-teal-50: rgb(87.45% 96.08% 94.12%);
+  --color-teal-100: rgb(78.43% 92.55% 89.41%);
   --color-teal-200: rgb(65.88% 84.71% 81.57%);
   --color-teal-600: rgb(5.49% 54.9% 49.8%);
   --color-teal-700: rgb(4.31% 47.84% 43.53%);
@@ -73,12 +76,16 @@
   --font-ui: var(--font-family-sans);
   --font-weight-bold: 700;
   --font-weight-regular: 400;
+  /* Disabled controls. WCAG exempts them from contrast. */
+  --opacity-disabled: 0.5;
   --radius-full: 9999px;
   --radius-lg: 16px;
   --radius-md: 10px;
   --radius-sm: 6px;
   /* Floating panels over the map. */
   --shadow-raised: 0px 1px 3px rgb(0% 0% 0% / 0.08), 0px 8px 24px rgb(0% 0% 0% / 0.1);
+  /* The smallest height for anything you tap or click (WCAG 2.5.8 asks for 24px; 44px is comfortable). */
+  --size-touch-target: 2.75rem;
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;

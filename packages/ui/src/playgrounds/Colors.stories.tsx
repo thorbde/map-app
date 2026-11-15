@@ -330,7 +330,12 @@ const color = (name: string, description: string, category?: string) => ({
 	...(category ? { table: { category } } : {}),
 });
 
-const meta: Meta = { title: "Playgrounds/Colour palettes" };
+const meta: Meta = {
+	title: "Playgrounds/Colour palettes",
+	// Playgrounds are design tools, not components: they deliberately show failing
+	// contrast pairs and load fonts from Google, so they're not part of the tests.
+	tags: ["!test"],
+};
 export default meta;
 
 export const Pick: StoryObj<Picks> = {

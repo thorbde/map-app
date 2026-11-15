@@ -153,6 +153,8 @@ const grid: CSSProperties = {
 
 const meta: Meta<Args> = {
 	title: "Playgrounds/Fonts",
+	// A design tool, not a component: not part of the tests (see Colour palettes).
+	tags: ["!test"],
 	argTypes: {
 		candidates: {
 			control: "text",

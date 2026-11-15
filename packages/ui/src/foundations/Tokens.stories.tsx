@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import "@thorbde/tokens/tokens.css";
 import primitives from "@thorbde/tokens/tokens/primitives.json";
 import semantic from "@thorbde/tokens/tokens/semantic.json";
 import type { CSSProperties, ReactNode } from "react";

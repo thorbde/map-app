@@ -13,6 +13,10 @@
 				"$description": "Quiet areas such as the fact box.",
 				"$value": "{color.teal.50}"
 			},
+			"subtle-hover": {
+				"$description": "Hover on subtle areas, such as the secondary button.",
+				"$value": "{color.teal.100}"
+			},
 			"inverse": {
 				"$description": "The dark header block on panels.",
 				"$value": "{color.teal.950}"
@@ -72,6 +76,23 @@
 				"$description": "Must reach 3:1 against written.",
 				"$value": "{color.teal.950}"
 			}
+		}
+	},
+	"size": {
+		"$type": "dimension",
+		"touch-target": {
+			"$description": "The smallest height for anything you tap or click (WCAG 2.5.8 asks for 24px; 44px is comfortable).",
+			"$value": {
+				"value": 2.75,
+				"unit": "rem"
+			}
+		}
+	},
+	"opacity": {
+		"$type": "number",
+		"disabled": {
+			"$description": "Disabled controls. WCAG exempts them from contrast.",
+			"$value": 0.5
 		}
 	},
 	"font": {

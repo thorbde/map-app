@@ -1,11 +1,13 @@
 import type { Preview } from "@storybook/react-vite";
+import "@thorbde/tokens/tokens.css";
+import "../src/base.css";
 
 const preview: Preview = {
 	parameters: {
 		layout: "fullscreen",
 		controls: { expanded: true },
-		// Playgrounds deliberately show failing contrast pairs, so the checker only reports.
-		a11y: { test: "todo" },
+		// Accessibility violations fail the story's test (pnpm test, via addon-vitest).
+		a11y: { test: "error" },
 	},
 };
 
