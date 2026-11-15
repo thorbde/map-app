@@ -72,6 +72,17 @@ The preview deploy and cleanup run `wrangler` through `npx` at a pinned version,
 - **Integration tests load React Router's Vite plugin** in `vitest.config.ts`, because the Worker entry imports the generated server build. That way a test request goes through exactly what production runs.
 - **e2e tests use the production build** (`vite preview` on workerd), never a deployed URL (ADR 0007). No retries, so a flaky test shows up instead of hiding. Traces are kept on failure and uploaded from CI.
 
+### Added in M0 PR 4 (boundaries)
+
+| Package | Version | Why | Unpacked size |
+|---|---|---|---|
+| `dependency-cruiser` | 18.7.2 | Enforces the import rules from ARCHITECTURE.md; draws the dependency graph | 1.0 MB |
+| `knip` | 6.45.1 | Finds unused files, exports and dependencies | 1.6 MB |
+
+- **The rules are proven by tests,** not just configured: `tests/boundaries/fixtures/` has one small fake project per rule that breaks it, and `tests/boundaries/rules.test.mjs` checks that each fixture trips exactly its rule. Another test fails if a rule is added without a fixture. These tests use Node's built-in test runner, so no extra package is needed.
+- **The dependency graph** is a Mermaid diagram (`pnpm graph`), added to the summary of every CI run on `main`. GitHub renders it, so there's nothing to install, such as Graphviz.
+- **knip** needs almost no configuration: its React Router, Vite, Vitest, Playwright and wrangler plugins find the entry points. React Router route modules count as entry points, so their exports (`loader`, `meta`…) aren't reported as unused.
+
 ### Planned, not yet installed
 Recorded here so the sizes are known before code depends on them (ADR 0006):
 

@@ -27,7 +27,9 @@ Look up current docs for these libraries instead of relying on memory. Their API
 | Command | What |
 |---|---|
 | `pnpm dev` | Local dev on the Workers runtime |
-| `pnpm check` | **Run before every commit:** typecheck + lint + boundaries + knip + unit tests |
+| `pnpm check` | **Run before every commit:** lint + typecheck + boundaries + knip + tests |
+| `pnpm boundaries` / `pnpm knip` | Import rules (dependency-cruiser) / unused files, exports and dependencies |
+| `pnpm graph` | The dependency graph as a Mermaid diagram |
 | `pnpm test` / `pnpm test:e2e` | Unit and integration tests / Playwright |
 | `pnpm storybook` | Design-system workbench (`packages/ui`) |
 | `pnpm tokens` | Build the design tokens (`packages/tokens`) |

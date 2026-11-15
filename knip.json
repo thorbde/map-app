@@ -1,0 +1,10 @@
+{
+	"$schema": "https://unpkg.com/knip@6/schema.json",
+	"ignore": ["tests/boundaries/fixtures/**"],
+	"workspaces": {
+		".": {
+			"entry": ["tests/boundaries/*.test.mjs"]
+		},
+		"apps/web": {}
+	}
+}

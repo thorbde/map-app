@@ -72,7 +72,7 @@ Do not write any code until I approve the plan.
 
 ## 5. Weekly check (15 minutes)
 
-- Look at the dependency graph (dependency-cruiser can output an SVG in CI) for anything unexpected.
-- Read the knip report for dead code and unused dependencies.
+- Look at the dependency graph for anything unexpected: it's in the summary of the latest CI run on `main` (Actions → CI → the run → Summary), or run `pnpm graph`.
+- knip fails CI on dead code and unused dependencies, so there's no report to read; skim `knip.json` for anything ignored that shouldn't be.
 - Read the ADRs added this week. Do you still agree with them?
 - Check that `ARCHITECTURE.md` still matches reality.

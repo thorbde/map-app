@@ -10,14 +10,20 @@
 		"dev": "pnpm --filter web dev",
 		"build": "pnpm --filter web build",
 		"size": "pnpm --filter web size",
-		"test": "pnpm --filter web test",
+		"test": "pnpm --filter web test && pnpm test:boundaries",
 		"test:e2e": "pnpm --filter web test:e2e",
+		"test:boundaries": "node --test \"tests/boundaries/*.test.mjs\"",
+		"boundaries": "depcruise . --config .dependency-cruiser.cjs",
+		"knip": "knip",
+		"graph": "depcruise . --config .dependency-cruiser.cjs --output-type mermaid --collapse \"^(node_modules|apps/web/node_modules)/[^/]+\"",
 		"typecheck": "pnpm -r typecheck",
 		"lint": "biome check .",
 		"format": "biome check --write .",
-		"check": "pnpm lint && pnpm typecheck && pnpm test"
+		"check": "pnpm lint && pnpm typecheck && pnpm boundaries && pnpm knip && pnpm test"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.6.8"
+		"@biomejs/biome": "2.6.8",
+		"dependency-cruiser": "18.7.2",
+		"knip": "6.45.1"
 	}
 }
