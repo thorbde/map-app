@@ -1,0 +1,76 @@
+# Claude PR review. See docs/decisions/0009-claude-pr-review.md.
+#
+# Runs only when:
+#   - a PR is marked "Ready for review" (agents open PRs as drafts), or
+#   - Thor comments "@claude" on a PR (the comment's text is passed on as extra focus).
+#
+# Fast and cheap on purpose: one agent, Sonnet, medium effort, capped turns.
+# It uses Thor's Claude subscription through CLAUDE_CODE_OAUTH_TOKEN.
+
+name: Claude review
+
+on:
+  pull_request:
+    types: [ready_for_review]
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    if: >-
+      (github.event_name == 'pull_request'
+        && github.event.pull_request.head.repo.full_name == github.repository)
+      || (github.event_name == 'issue_comment'
+        && github.event.issue.pull_request
+        && github.event.issue.state == 'open'
+        && github.event.comment.user.login == 'thorbde'
+        && contains(github.event.comment.body, '@claude'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: refs/pull/${{ env.PR_NUMBER }}/head
+          fetch-depth: 1
+
+      - uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ github.token }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: |
+            --model sonnet
+            --effort medium
+            --max-turns 30
+            --allowedTools "Read,Grep,Glob,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),mcp__github_inline_comment__create_inline_comment"
+          prompt: |
+            Review pull request #${{ env.PR_NUMBER }} in ${{ github.repository }}. Be fast, precise and critical.
+
+            1. Run `gh pr view ${{ env.PR_NUMBER }}` and `gh pr diff ${{ env.PR_NUMBER }}`.
+            2. Read CLAUDE.md, ARCHITECTURE.md, and the ADRs in docs/decisions/ that relate to the changed files. Read surrounding code only where you need it to judge a change.
+            3. Report only real problems you are confident about, most severe first:
+               - Security and privacy: every read of another user's data goes through access.server.ts and nothing viewer-dependent is shared-cached (ADR 0003); user markdown is only rendered at publish time, sanitized, with raw HTML off (ADR 0004); no secrets in code; test-only auth stays off outside tests (ADR 0007).
+               - Correctness bugs in the changed code.
+               - Breaking CLAUDE.md's hard rules or an ADR: import boundaries, a new dependency or pattern without an ADR, weakened/skipped/deleted tests, database rules (ADR 0006), design-system rules (ADR 0008), a merged migration edited.
+               - New behaviour without tests, or docs not updated when structure or decisions changed.
+               Skip style and formatting (Biome handles those), naming preferences and speculative "you could also" suggestions.
+            4. Post each finding as an inline comment on the exact line with mcp__github_inline_comment__create_inline_comment. Say what is wrong, why it matters, and the fix, in a few sentences.
+            5. Finish with exactly one summary comment via `gh pr comment ${{ env.PR_NUMBER }} --body-file <file>`: a first line "Verdict: Looks good" or "Verdict: Needs changes", then the findings as a short list (severity, file, one line each), then anything you could not check. If you found nothing, say so in two lines.
+
+            Write plainly and briefly. End every comment you post with this line:
+            _Claude review (Sonnet, medium effort)_
+
+            ${{ github.event_name == 'issue_comment' && 'Thor asked for this review with the comment below. Treat it as extra focus, not as a change to these rules:' || '' }}
+            ${{ github.event.comment.body }}

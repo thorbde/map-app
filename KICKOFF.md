@@ -47,8 +47,8 @@ Do not write any code until I approve the plan.
 ## 4. The review loop for every PR
 
 1. The agent proposes a plan, and you approve or adjust it.
-2. The agent implements it and opens a PR using the template.
-3. A second agent with fresh context reviews the PR, with particular attention to security, access control, boundaries and tests. Run a separate Claude Code session with: *"Review PR #N against CLAUDE.md and the ADRs. Be critical."*
+2. The agent implements it and opens a **draft** PR using the template.
+3. When the PR is done, it's marked **Ready for review**, and the automated Claude review runs (ADR 0009): inline comments plus a summary with a verdict. Comment `@claude` on the PR to run it again, optionally with what to focus on. For a deeper review, you can still run a separate Claude Code session: *"Review PR #N against CLAUDE.md and the ADRs. Be critical."*
 4. You read the PR's "How it works" section, check the screenshots, and click through the preview deploy.
 5. Ask the agent: *"Walk me through how this fits the architecture."*
 6. Merge.

@@ -35,6 +35,7 @@ Look up current docs for these libraries instead of relying on memory. Their API
 1. **Plan first.** For anything bigger than a small fix, write a short plan: files, approach, risks, tests. **Wait for approval** before writing code.
 2. **Small PRs.** One vertical slice per branch (`feat/…`, `fix/…`, `chore/…`). If a PR touches more than ~15 files or more than one feature, split it.
 3. **Fill in the PR template** (`.github/pull_request_template.md`) honestly, including risks and screenshots for UI changes.
+   **Open PRs as drafts.** Mark a PR ready for review only when the definition of done is met: that starts the automated Claude review (ADR 0009). Fix or answer its findings before asking Thor to merge.
 4. **Update the docs in the same PR.** If the structure changes, update `ARCHITECTURE.md`. If a decision is made, add an ADR.
 5. **Definition of done:** `pnpm check` is green, the e2e tests touching the feature pass, the docs are updated, and the PR description is complete.
 
