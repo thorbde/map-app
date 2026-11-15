@@ -15,12 +15,13 @@ on:
   issue_comment:
     types: [created]
 
-concurrency:
-  group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
-  cancel-in-progress: true
-
 jobs:
   review:
+    # Job-level, not workflow-level: a skipped run (for example the bot's own summary
+    # comment, or any comment without @claude) must not cancel a review in progress.
+    concurrency:
+      group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
+      cancel-in-progress: true
     if: >-
       (github.event_name == 'pull_request'
         && github.event.pull_request.head.repo.full_name == github.repository)
