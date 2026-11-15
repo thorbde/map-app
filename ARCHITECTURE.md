@@ -8,7 +8,7 @@
 Browser
   │  HTML (SSR) + small route-split JS; CodeMirror only on /write
   ▼
-Cloudflare Worker (React Router v7, Smart Placement → runs near the DB)
+Cloudflare Worker (React Router v8, Smart Placement → runs near the DB)
   │
   ├─ app/routes/*            thin: parse input → call feature service → render
   │                          one layout route is the map shell: the map stays mounted,
@@ -54,6 +54,9 @@ Paths in this file and in `CLAUDE.md` that start with `app/` are inside `apps/we
 
 ```
 app/
+  root.tsx                the HTML document, top-level layout and error boundary
+  routes.ts               the route table
+  entry.server.tsx        server rendering (streams HTML)
   routes/                 React Router route modules (thin)
   features/
     auth/                 Better Auth setup, onboarding, username rules
@@ -68,6 +71,7 @@ app/
       client.server.ts    DB client factory (per request)
       migrations/
     platform/             Cloudflare adapters; nothing else may import Workers APIs
+      worker.ts           the Worker entry (wrangler's "main"): hands requests to React Router
       index.server.ts     the ONLY file other code may import from platform/
   lib/                    Shared pure utilities (errors, dates, zod helpers). No feature logic.
 scripts/

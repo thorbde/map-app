@@ -12,9 +12,11 @@ This app is built by agents and owned by Thor, a design systems engineer. Thor o
 
 People learn about the countries of the world by writing short essays, one country at a time, following an evidence-based method (`docs/METHOD.md`). Each user has a world map that fills in as they publish. Profiles can be public or private. Social features come later (`docs/specs/roadmap.md`). The MVP is defined in `docs/specs/mvp.md`.
 
-## Stack (see ADRs 0001, 0006, 0007, 0008)
+## Stack (see ADRs 0001, 0006, 0007, 0008, 0013)
 
-React Router v7 (framework mode) · TypeScript strict · Cloudflare Workers · Cloudflare D1 (EU jurisdiction) · Drizzle ORM · Better Auth (Google sign-in) · CodeMirror 6 · remark/rehype + rehype-sanitize · Base UI · DTCG tokens + Terrazzo · CSS Modules · Vitest (Workers pool) · Playwright · Storybook · Biome · dependency-cruiser · knip · pnpm workspaces
+React Router v8 (framework mode) · TypeScript strict · Cloudflare Workers · Cloudflare D1 (EU jurisdiction) · Drizzle ORM · Better Auth (Google sign-in) · CodeMirror 6 · remark/rehype + rehype-sanitize · Base UI · DTCG tokens + Terrazzo · CSS Modules · Vitest (Workers pool) · Playwright · Storybook · Biome · dependency-cruiser · knip · pnpm workspaces
+
+Versions are pinned exactly; ADR 0013 lists every package, why it's there, and its size. Add new ones there too.
 
 **Repo layout:** `apps/web/` is the app, `packages/tokens/` and `packages/ui/` are the design system (`@thorbde/tokens`, `@thorbde/ui`). Paths starting with `app/` are inside `apps/web/`.
 

@@ -1,0 +1,9 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# pnpm only runs install scripts for packages listed here.
+# workerd (the local Workers runtime) and esbuild download platform binaries.
+onlyBuiltDependencies:
+  - esbuild
+  - workerd
