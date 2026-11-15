@@ -112,7 +112,7 @@ features/essays/
 
 **How each rule is enforced:**
 
-- **dependency-cruiser** (`.dependency-cruiser.cjs`, run by `pnpm boundaries`): the design-system rules, feature and `server/platform/` front doors, routes not touching `server/db/`, `cloudflare:*` imports only in `server/platform/`, `lib/` staying generic, plus no circular imports, no unresolvable imports and no `devDependencies` in shipped code. `tests/boundaries/` has a fixture that breaks each rule, and a test proves every rule catches it.
+- **dependency-cruiser** (`.dependency-cruiser.cjs`, run by `pnpm boundaries`): the design-system rules, feature and `server/platform/` front doors, routes not touching `server/db/`, `cloudflare:*` imports only in `server/platform/`, `lib/` staying generic, plus no circular imports, no unresolvable imports and no `devDependencies` in shipped code. Colocated tests (`*.test.ts`) may use `devDependencies` and `cloudflare:*` modules. `tests/boundaries/` has a fixture that breaks each rule, and a test proves every rule catches it.
 - **React Router's build:** client code importing a `*.server.ts` file fails the build.
 - **Not automated yet:** Workers-only globals (for example `HTMLRewriter` or `caches.default`). Their types are visible to all app code, so no tool stops them outside `server/platform/`; code review (and the Claude review) watches for them.
 - **knip** (`pnpm knip`): unused files, exports and dependencies.

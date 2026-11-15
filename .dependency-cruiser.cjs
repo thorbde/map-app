@@ -4,6 +4,8 @@
 
 const APP = "^apps/web/app/";
 const FRONT_DOOR = "index(\\.server)?\\.ts$";
+// Colocated tests, for example features/maps/draw.test.ts (ARCHITECTURE.md).
+const TEST_FILE = "\\.test\\.tsx?$";
 
 /** @type {import('dependency-cruiser').IConfiguration} */
 module.exports = {
@@ -84,7 +86,9 @@ module.exports = {
 			severity: "error",
 			comment:
 				"Only server/platform/ (and tests) may import cloudflare:* modules, so the app stays portable.",
-			from: { pathNot: [`${APP}server/platform/`, "^apps/web/tests/"] },
+			from: {
+				pathNot: [`${APP}server/platform/`, "^apps/web/tests/", TEST_FILE],
+			},
 			to: { path: "^cloudflare:" },
 		},
 
@@ -123,8 +127,9 @@ module.exports = {
 				"App code ships to users, so it can't depend on devDependencies (type-only imports are fine).",
 			from: {
 				path: "^(apps/[^/]+/app|packages/[^/]+/src)/",
-				// The route table is read at build time by React Router's tooling.
-				pathNot: `${APP}routes\\.ts$`,
+				// The route table is read at build time by React Router's tooling, and
+				// tests (colocated *.test.ts files) never ship.
+				pathNot: [`${APP}routes\\.ts$`, TEST_FILE],
 			},
 			to: { dependencyTypes: ["npm-dev"], dependencyTypesNot: ["type-only"] },
 		},
