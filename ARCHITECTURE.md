@@ -37,7 +37,8 @@ The repo is a pnpm workspace (ADR 0008). The design system lives in its own pack
 apps/
   web/                    the map app (everything under "Folder structure" below)
 packages/
-  tokens/                 @thorbde/tokens: DTCG token JSON → Terrazzo → CSS custom properties + TS types
+  tokens/                 @thorbde/tokens (ADR 0014): DTCG JSON in tokens/ (primitives, semantic)
+                          → Terrazzo → generated/tokens.css (committed; checked by pnpm tokens:check)
   ui/                     @thorbde/ui: Base UI components styled with CSS Modules, plus Storybook
     src/playgrounds/      Storybook playgrounds for design decisions (fonts, colour, type scale); never shipped
 docs/

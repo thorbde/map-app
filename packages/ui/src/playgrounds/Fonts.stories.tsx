@@ -173,7 +173,7 @@ export const Interface: Story = {
 	name: "Interface fonts (sans)",
 	args: {
 		candidates:
-			"Inter, Atkinson Hyperlegible Next, IBM Plex Sans, Source Sans 3, Public Sans, Figtree, system-ui",
+			"Plus Jakarta Sans, Manrope, Sora, DM Sans, Outfit, Lexend, Figtree, Inter, IBM Plex Sans, system-ui",
 		size: 15,
 		weight: 400,
 		lineHeight: 1.45,

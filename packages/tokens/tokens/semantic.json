@@ -1,0 +1,88 @@
+{
+	"$description": "Semantic tokens: what components and the app use. Light theme only for now; dark becomes a second mode of these same tokens (ADR 0014).",
+	"color": {
+		"$type": "color",
+		"bg": {
+			"page": {
+				"$value": "{color.sky.100}"
+			},
+			"surface": {
+				"$value": "{color.neutral.0}"
+			},
+			"subtle": {
+				"$description": "Quiet areas such as the fact box.",
+				"$value": "{color.teal.50}"
+			},
+			"inverse": {
+				"$description": "The dark header block on panels.",
+				"$value": "{color.teal.950}"
+			}
+		},
+		"text": {
+			"default": {
+				"$value": "{color.teal.950}"
+			},
+			"muted": {
+				"$value": "{color.teal-grey.600}"
+			},
+			"on-accent": {
+				"$value": "{color.neutral.0}"
+			},
+			"on-inverse": {
+				"$value": "{color.neutral.0}"
+			},
+			"on-inverse-muted": {
+				"$description": "Secondary text on the dark header block.",
+				"$value": "{color.teal.200}"
+			}
+		},
+		"border": {
+			"default": {
+				"$value": "{color.neutral.200}"
+			}
+		},
+		"accent": {
+			"default": {
+				"$description": "Buttons and links. White text on it reaches 4.5:1.",
+				"$value": "{color.teal.700}"
+			},
+			"hover": {
+				"$value": "{color.teal.950}"
+			}
+		},
+		"focus": {
+			"$description": "Focus rings.",
+			"$value": "{color.teal.700}"
+		},
+		"map": {
+			"ocean": {
+				"$value": "{color.sky.100}"
+			},
+			"land": {
+				"$value": "{color.neutral.0}"
+			},
+			"border": {
+				"$value": "{color.sky.300}"
+			},
+			"written": {
+				"$description": "Must reach 3:1 against land (WCAG 1.4.11).",
+				"$value": "{color.teal.600}"
+			},
+			"selected": {
+				"$description": "Must reach 3:1 against written.",
+				"$value": "{color.teal.950}"
+			}
+		}
+	},
+	"font": {
+		"$type": "fontFamily",
+		"ui": {
+			"$description": "Interface text.",
+			"$value": "{font.family.sans}"
+		},
+		"essay": {
+			"$description": "Essay body text.",
+			"$value": "{font.family.serif}"
+		}
+	}
+}

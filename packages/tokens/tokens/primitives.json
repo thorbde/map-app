@@ -1,0 +1,418 @@
+{
+	"$description": "Primitives: raw values. Components and the app never use these directly; they use the semantic tokens. Colour: teal, chosen on the design canvas (docs/design/brief.md). Fonts are still placeholders.",
+	"color": {
+		"$type": "color",
+		"neutral": {
+			"$description": "Greys on the OKLCH lightness steps of the colour playground. Mostly for borders now that the palette is teal.",
+			"0": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [1.0, 1.0, 1.0],
+					"hex": "#ffffff"
+				}
+			},
+			"50": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.9686, 0.9686, 0.9686],
+					"hex": "#f7f7f7"
+				}
+			},
+			"100": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.9216, 0.9216, 0.9216],
+					"hex": "#ebebeb"
+				}
+			},
+			"200": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.8314, 0.8314, 0.8314],
+					"hex": "#d4d4d4"
+				}
+			},
+			"300": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.7176, 0.7176, 0.7176],
+					"hex": "#b7b7b7"
+				}
+			},
+			"400": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.5961, 0.5961, 0.5961],
+					"hex": "#989898"
+				}
+			},
+			"500": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.4784, 0.4784, 0.4784],
+					"hex": "#7a7a7a"
+				}
+			},
+			"600": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.3765, 0.3765, 0.3765],
+					"hex": "#606060"
+				}
+			},
+			"700": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.2902, 0.2902, 0.2902],
+					"hex": "#4a4a4a"
+				}
+			},
+			"800": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.2078, 0.2078, 0.2078],
+					"hex": "#353535"
+				}
+			},
+			"900": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.1412, 0.1412, 0.1412],
+					"hex": "#242424"
+				}
+			},
+			"950": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.0863, 0.0863, 0.0863],
+					"hex": "#161616"
+				}
+			}
+		},
+		"teal": {
+			"$description": "The brand colour: written countries, buttons, and the dark header block.",
+			"50": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.8745, 0.9608, 0.9412],
+					"hex": "#dff5f0"
+				}
+			},
+			"200": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.6588, 0.8471, 0.8157],
+					"hex": "#a8d8d0"
+				}
+			},
+			"600": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.0549, 0.549, 0.498],
+					"hex": "#0e8c7f"
+				}
+			},
+			"700": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.0431, 0.4784, 0.4353],
+					"hex": "#0b7a6f"
+				}
+			},
+			"950": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.0431, 0.1843, 0.1725],
+					"hex": "#0b2f2c"
+				}
+			}
+		},
+		"teal-grey": {
+			"$description": "Teal-tinted grey for secondary text.",
+			"600": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.2902, 0.4, 0.3882],
+					"hex": "#4a6663"
+				}
+			}
+		},
+		"sky": {
+			"$description": "The ocean.",
+			"100": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.8275, 0.9333, 0.9608],
+					"hex": "#d3eef5"
+				}
+			},
+			"300": {
+				"$value": {
+					"colorSpace": "srgb",
+					"components": [0.6784, 0.8392, 0.8784],
+					"hex": "#add6e0"
+				}
+			}
+		}
+	},
+	"font": {
+		"family": {
+			"$type": "fontFamily",
+			"sans": {
+				"$description": "Placeholder: the system UI font until the interface font is chosen.",
+				"$value": [
+					"system-ui",
+					"-apple-system",
+					"Segoe UI",
+					"Roboto",
+					"sans-serif"
+				]
+			},
+			"serif": {
+				"$description": "Placeholder: until the essay font is chosen.",
+				"$value": ["Georgia", "Times New Roman", "serif"]
+			}
+		},
+		"weight": {
+			"$type": "fontWeight",
+			"$description": "Two weights only (Thor's call): regular for text, bold for emphasis and headings.",
+			"regular": {
+				"$value": 400
+			},
+			"bold": {
+				"$value": 700
+			}
+		},
+		"size": {
+			"$type": "dimension",
+			"$description": "Major third (1.25) from 16px; xs and sm are rounded up for legibility.",
+			"xs": {
+				"$value": {
+					"value": 0.75,
+					"unit": "rem"
+				}
+			},
+			"sm": {
+				"$value": {
+					"value": 0.875,
+					"unit": "rem"
+				}
+			},
+			"md": {
+				"$value": {
+					"value": 1,
+					"unit": "rem"
+				}
+			},
+			"lg": {
+				"$value": {
+					"value": 1.25,
+					"unit": "rem"
+				}
+			},
+			"xl": {
+				"$value": {
+					"value": 1.5625,
+					"unit": "rem"
+				}
+			},
+			"2xl": {
+				"$value": {
+					"value": 1.953,
+					"unit": "rem"
+				}
+			},
+			"3xl": {
+				"$value": {
+					"value": 2.441,
+					"unit": "rem"
+				}
+			}
+		},
+		"line-height": {
+			"$type": "number",
+			"tight": {
+				"$value": 1.15
+			},
+			"normal": {
+				"$value": 1.5
+			},
+			"relaxed": {
+				"$value": 1.65
+			}
+		}
+	},
+	"space": {
+		"$type": "dimension",
+		"$description": "A 4px grid.",
+		"1": {
+			"$value": {
+				"value": 0.25,
+				"unit": "rem"
+			}
+		},
+		"2": {
+			"$value": {
+				"value": 0.5,
+				"unit": "rem"
+			}
+		},
+		"3": {
+			"$value": {
+				"value": 0.75,
+				"unit": "rem"
+			}
+		},
+		"4": {
+			"$value": {
+				"value": 1,
+				"unit": "rem"
+			}
+		},
+		"5": {
+			"$value": {
+				"value": 1.25,
+				"unit": "rem"
+			}
+		},
+		"6": {
+			"$value": {
+				"value": 1.5,
+				"unit": "rem"
+			}
+		},
+		"8": {
+			"$value": {
+				"value": 2,
+				"unit": "rem"
+			}
+		},
+		"10": {
+			"$value": {
+				"value": 2.5,
+				"unit": "rem"
+			}
+		},
+		"12": {
+			"$value": {
+				"value": 3,
+				"unit": "rem"
+			}
+		},
+		"16": {
+			"$value": {
+				"value": 4,
+				"unit": "rem"
+			}
+		}
+	},
+	"radius": {
+		"$type": "dimension",
+		"sm": {
+			"$value": {
+				"value": 6,
+				"unit": "px"
+			}
+		},
+		"md": {
+			"$value": {
+				"value": 10,
+				"unit": "px"
+			}
+		},
+		"lg": {
+			"$value": {
+				"value": 16,
+				"unit": "px"
+			}
+		},
+		"full": {
+			"$value": {
+				"value": 9999,
+				"unit": "px"
+			}
+		}
+	},
+	"shadow": {
+		"$type": "shadow",
+		"raised": {
+			"$description": "Floating panels over the map.",
+			"$value": [
+				{
+					"color": {
+						"colorSpace": "srgb",
+						"components": [0, 0, 0],
+						"alpha": 0.08
+					},
+					"offsetX": {
+						"value": 0,
+						"unit": "px"
+					},
+					"offsetY": {
+						"value": 1,
+						"unit": "px"
+					},
+					"blur": {
+						"value": 3,
+						"unit": "px"
+					},
+					"spread": {
+						"value": 0,
+						"unit": "px"
+					}
+				},
+				{
+					"color": {
+						"colorSpace": "srgb",
+						"components": [0, 0, 0],
+						"alpha": 0.1
+					},
+					"offsetX": {
+						"value": 0,
+						"unit": "px"
+					},
+					"offsetY": {
+						"value": 8,
+						"unit": "px"
+					},
+					"blur": {
+						"value": 24,
+						"unit": "px"
+					},
+					"spread": {
+						"value": 0,
+						"unit": "px"
+					}
+				}
+			]
+		}
+	},
+	"duration": {
+		"$type": "duration",
+		"$description": "Components must drop motion when the user prefers reduced motion.",
+		"fast": {
+			"$value": {
+				"value": 120,
+				"unit": "ms"
+			}
+		},
+		"normal": {
+			"$value": {
+				"value": 200,
+				"unit": "ms"
+			}
+		},
+		"slow": {
+			"$value": {
+				"value": 320,
+				"unit": "ms"
+			}
+		}
+	},
+	"easing": {
+		"$type": "cubicBezier",
+		"standard": {
+			"$value": [0.2, 0, 0, 1]
+		}
+	}
+}

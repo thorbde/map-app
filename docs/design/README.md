@@ -6,6 +6,10 @@ Designs live on claude.ai as Claude Design canvases. They're private by default;
 |---|---|---|
 | [Map App: first sketches](https://claude.ai/artifact/Hp7xBLLRuyxsJvSSh7SCrt) | The map-first app: profile, essay, editor, and the phone bottom sheet, in light and dark | ADRs 0010, 0011, 0012 |
 
+## Brief
+
+[`brief.md`](brief.md) holds the direction for colour and fonts: modern, clean and confident, light first, and what to avoid. The colour palette is chosen (teal); the fonts are still placeholders (ADR 0014).
+
 ## Playgrounds in Storybook
 
 For decisions that depend on real rendering (fonts on Windows and Mac, colours on real screens, contrast), `packages/ui` has Storybook playgrounds:

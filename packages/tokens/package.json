@@ -1,0 +1,17 @@
+{
+	"name": "@thorbde/tokens",
+	"private": true,
+	"type": "module",
+	"exports": {
+		"./tokens.css": "./generated/tokens.css",
+		"./tokens/*.json": "./tokens/*.json"
+	},
+	"scripts": {
+		"build": "tz build",
+		"check": "tz build && git diff --exit-code -- generated"
+	},
+	"devDependencies": {
+		"@terrazzo/cli": "2.10.0",
+		"@terrazzo/plugin-css": "2.10.0"
+	}
+}

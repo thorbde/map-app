@@ -35,7 +35,8 @@ Run these from the repository root.
 | `pnpm typecheck` | Generates route and Worker types, then type-checks |
 | `pnpm lint` | Checks linting and formatting with Biome |
 | `pnpm format` | Fixes formatting and safe lint issues |
-| `pnpm check` | Lint, typecheck, import boundaries, knip and all tests except e2e. **Run before every commit.** |
+| `pnpm check` | Lint, typecheck, tokens in step with their JSON, import boundaries, knip and all tests except e2e. **Run before every commit.** |
+| `pnpm tokens` | Builds the design tokens into CSS (`packages/tokens/generated/`); commit the result |
 | `pnpm test` | Unit and integration tests inside workerd, plus the boundary-rule tests |
 | `pnpm boundaries` | Checks the import rules from ARCHITECTURE.md (dependency-cruiser) |
 | `pnpm knip` | Finds unused files, exports and dependencies |
@@ -58,6 +59,7 @@ Every PR runs:
 
 ```
 apps/web/        the app (React Router on Cloudflare Workers)
+packages/tokens/ the design tokens (@thorbde/tokens): DTCG JSON and the generated CSS
 packages/ui/     the design system's components and Storybook, with its playgrounds (@thorbde/ui)
 docs/            the method, specs, decisions (ADRs) and design links
 ```
