@@ -99,8 +99,8 @@
   --radius-sm: 6px;
   /* Floating panels over the map. */
   --shadow-raised: 0px 1px 3px rgb(0% 0% 0% / 0.08), 0px 8px 24px rgb(0% 0% 0% / 0.1);
-  /* The smallest height for anything you tap or click (WCAG 2.5.8 asks for 24px; 44px is comfortable). */
-  --size-touch-target: 2.75rem;
+  /* The height of buttons and inputs, so they line up side by side. Comfortable to tap (WCAG 2.5.8 asks for at least 24px). */
+  --size-control: 2.5rem;
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;

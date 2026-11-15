@@ -13,7 +13,7 @@
 .control {
 	box-sizing: border-box;
 	width: 100%;
-	min-height: var(--size-touch-target);
+	min-height: var(--size-control);
 	padding: 0 var(--space-3);
 	border: 1px solid var(--color-border-control);
 	border-radius: var(--radius-md);
