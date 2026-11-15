@@ -29,13 +29,22 @@ module.exports = {
 			to: { path: "^packages/", pathNot: "^packages/tokens/" },
 		},
 		{
-			name: "ui-only-to-tokens",
+			name: "icons-not-to-other-packages",
 			severity: "error",
-			comment: "@thorbde/ui may import @thorbde/tokens, and no other package.",
+			comment:
+				"@thorbde/icons stands alone: it imports nothing from the repo (ADR 0016).",
+			from: { path: "^packages/icons/" },
+			to: { path: "^packages/", pathNot: "^packages/icons/" },
+		},
+		{
+			name: "ui-only-to-tokens-and-icons",
+			severity: "error",
+			comment:
+				"@thorbde/ui may import @thorbde/tokens and @thorbde/icons, and no other package.",
 			from: { path: "^packages/ui/" },
 			to: {
 				path: "^packages/",
-				pathNot: ["^packages/ui/", "^packages/tokens/"],
+				pathNot: ["^packages/ui/", "^packages/tokens/", "^packages/icons/"],
 			},
 		},
 

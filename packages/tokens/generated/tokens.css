@@ -25,6 +25,8 @@
   --color-border-error: var(--color-red-600);
   /* Focus rings. */
   --color-focus: var(--color-teal-700);
+  /* The soft fill of duotone icons (docs/design/icons.md). A surface can set its own, such as a lighter teal on teal buttons. */
+  --color-icon-fill: var(--color-teal-200);
   --color-map-border: var(--color-sky-300);
   --color-map-land: var(--color-neutral-0);
   --color-map-ocean: var(--color-sky-100);
@@ -103,6 +105,12 @@
   --size-control: 2rem;
   /* The same on touch screens (pointer: coarse), where controls need more room to tap. @thorbde/ui/base.css swaps it in. */
   --size-control-touch: 2.5rem;
+  /* Icons in tab bars and headings. */
+  --size-icon-lg: 1.5rem;
+  /* The default icon size. */
+  --size-icon-md: 1.25rem;
+  /* Icons in small text and inside controls. */
+  --size-icon-sm: 1rem;
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;

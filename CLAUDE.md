@@ -18,7 +18,7 @@ React Router v8 (framework mode) · TypeScript strict · Cloudflare Workers · C
 
 Versions are pinned exactly; ADR 0013 lists every package, why it's there, and its size. Add new ones there too.
 
-**Repo layout:** `apps/web/` is the app, `packages/tokens/` and `packages/ui/` are the design system (`@thorbde/tokens`, `@thorbde/ui`). Paths starting with `app/` are inside `apps/web/`.
+**Repo layout:** `apps/web/` is the app, `packages/tokens/`, `packages/icons/` and `packages/ui/` are the design system (`@thorbde/tokens`, `@thorbde/icons`, `@thorbde/ui`). Paths starting with `app/` are inside `apps/web/`.
 
 Look up current docs for these libraries instead of relying on memory. Their APIs change fast.
 
@@ -33,6 +33,7 @@ Look up current docs for these libraries instead of relying on memory. Their API
 | `pnpm test` / `pnpm test:e2e` | Unit, integration and component tests (every story, with accessibility checks) / Playwright |
 | `pnpm storybook` / `pnpm build:storybook` | Design-system workbench and playgrounds (`packages/ui`) / its static build |
 | `pnpm tokens` | Build the design tokens (`packages/tokens`) after editing their JSON; commit the generated CSS |
+| `pnpm icons` | Turn the icon SVGs into components (`packages/icons`); commit the result. Drawing icons: `docs/design/icons.md` |
 | `pnpm db:generate` | Generate a migration from the schema |
 | `pnpm db:migrate` | Apply migrations to the **local** D1 only |
 | `pnpm build:maps` | Regenerate the map geometry from Natural Earth |
@@ -54,7 +55,7 @@ Look up current docs for these libraries instead of relying on memory. Their API
 - **Never bypass `server/access.server.ts`** when reading another user's data. The UI never decides visibility.
 - **Never cache viewer-dependent responses in a shared cache.** See ADR 0003.
 - **Never render user markdown at request time, or with raw HTML enabled.** See ADR 0004.
-- **Never build UI from scratch in a feature.** Compose from `@thorbde/ui`. If a component or token is missing, propose it in the PR and **ask Thor**. Thor approves all changes to `packages/`.
+- **Never build UI from scratch in a feature.** Compose from `@thorbde/ui` and `@thorbde/icons`. **Never add an icon library;** new icons are drawn with the icon tool and approved by Thor (`docs/design/icons.md`). If a component or token is missing, propose it in the PR and **ask Thor**. Thor approves all changes to `packages/`.
 - **The design system never imports from the app.** `packages/*` must stay reusable in other apps (ADR 0008).
 - **Never push to `main`, run migrations against production, or read production secrets.**
 - **Never edit a migration that has been merged.** Write a new one.

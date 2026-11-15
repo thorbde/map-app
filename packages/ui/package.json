@@ -36,6 +36,7 @@
 		"@base-ui/react": "1.9.0",
 		"@fontsource/montserrat": "5.3.0",
 		"@fontsource/source-serif-4": "5.3.1",
+		"@thorbde/icons": "workspace:*",
 		"@thorbde/tokens": "workspace:*"
 	}
 }

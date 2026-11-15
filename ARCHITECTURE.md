@@ -39,6 +39,8 @@ apps/
 packages/
   tokens/                 @thorbde/tokens (ADR 0014): DTCG JSON in tokens/ (primitives, semantic)
                           → Terrazzo → generated/tokens.css (committed; checked by pnpm tokens:check)
+  icons/                  @thorbde/icons (ADR 0016): our own icons. tools/ draws them (Python, agents only),
+                          svg/ holds the approved drawings, generated/ the React components (checked by pnpm icons:check)
   ui/                     @thorbde/ui: Base UI components styled with CSS Modules, plus Storybook
     src/index.ts          the public API: apps import from "@thorbde/ui", never from src/ paths
     src/base.css          page basics (background, text, font, focus ring): "@thorbde/ui/base.css"
@@ -110,9 +112,10 @@ features/essays/
 | From | May import | May NOT import |
 |---|---|---|
 | `packages/tokens/` | nothing in the repo | `packages/ui/`, `apps/` |
-| `packages/ui/` | `@thorbde/tokens` | `apps/` |
-| `app/routes/` | `features/*/index(.server).ts`, `@thorbde/ui`, `lib/` | `server/db/`, another feature's internals |
-| `app/features/X/` | its own files, `@thorbde/ui`, `lib/`, `server/access`, `server/db`, `server/platform/index.server.ts`, other features' `index(.server).ts` | other features' internals, any other file in `server/platform/` |
+| `packages/icons/` | nothing in the repo | `packages/ui/`, `apps/` |
+| `packages/ui/` | `@thorbde/tokens`, `@thorbde/icons` | `apps/` |
+| `app/routes/` | `features/*/index(.server).ts`, `@thorbde/ui`, `@thorbde/icons`, `lib/` | `server/db/`, another feature's internals |
+| `app/features/X/` | its own files, `@thorbde/ui`, `@thorbde/icons`, `lib/`, `server/access`, `server/db`, `server/platform/index.server.ts`, other features' `index(.server).ts` | other features' internals, any other file in `server/platform/` |
 | `app/lib/` | nothing app-specific | everything else |
 | any client code | n/a | `*.server.ts` |
 | anything outside `server/platform/` | n/a | `cloudflare:*`, Workers-specific globals |

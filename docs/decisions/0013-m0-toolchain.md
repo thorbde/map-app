@@ -124,6 +124,10 @@ In `packages/ui`:
 
 Only Base UI is a runtime dependency; the rest are devDependencies. The Button isn't on any page yet, so the home page is unchanged at 113.4 KB.
 
+### Added with the icons (ADR 0016)
+
+No npm packages: `@thorbde/icons` builds with a script of our own. The drawing tool, which only agents run and not CI, needs Python with Shapely 2.2.0 and svgpathtools 1.8.0 (`packages/icons/tools/requirements.txt`).
+
 ### Added with the fonts (ADR 0017)
 
 In `packages/ui`, as dependencies:
