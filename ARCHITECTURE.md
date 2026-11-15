@@ -91,7 +91,8 @@ features/essays/
 - **profile:**
   - `user_id`, `username` (unique, reserved list), `display_name`, `bio`
   - `visibility` (`public` | `private`)
-  - `current_continent`, `hidden` (admin), `essay_count` (denormalised), `created_at`
+  - `current_continent`, `hidden` (admin), `essay_count`, `created_at`
+  - `essay_count` is a denormalised copy of the number of **written** countries, as defined in ADR 0005 (has a latest version, isn't unpublished, isn't hidden). It is never incremented or decremented. It is **recomputed with a `COUNT`** in the same transaction as any change that can affect it: publish, unpublish, an admin hiding or unhiding an essay, and deleting an essay.
 - **essay:**
   - `id`, `user_id`, `iso`, `locale` (default `en`)
   - `draft_body`, `draft_data` (jsonb), `draft_updated_at`
@@ -109,7 +110,7 @@ features/essays/
 - **Publish:**
   1. validate the draft
   2. render markdown → sanitized HTML (ADR 0004)
-  3. in one transaction: insert `essay_version`, update `essay.latest_version_id`, set `first_published_at` if empty, bump `profile.essay_count`
+  3. in one transaction: insert `essay_version`, update `essay.latest_version_id`, set `first_published_at` if empty, clear `unpublished_at`, recompute `profile.essay_count` (see the data model: republishing an essay that's already written must not count it twice)
 - **Read an essay:**
   1. load the owner's profile and the essay's latest version in one query
   2. `canViewEssay(viewer, owner, essay)`
