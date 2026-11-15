@@ -47,7 +47,7 @@
 .description,
 .error {
 	margin: 0; /* Base UI renders these as paragraphs, with the browser's margins */
-	font-size: var(--font-size-sm);
+	font-size: var(--font-size-xs);
 	line-height: var(--font-line-height-normal);
 }
 
