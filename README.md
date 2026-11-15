@@ -41,6 +41,8 @@ Run these from the repository root.
 | `pnpm knip` | Finds unused files, exports and dependencies |
 | `pnpm graph` | Prints the dependency graph as a Mermaid diagram |
 | `pnpm test:e2e` | Playwright end-to-end tests against the production build, served locally |
+| `pnpm storybook` | Opens Storybook: the design-system playgrounds and components (`packages/ui`) |
+| `pnpm build:storybook` | Builds Storybook as static files |
 | `pnpm size` | Checks each page's first-load JavaScript against the 150 KB budget (after `pnpm build`) |
 
 ## Continuous integration
@@ -49,14 +51,14 @@ Every PR runs:
 
 - **CI (`check`):** lint, typecheck, import boundaries, knip, tests, build, and the JavaScript budget: at most 150 KB gzipped of first-load JavaScript per page (ADR 0013). `pnpm size` runs the same check locally after `pnpm build`.
 - **CI (`e2e`):** Playwright against the production build, served locally on workerd.
-- **Preview:** a deploy of the PR to its own Worker, `map-app-pr-<number>`, in the separate Previews Cloudflare account. A comment on the PR links to it, and the Worker is deleted when the PR closes (ADR 0006).
+- **Preview:** the PR's app and its Storybook, each deployed to its own Worker (`map-app-pr-<number>`, `map-app-storybook-pr-<number>`) in the separate Previews Cloudflare account. A comment on the PR links to both, and they're deleted when the PR closes (ADR 0006). Storybook for `main` stays up at `map-app-storybook`.
 - **Claude review:** when a PR is marked ready for review, or when Thor comments `@claude` (ADR 0009).
 
 ## Repository layout
 
 ```
 apps/web/        the app (React Router on Cloudflare Workers)
-packages/        the design system: @thorbde/tokens and @thorbde/ui (from M0 PR 5)
+packages/ui/     the design system's components and Storybook, with its playgrounds (@thorbde/ui)
 docs/            the method, specs, decisions (ADRs) and design links
 ```
 

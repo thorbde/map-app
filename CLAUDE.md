@@ -31,7 +31,7 @@ Look up current docs for these libraries instead of relying on memory. Their API
 | `pnpm boundaries` / `pnpm knip` | Import rules (dependency-cruiser) / unused files, exports and dependencies |
 | `pnpm graph` | The dependency graph as a Mermaid diagram |
 | `pnpm test` / `pnpm test:e2e` | Unit and integration tests / Playwright |
-| `pnpm storybook` | Design-system workbench (`packages/ui`) |
+| `pnpm storybook` / `pnpm build:storybook` | Design-system workbench and playgrounds (`packages/ui`) / its static build |
 | `pnpm tokens` | Build the design tokens (`packages/tokens`) |
 | `pnpm db:generate` | Generate a migration from the schema |
 | `pnpm db:migrate` | Apply migrations to the **local** D1 only |

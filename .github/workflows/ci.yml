@@ -40,6 +40,8 @@ jobs:
       - name: Lint, typecheck, boundaries, knip and tests
         run: pnpm check
       - run: pnpm build
+      - name: Storybook builds (design-system playgrounds and components)
+        run: pnpm build:storybook
       - name: JavaScript size budget (ADR 0013)
         run: pnpm size
       - name: Dependency graph, shown in the run summary (for the weekly check)

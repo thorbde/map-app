@@ -1,0 +1,63 @@
+# Keeps a stable Storybook for main at map-app-storybook, in the Previews Cloudflare
+# account (ADR 0006): the design-system playgrounds and, later, the components.
+
+name: Storybook
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: storybook-main
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  # Keep in step with apps/web/package.json.
+  WRANGLER_VERSION: 4.162.0
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:storybook
+      - uses: actions/upload-artifact@v7
+        with:
+          name: storybook
+          path: packages/ui/storybook-static
+          retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_PREVIEW_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PREVIEW_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/scripts
+      - uses: actions/download-artifact@v8
+        with:
+          name: storybook
+          path: storybook-static
+      - name: Deploy Storybook (static files only)
+        run: |
+          url=$(bash .github/scripts/deploy-worker.sh \
+            --assets storybook-static --name map-app-storybook --compatibility-date 2026-11-01)
+          echo "Storybook for main: $url" >> "$GITHUB_STEP_SUMMARY"

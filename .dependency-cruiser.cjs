@@ -6,6 +6,8 @@ const APP = "^apps/web/app/";
 const FRONT_DOOR = "index(\\.server)?\\.ts$";
 // Colocated tests, for example features/maps/draw.test.ts (ARCHITECTURE.md).
 const TEST_FILE = "\\.test\\.tsx?$";
+// Storybook stories and playgrounds, which never ship.
+const STORY_FILE = "\\.stories\\.tsx?$";
 
 /** @type {import('dependency-cruiser').IConfiguration} */
 module.exports = {
@@ -129,9 +131,13 @@ module.exports = {
 				path: "^(apps/[^/]+/app|packages/[^/]+/src)/",
 				// The route table is read at build time by React Router's tooling, and
 				// tests (colocated *.test.ts files) never ship.
-				pathNot: [`${APP}routes\\.ts$`, TEST_FILE],
+				pathNot: [`${APP}routes\\.ts$`, TEST_FILE, STORY_FILE],
 			},
-			to: { dependencyTypes: ["npm-dev"], dependencyTypesNot: ["type-only"] },
+			// Peer dependencies (React in @thorbde/ui) are provided by the app that uses the package.
+			to: {
+				dependencyTypes: ["npm-dev"],
+				dependencyTypesNot: ["type-only", "npm-peer"],
+			},
 		},
 	],
 	options: {
@@ -143,7 +149,7 @@ module.exports = {
 			path: [
 				"^(tests|docs|scripts|\\.github)/",
 				"^[^/]+\\.(c|m)?[jt]s$",
-				"(^|/)(build|\\.react-router|\\.wrangler)/",
+				"(^|/)(build|storybook-static|\\.react-router|\\.wrangler)/",
 				"worker-configuration\\.d\\.ts$",
 			],
 		},

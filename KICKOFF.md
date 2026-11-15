@@ -37,9 +37,10 @@ Maps come before auth: they need no database or login, they're the heart of the 
 | 2. CI | `ci.yml` and `preview.yml`: a preview deploy per PR in the Previews account | `check`: lint, typecheck, build, and the **150 KB JavaScript budget** per page. **Then make `check` a required status check.** |
 | 3. Tests | Vitest (Cloudflare's Vitest plugin, in workerd) and Playwright | Unit and integration tests inside `check`, plus a separate `e2e` job against the production build. **Then make `e2e` required too** (source: GitHub Actions). |
 | 4. Boundaries | dependency-cruiser and knip | Import rules and unused code inside `check`; a dependency graph for the weekly check |
-| 5. Tokens | `@thorbde/tokens`: DTCG + Terrazzo, light and dark | Tokens build inside `check` |
-| 6. UI foundation | `@thorbde/ui`: Storybook, CSS Modules, Button | Storybook builds |
-| 7. Components | Field, Link, Dialog | Accessibility checks on the components |
+| 5. Storybook and playgrounds | `@thorbde/ui` with Storybook, and playgrounds for comparing fonts, colour palettes (with WCAG contrast and the map) and type scales. Storybook deploys per PR and for `main` | Storybook builds inside `check` |
+| 6. Tokens | `@thorbde/tokens`: DTCG + Terrazzo, light and dark, from the choices made in the playgrounds. Self-hosted fonts | Tokens build inside `check` |
+| 7. UI foundation | CSS Modules on tokens, Button | Accessibility checks on the components |
+| 8. Components | Field, Link, Dialog | Accessibility checks on the components |
 
 Lighthouse CI (load speed and accessibility on a mid-range phone) comes in M5.
 

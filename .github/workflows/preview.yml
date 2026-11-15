@@ -1,9 +1,11 @@
-# A preview deploy per PR, in the separate Previews Cloudflare account (ADR 0006).
+# A preview deploy per PR, in the separate Previews Cloudflare account (ADR 0006):
+# the app, and Storybook with the design-system playgrounds.
 #
 # - build:   builds the PR's code with no Cloudflare secrets in reach.
-# - deploy:  deploys that build as its own Worker, map-app-pr-<number>, using only
-#            the preview token, and posts the URL as one comment that it keeps updated.
-# - cleanup: deletes the Worker when the PR closes.
+# - deploy:  deploys those builds as their own Workers, map-app-pr-<number> and
+#            map-app-storybook-pr-<number>, using only the preview token, and posts the
+#            URLs as one comment that it keeps updated.
+# - cleanup: deletes both Workers when the PR closes.
 #
 # The preview token can't reach production: it belongs to a different account.
 
@@ -26,7 +28,8 @@ defaults:
     shell: bash
 
 env:
-  WORKER_NAME: map-app-pr-${{ github.event.pull_request.number }}
+  APP_WORKER: map-app-pr-${{ github.event.pull_request.number }}
+  STORYBOOK_WORKER: map-app-storybook-pr-${{ github.event.pull_request.number }}
   # Keep in step with apps/web/package.json. Deploy and cleanup run wrangler with
   # npx so they never install the PR's dependencies next to the token.
   WRANGLER_VERSION: 4.162.0
@@ -47,10 +50,13 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      - run: pnpm build:storybook
       - uses: actions/upload-artifact@v7
         with:
           name: preview-build
-          path: apps/web/build
+          path: |
+            apps/web/build
+            packages/ui/storybook-static
           include-hidden-files: true # build/client/.assetsignore
           retention-days: 1
 
@@ -62,6 +68,9 @@ jobs:
       contents: read
       pull-requests: write
       issues: write
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_PREVIEW_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PREVIEW_API_TOKEN }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -69,32 +78,29 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           name: preview-build
-          path: apps/web/build
-      - name: Deploy to the Previews account
-        id: deploy
-        env:
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_PREVIEW_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PREVIEW_API_TOKEN }}
-        working-directory: apps/web
+      - name: Deploy the app
+        id: app
         run: |
-          npx --yes "wrangler@${WRANGLER_VERSION}" deploy \
-            --config build/server/wrangler.json \
-            --name "$WORKER_NAME" | tee deploy.log
-          url=$(grep -oE 'https://[a-zA-Z0-9.-]+\.workers\.dev' deploy.log | head -n 1)
-          if [ -z "$url" ]; then
-            echo "::error::No workers.dev URL in the deploy output. Does the Previews account have a workers.dev subdomain?"
-            exit 1
-          fi
+          url=$(bash .github/scripts/deploy-worker.sh \
+            --config apps/web/build/server/wrangler.json --name "$APP_WORKER")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+      - name: Deploy Storybook (static files only)
+        id: storybook
+        run: |
+          url=$(bash .github/scripts/deploy-worker.sh \
+            --assets packages/ui/storybook-static --name "$STORYBOOK_WORKER" \
+            --compatibility-date 2026-11-01)
           echo "url=$url" >> "$GITHUB_OUTPUT"
       - name: Post or update the preview comment
         env:
           GH_TOKEN: ${{ github.token }}
-          URL: ${{ steps.deploy.outputs.url }}
+          APP_URL: ${{ steps.app.outputs.url }}
+          STORYBOOK_URL: ${{ steps.storybook.outputs.url }}
           PR: ${{ github.event.pull_request.number }}
           SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          body=$(printf '%s\n**Preview:** %s\n\nBuilt from %s. Updated on every push, removed when the PR closes.' \
-            "$COMMENT_MARKER" "$URL" "${SHA:0:7}")
+          body=$(printf '%s\n**App preview:** %s\n**Storybook:** %s\n\nBuilt from %s. Updated on every push, removed when the PR closes.' \
+            "$COMMENT_MARKER" "$APP_URL" "$STORYBOOK_URL" "${SHA:0:7}")
           bash .github/scripts/upsert-preview-comment.sh "$PR" "$body"
 
   cleanup:
@@ -105,27 +111,21 @@ jobs:
       contents: read
       pull-requests: write
       issues: write
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_PREVIEW_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PREVIEW_API_TOKEN }}
     steps:
       - uses: actions/checkout@v7
         with:
           sparse-checkout: .github/scripts
-      - name: Delete the preview Worker
-        env:
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_PREVIEW_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PREVIEW_API_TOKEN }}
-        # A Worker that was never deployed, or is already gone, is fine. Anything else fails.
+      - name: Delete the preview Workers
         run: |
-          if ! npx --yes "wrangler@${WRANGLER_VERSION}" delete --name "$WORKER_NAME" --force 2>&1 | tee delete.log; then
-            if grep -qiE 'does not exist|10007|not found' delete.log; then
-              echo "No preview Worker to delete."
-            else
-              exit 1
-            fi
-          fi
+          bash .github/scripts/delete-worker.sh "$APP_WORKER"
+          bash .github/scripts/delete-worker.sh "$STORYBOOK_WORKER"
       - name: Update the preview comment
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
         run: |
-          body=$(printf '%s\n**Preview:** removed, because the PR was closed.' "$COMMENT_MARKER")
+          body=$(printf '%s\n**Previews:** removed, because the PR was closed.' "$COMMENT_MARKER")
           bash .github/scripts/upsert-preview-comment.sh "$PR" "$body" --update-only

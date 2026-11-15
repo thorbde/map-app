@@ -1,0 +1,11 @@
+{
+	"name": "fixture-ui",
+	"private": true,
+	"peerDependencies": {
+		"knip": "*"
+	},
+	"devDependencies": {
+		"knip": "*",
+		"dependency-cruiser": "*"
+	}
+}

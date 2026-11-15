@@ -83,6 +83,22 @@ The preview deploy and cleanup run `wrangler` through `npx` at a pinned version,
 - **The dependency graph** is a Mermaid diagram (`pnpm graph`), added to the summary of every CI run on `main`. GitHub renders it, so there's nothing to install, such as Graphviz.
 - **knip** needs almost no configuration: its React Router, Vite, Vitest, Playwright and wrangler plugins find the entry points. React Router route modules count as entry points, so their exports (`loader`, `meta`…) aren't reported as unused.
 
+### Added in M0 PR 5 (Storybook and playgrounds)
+
+All in `packages/ui`, as devDependencies:
+
+| Package | Version | Why | Unpacked size |
+|---|---|---|---|
+| `storybook` | 10.6.7 | The design-system workbench | 22 MB |
+| `@storybook/react-vite` | 10.6.7 | Storybook for React, built with our Vite | 32 KB |
+| `@storybook/addon-a11y` | 10.6.7 | axe accessibility checks in every story | 0.2 MB |
+| `react`, `react-dom`, `typescript`, `vite`, `@types/react(-dom)` | as in `apps/web` | `@thorbde/ui` also lists React as a peer dependency: the app brings its own copy | already installed |
+
+- **Playgrounds aren't components.** They live in `src/playgrounds/` as stories, never ship, and use inline styles. Their colour maths (OKLCH to sRGB, gamut mapping, WCAG contrast) is a small local file instead of a colour library.
+- **Fonts in the playgrounds come from Google Fonts,** loaded on demand for comparing only. The app will host its fonts itself, because loading them from Google's servers sends visitors' IP addresses to Google (a German court found this a GDPR breach in 2022).
+- **The boundary rules** allow stories to use devDependencies and allow peer dependencies in shipped code; the clean boundary fixture proves both.
+- **Storybook deploys** as a static-files-only Worker, per PR and for `main`, in the Previews account.
+
 ### Planned, not yet installed
 Recorded here so the sizes are known before code depends on them (ADR 0006):
 

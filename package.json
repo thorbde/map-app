@@ -9,6 +9,8 @@
 	"scripts": {
 		"dev": "pnpm --filter web dev",
 		"build": "pnpm --filter web build",
+		"storybook": "pnpm --filter @thorbde/ui storybook",
+		"build:storybook": "pnpm --filter @thorbde/ui build-storybook",
 		"size": "pnpm --filter web size",
 		"test": "pnpm --filter web test && pnpm test:boundaries",
 		"test:e2e": "pnpm --filter web test:e2e",
