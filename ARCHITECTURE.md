@@ -11,6 +11,8 @@ Browser
 Cloudflare Worker (React Router v7, Smart Placement → runs near the DB)
   │
   ├─ app/routes/*            thin: parse input → call feature service → render
+  │                          one layout route is the map shell: the map stays mounted,
+  │                          child routes render the floating panel (ADR 0010)
   │       │
   │       ▼
   ├─ app/features/*/         business logic per feature (services, queries, components)
@@ -40,6 +42,7 @@ packages/
 docs/
   METHOD.md               The writing method (product content)
   decisions/              ADRs
+  design/                 links to the design canvases (README.md)
   specs/                  mvp.md, roadmap.md, future feature specs
 ```
 
@@ -57,7 +60,7 @@ app/
     profiles/             profile, settings, visibility, export, delete account
     essays/               drafts, publishing, versions, rendering, editor
     maps/                 map components, geometry loading, written-state colouring
-    countries/            static country data + region lists (no DB)
+    countries/            static country data, region lists and reference facts (no DB, ADR 0012)
   server/
     access.server.ts      canViewProfile / canViewEssay, see ADR 0003
     db/
@@ -69,6 +72,7 @@ app/
   lib/                    Shared pure utilities (errors, dates, zod helpers). No feature logic.
 scripts/
   build-maps.ts           Natural Earth → simplified static geometry
+  build-facts.ts          Wikidata + overrides → features/countries/facts.ts (monthly scheduled PR, reviewed before merge)
 tests/
   e2e/                    Playwright
 ```
@@ -120,7 +124,7 @@ Stored in D1 (SQLite). To keep a later move to Postgres cheap (ADR 0006): IDs ar
 - **invite_code:** `code`, `created_by`, `max_uses`, `uses`, `expires_at`. Used while `SIGNUP_MODE=invite`.
 - **Admins** use Better Auth's admin plugin (`role` on user).
 
-`data` / `draft_data` is validated by zod in `features/essays/schema.ts`. In the MVP it holds `hook`, `capital`, `languages[]`, `population`, `independence`, `government`, `neighbours[]`. Cities, questions and riddles are added later as **new optional fields**, never as a breaking change.
+`data` / `draft_data` is validated by zod in `features/essays/schema.ts`. In the MVP it holds only what the writer writes besides the essay: the memory `hook`. Country facts are **reference data** in `features/countries`, not stored per essay (ADR 0012). Cities, recall questions and riddles are added later as **new optional fields**, never as a breaking change.
 
 ## Key flows
 
@@ -135,7 +139,11 @@ D1 has no interactive transactions. "Atomic" below means one `db.batch([...])`: 
   1. load the owner's profile and the essay's latest version in one query
   2. `canViewEssay(viewer, owner, essay)`
   3. return the stored `rendered_html`
-- **Map:** the static geometry (hashed asset) plus the list of written ISO codes per user. Colouring is done with CSS classes.
+- **Map shell (ADR 0010):**
+  1. the shell's layout route renders `<CountryMap>` once and keeps it mounted
+  2. each child route's loader returns the panel's data plus the map view (world, continent or country) and, through `access.server.ts`, the list of written ISO codes the viewer may see
+  3. the map geometry is a static hashed asset (world first, continent detail on zoom); colouring is done with CSS classes
+  4. clicking a country navigates: for the owner, to the editor or the essay; for visitors, only written countries are links
 
 ## Environments
 
