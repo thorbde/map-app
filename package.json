@@ -9,6 +9,7 @@
 	"scripts": {
 		"dev": "pnpm --filter web dev",
 		"build": "pnpm --filter web build",
+		"size": "pnpm --filter web size",
 		"typecheck": "pnpm -r typecheck",
 		"lint": "biome check .",
 		"format": "biome check --write .",

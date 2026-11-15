@@ -1,0 +1,131 @@
+# A preview deploy per PR, in the separate Previews Cloudflare account (ADR 0006).
+#
+# - build:   builds the PR's code with no Cloudflare secrets in reach.
+# - deploy:  deploys that build as its own Worker, map-app-pr-<number>, using only
+#            the preview token, and posts the URL as one comment that it keeps updated.
+# - cleanup: deletes the Worker when the PR closes.
+#
+# The preview token can't reach production: it belongs to a different account.
+
+name: Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    # Explicit bash adds -o pipefail, so a failing command piped into tee fails the step.
+    shell: bash
+
+env:
+  WORKER_NAME: map-app-pr-${{ github.event.pull_request.number }}
+  # Keep in step with apps/web/package.json. Deploy and cleanup run wrangler with
+  # npx so they never install the PR's dependencies next to the token.
+  WRANGLER_VERSION: 4.162.0
+  COMMENT_MARKER: "<!-- preview-deploy -->"
+
+jobs:
+  build:
+    # Fork PRs get no secrets, so they get no preview.
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - uses: actions/upload-artifact@v7
+        with:
+          name: preview-build
+          path: apps/web/build
+          include-hidden-files: true # build/client/.assetsignore
+          retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/scripts
+      - uses: actions/download-artifact@v8
+        with:
+          name: preview-build
+          path: apps/web/build
+      - name: Deploy to the Previews account
+        id: deploy
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_PREVIEW_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PREVIEW_API_TOKEN }}
+        working-directory: apps/web
+        run: |
+          npx --yes "wrangler@${WRANGLER_VERSION}" deploy \
+            --config build/server/wrangler.json \
+            --name "$WORKER_NAME" | tee deploy.log
+          url=$(grep -oE 'https://[a-zA-Z0-9.-]+\.workers\.dev' deploy.log | head -n 1)
+          if [ -z "$url" ]; then
+            echo "::error::No workers.dev URL in the deploy output. Does the Previews account have a workers.dev subdomain?"
+            exit 1
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+      - name: Post or update the preview comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          URL: ${{ steps.deploy.outputs.url }}
+          PR: ${{ github.event.pull_request.number }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          body=$(printf '%s\n**Preview:** %s\n\nBuilt from %s. Updated on every push, removed when the PR closes.' \
+            "$COMMENT_MARKER" "$URL" "${SHA:0:7}")
+          bash .github/scripts/upsert-preview-comment.sh "$PR" "$body"
+
+  cleanup:
+    if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/scripts
+      - name: Delete the preview Worker
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_PREVIEW_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PREVIEW_API_TOKEN }}
+        # A Worker that was never deployed, or is already gone, is fine. Anything else fails.
+        run: |
+          if ! npx --yes "wrangler@${WRANGLER_VERSION}" delete --name "$WORKER_NAME" --force 2>&1 | tee delete.log; then
+            if grep -qiE 'does not exist|10007|not found' delete.log; then
+              echo "No preview Worker to delete."
+            else
+              exit 1
+            fi
+          fi
+      - name: Update the preview comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          body=$(printf '%s\n**Preview:** removed, because the PR was closed.' "$COMMENT_MARKER")
+          bash .github/scripts/upsert-preview-comment.sh "$PR" "$body" --update-only

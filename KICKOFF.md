@@ -4,9 +4,9 @@
 
 - [x] Create an empty GitHub repo and push this folder to `main`.
 - [x] Turn on branch protection for `main` (a ruleset): require a PR, block force pushes and deletions, linear history, squash merges. Approvals are set to 0, because GitHub doesn't let you approve PRs opened from your own account; Thor merging is the approval.
-- [ ] Add the required status checks `check` and `e2e` to the ruleset once CI has run them for the first time (M0).
-- [ ] Cloudflare **production** account: note the account ID and create an API token with **Workers Scripts: Edit** and **D1: Edit**. Store both as secrets of a GitHub **`production` environment** that only allows `main` (Settings → Environments), not as repository secrets (ADR 0006).
-- [ ] Cloudflare **preview** account (a second, free account): the same kind of token. Store as repository secrets `CLOUDFLARE_PREVIEW_ACCOUNT_ID` and `CLOUDFLARE_PREVIEW_API_TOKEN`.
+- [ ] Add the required status checks to the ruleset once CI has run them for the first time: `check` after M0 PR 2, `e2e` after M0 PR 3.
+- [x] Cloudflare **Previews** account (a second, free account under the same login, shared by all apps' previews): a token from the "Edit Cloudflare Workers" template plus **D1: Edit**, limited to that account. Stored as repository secrets `CLOUDFLARE_PREVIEW_ACCOUNT_ID` and `CLOUDFLARE_PREVIEW_API_TOKEN`.
+- [ ] Cloudflare **production** account (your existing one), before M5: the same kind of token, stored as secrets of a GitHub **`production` environment** that only allows `main` (Settings → Environments), not as repository secrets (ADR 0006).
 - [ ] Google Cloud console: create an OAuth client (M2). Add the redirect URIs once the dev and prod URLs are known.
 - [ ] Optional: pick a domain name.
 
@@ -28,6 +28,20 @@ Maps come before auth: they need no database or login, they're the heart of the 
 | **M3** | **Writing:** click-a-country to write, the CodeMirror editor with its formatting toolbar (ADR 0011), the template and guide, the memory hook, autosave, the publish pipeline (render + sanitize + version), unpublish/delete | You can write and publish an essay, and the XSS tests pass |
 | **M4** | **Reading and privacy:** the profile, continent and essay panels, `access.server.ts` + the full test matrix, settings (profile, visibility), export, delete account | The e2e flow from the MVP spec passes, including the private/logged-out checks |
 | **M5** | **Launch prep:** minimal admin, privacy and terms placeholders, Lighthouse CI budgets, accessibility pass, production deploy | Live on production with invite-only sign-up |
+
+### M0, PR by PR
+
+| PR | What it adds | What CI checks afterwards |
+|---|---|---|
+| 1. Scaffold | pnpm workspace, React Router on Workers, TypeScript, Biome, README, ADR 0013 | Nothing yet (`pnpm check` runs locally) |
+| 2. CI | `ci.yml` and `preview.yml`: a preview deploy per PR in the Previews account | `check`: lint, typecheck, build, and the **150 KB JavaScript budget** per page. **Then make `check` a required status check.** |
+| 3. Tests | Vitest (Workers pool) and Playwright | Unit tests inside `check`, plus a separate `e2e` job. **Then make `e2e` required too.** |
+| 4. Boundaries | dependency-cruiser and knip | Import rules and unused code inside `check`; a dependency graph for the weekly check |
+| 5. Tokens | `@thorbde/tokens`: DTCG + Terrazzo, light and dark | Tokens build inside `check` |
+| 6. UI foundation | `@thorbde/ui`: Storybook, CSS Modules, Button | Storybook builds |
+| 7. Components | Field, Link, Dialog | Accessibility checks on the components |
+
+Lighthouse CI (load speed and accessibility on a mid-range phone) comes in M5.
 
 ## 3. The first prompt for Claude Code
 
