@@ -29,6 +29,7 @@ Rough order. Each item gets its own spec in `docs/specs/` before it's built.
 ## Iteration 3: the method as product
 - **A guided writing flow:** pretest → study notes → closed-book draft (with the notes hidden) → fact check → encode.
 - **"Test me" mode** on essays: free recall, then questions and riddles, then reveal.
+- **A memorization mode:** flashcards, quizzes and hiding and revealing the country's facts (ADR 0012) and your own essay. The normal essay view keeps showing everything.
 - **A review schedule** (1 day, 1 week, 1 month, 3 months, 6 months), stored per user.
 - **A quiz page** with a riddle mode and a map mode, plus quizzing on friends' maps.
 - **Anki export.**
