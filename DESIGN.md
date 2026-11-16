@@ -4,6 +4,17 @@ Agents design by default, and the default has a recognisable look: warm off-whit
 
 **Read this before any design or UI work, in every session,** and again whenever the conversation has been summarised or has run long: defaults creep back in.
 
+## The idea: "Schoolbook comes alive"
+
+Thor's name for the design language. The app looks like **a high-quality geography textbook**: a clear map with labels, a fact box, calm headings, and body text set for reading. Over time it **comes alive** with playful animation at the moments that matter.
+
+The name is the direction, not a rule. The rules below are what it means in practice:
+
+- **The schoolbook** is the values and the "Never" table: flat colour, a serif for the essay text, sentence case, labels on the map, one fact box, no decoration.
+- **"Comes alive"** is the motion rule: animation is feedback to something the user did, or marks a moment such as publishing an essay or reaching a milestone. It's added one moment at a time, each one shown to Thor first. It is never looping or ambient.
+
+The reference for the look is the board **"Essay · the approved look, following DESIGN.md"** on the design canvas, which Thor approved.
+
 ## How these rules work
 
 - **Rules are constraints, not vibes.** A value, a token or a "never", not an adjective. "Modern" and "clean" decide nothing; `var(--radius-lg)` does.
@@ -34,20 +45,25 @@ The tokens are the source of truth (`packages/tokens/tokens/`, ADR 0014). This i
 
 **Type.**
 - **Montserrat** for everything in the interface, including every heading. Two weights: 400 and 700.
-- **Source Serif 4** for the body text of essays, and nothing else (ADR 0017).
+- **Source Serif 4** for the body text of essays, and nothing else (ADR 0017). Essay text is 16 px (`font.size.md`) with a line height of 1.65; essay headings are Montserrat 700 at 20 px.
 - **Sizes:** 12, 14, 16, 20, 25, 31, 39 px (`font.size.xs` to `3xl`). **Line heights:** 1.15, 1.5, 1.65.
 
 **Shape and space.**
 - **Space:** a 4 px grid: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64.
 - **Radius:**
   - pill (`radius.full`) for buttons;
-  - 10 px (`radius.md`) for inputs;
+  - 10 px (`radius.md`) for inputs and the fact box;
   - 16 px (`radius.lg`) for panels and dialogs;
   - 6 px (`radius.sm`) for small things like focus outlines on text.
 - **Controls:** 32 px tall with a mouse, 40 px on touch screens.
 - **Shadow:** one, `shadow.raised`, and only on things that float over the map: panels, dialogs, the tab bar.
 - **Motion:** 120, 200 or 320 ms, with `easing.standard`.
 - **Icons:** our own (`docs/design/icons.md`). 16, 20 or 24 px.
+
+**Labels on the map.** 12 px, sentence case.
+- On land that isn't written: text colour with a 3 px white outline, so borders don't cut through the letters.
+- On a written country: the same. White text on the teal would only reach 4.1:1, under the minimum.
+- On the selected country: white, 16 px, 700, inside the shape (14.4:1).
 
 ## Never
 
@@ -79,4 +95,4 @@ Each of these is a known tell of a design nobody decided on. The "instead" is wh
 
 ## What's older than these rules
 
-The design canvas has mockups from before this file existed, and some break it: capitals with wide letter-spacing on the fact labels and map labels, and a "West Africa" pill that can't be pressed. They show the approved colours and layout, not approved details. Code follows this file.
+The design canvas has mockups from before this file existed, and some break it: capitals with wide letter-spacing on the fact labels and map labels, and a "West Africa" pill that can't be pressed. They show how the colours and layout were chosen, not approved details. The board "Essay · the approved look, following DESIGN.md" replaces them as the reference, and code follows this file.

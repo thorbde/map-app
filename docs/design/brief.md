@@ -6,7 +6,9 @@ Thor's direction for the look of the app, and the history of how the look was ch
 
 ## Feel
 
-**Modern, exciting but clean, minimal and stylish.**
+**"Schoolbook comes alive."** Thor's name for the design language, after seeing the essay screen built to the rules: it looks like a high-quality geography textbook, and it will come alive with playful animation at the moments that matter. `DESIGN.md` says what that means in practice.
+
+It grew out of the first direction, which still holds: **modern, exciting but clean, minimal and stylish.**
 
 - **Popping, confident colours** on a clean, light base.
 - **Inspiration:** the Kurzgesagt store (its vividness, palette and illustration), and Duolingo's cartoony style with happy, optimistic, animated little details.

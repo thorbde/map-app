@@ -4,7 +4,7 @@ Designs live on claude.ai as Claude Design canvases. They're private by default;
 
 | Canvas | What it shows | Decisions |
 |---|---|---|
-| [Map App: first sketches](https://claude.ai/artifact/Hp7xBLLRuyxsJvSSh7SCrt) | The map-first app: profile, essay, editor, and the phone bottom sheet, in light and dark | ADRs 0010, 0011, 0012 |
+| [Map App: first sketches](https://claude.ai/artifact/Hp7xBLLRuyxsJvSSh7SCrt) | The map-first app: profile, essay, editor and the phone bottom sheet; the rounds that led to the teal palette and the icon style; and, at the bottom, "Essay · the approved look, following DESIGN.md", the current reference | ADRs 0010, 0011, 0012, 0014, 0016, 0018 |
 
 ## Rules and brief
 
