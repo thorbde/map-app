@@ -10,11 +10,11 @@
 
 `countries.ts`: every country in scope, with:
 - `iso`: alpha-2
-- `name`: common English short name, e.g. "Côte d'Ivoire", "DR Congo", "Eswatini"
+- `name`: the English name from Unicode CLDR, copied as it is, e.g. "Côte d’Ivoire", "Congo - Kinshasa", "Türkiye" (ADR 0019)
 - `continent`: `africa` | `europe` | `asia` | `north-america` | `south-america` | `oceania`
 - `region`
 
-**Scope:** the 193 UN members plus Palestine (PS) and the Vatican (VA), for 195 in total. Add a commented-out, easy-to-enable option for Kosovo (XK) and Taiwan (TW).
+**Scope:** the 193 UN members plus Palestine (PS) and the Vatican (VA), and Kosovo (XK) and Taiwan (TW), for 197 in total. Including Kosovo and Taiwan is a **high-risk decision to revisit** (ADR 0019).
 
 **Regions:**
 - **Africa uses the African Union's regions exactly as listed:**
@@ -23,11 +23,11 @@
   - **Central Africa (9):** BI, CM, CF, TD, CG, CD, GQ, GA, ST
   - **East Africa (14):** KM, DJ, ER, ET, KE, MG, MU, RW, SC, SO, SS, SD, TZ, UG
   - **Southern Africa (10):** AO, BW, SZ, LS, MW, MZ, NA, ZA, ZM, ZW
-- **Other continents:** UN M49 sub-regions. The Americas are split into North America (Central America and the Caribbean included) and South America.
+- **Other continents:** UN M49 sub-regions, with M49's wording ("South-eastern Asia"). The Americas are split into North America (Central America and the Caribbean included) and South America. M49 decides the continent too: Cyprus, Türkiye, Georgia, Armenia and Azerbaijan are in Asia, and Russia is in Europe. M49 lists neither Kosovo nor Taiwan: Kosovo is in Southern Europe and Taiwan in Eastern Asia.
 
-**Facts** (ADR 0012): `facts.ts`, a reviewed static dataset per ISO code: capital, languages, population (with its year), independence date, government type and land neighbours. It's generated from **Wikidata** by `scripts/build-facts.ts`, plus a small overrides file. A **monthly scheduled job** regenerates it and opens a PR with the changes for Thor to review. Writers don't type facts in.
+**Facts** (ADR 0012): `facts.ts`, a reviewed static dataset per ISO code: capital, languages, population (with its year), government type and land neighbours (no independence date: Wikidata has no usable one, and it belongs in the essay). It's generated from **Wikidata** by `scripts/build-facts.ts`, plus a small overrides file. A **monthly scheduled job** regenerates it and opens a PR with the changes for Thor to review. Writers don't type facts in.
 
-**Tests:** 54 countries in Africa, 195 in total, no duplicates, and every country has a complete fact entry.
+**Tests:** 54 countries in Africa, 197 in total, no duplicates, and every country has a complete fact entry.
 
 ## 2. Maps and the app shell (`features/maps`)
 
@@ -84,7 +84,7 @@ Every page below is a panel over the map (§2).
 
 - **`/u/:username`:** the world map, and a panel with:
   - name, bio
-  - progress in total and per continent ("12 / 195", "4 / 54" for Africa)
+  - progress in total and per continent ("12 / 197", "4 / 54" for Africa)
   - when it's your own profile: "Continue writing", "In progress" (drafts and unpublished changes), and a hint that clicking a country starts an essay
   - recently published essays
   - a link to `/method`

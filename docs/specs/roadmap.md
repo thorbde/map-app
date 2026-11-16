@@ -34,6 +34,21 @@ Rough order. Each item gets its own spec in `docs/specs/` before it's built.
 - **A quiz page** with a riddle mode and a map mode, plus quizzing on friends' maps.
 - **Anki export.**
 
+## Use in Swedish schools
+Thor wants the app to be **compliant for use in Swedish schools at some point** (added 2026-11-16). No date is set, and nothing is built for it yet.
+
+- **Research comes first:** what a Swedish school, or the municipality that runs it, requires before pupils may use an app. The result is a written list of requirements with sources, and then a spec.
+- **Questions for that research.** These are guesses at where the requirements are, not findings:
+  - **Children's data:** what GDPR and Swedish rules require for pupils, including those under 13, and who gives consent.
+  - **The school as the party responsible for the data:** whether a data processing agreement is needed, and what it must contain.
+  - **Sign-in:** whether Google-only sign-in (ADR 0007) is acceptable, or pupils need school accounts or another method.
+  - **Where data is stored:** whether EU storage on Cloudflare D1 (ADR 0006) is enough, given the company is American.
+  - **Accessibility:** which legal standard applies to tools used in public schools.
+  - **Language:** whether the interface and the essays must be available in Swedish.
+  - **Pupils' safety:** public profiles, moderation and contact between users when the users are minors.
+  - **The curriculum:** how the method and the country list fit what geography teaching covers. The list includes Kosovo and Taiwan (ADR 0019).
+- **Related:** "Classroom mode" and "A Swedish self-hosted deployment" under Later.
+
 ## Later
 - **Translations,** as `essay` rows with another `locale`, plus a language switcher.
 - **A map redesign:** a polished, illustrative style.

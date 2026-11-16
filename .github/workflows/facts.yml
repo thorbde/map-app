@@ -1,0 +1,83 @@
+# The monthly refresh of the country facts from Wikidata. See docs/decisions/0012.
+#
+# No AI in the loop: a plain script, then `git` and `gh`. It never merges anything.
+# - The script writes facts.ts only when all 197 countries have a complete entry.
+#   A missing, malformed or wildly different value keeps the one we have, and the
+#   pull request lists it under "Kept the old value, needs a look".
+# - If Wikidata is down the script fails, no pull request is opened, and GitHub
+#   emails Thor about the failed run.
+# - If facts.ts changed, it goes to the branch chore/facts-refresh (replaced each run)
+#   and a pull request is opened, or the open one is updated.
+# - A pull request opened with the default token doesn't start CI by itself, so this
+#   job starts CI on the branch. The `check` and `e2e` results land on the same commit.
+#
+# Needs one repository setting: Settings → Actions → General →
+# "Allow GitHub Actions to create and approve pull requests".
+# GitHub pauses scheduled workflows after 60 days without repository activity.
+
+name: Facts refresh
+
+on:
+  schedule:
+    # 04:17 UTC on the 3rd of each month.
+    - cron: "17 4 3 * *"
+  workflow_dispatch:
+
+concurrency:
+  group: facts-refresh
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  BRANCH: chore/facts-refresh
+  FACTS: apps/web/app/features/countries/facts.ts
+
+jobs:
+  refresh:
+    name: refresh
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - name: Fetch the facts from Wikidata (the script has no dependencies)
+        run: node apps/web/scripts/build-facts.ts --report "$RUNNER_TEMP/report.md"
+      - name: Stop here if nothing changed
+        id: diff
+        run: |
+          if git diff --quiet -- "$FACTS"; then
+            echo "The facts are up to date." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Push the branch and open or update the pull request
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add "$FACTS"
+          git commit -m "chore: refresh the country facts from Wikidata"
+          git push --force origin "$BRANCH"
+          if [ "$(gh pr list --head "$BRANCH" --state open --json number --jq length)" = "0" ]; then
+            gh pr create --base main --head "$BRANCH" \
+              --title "chore: refresh the country facts from Wikidata" \
+              --body-file "$RUNNER_TEMP/report.md"
+          else
+            gh pr edit "$BRANCH" --body-file "$RUNNER_TEMP/report.md"
+          fi
+          gh workflow run ci.yml --ref "$BRANCH"

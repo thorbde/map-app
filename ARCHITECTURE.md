@@ -86,6 +86,8 @@ app/
 scripts/
   build-maps.ts           Natural Earth → simplified static geometry
   build-facts.ts          Wikidata + overrides → features/countries/facts.ts (monthly scheduled PR, reviewed before merge)
+  facts-rules.ts          the pure rules behind it: picking values, validation, keeping the old value when Wikidata's is unusable
+  wikidata-ids.ts         the Wikidata item for each country
 tests/
   integration/            Vitest in workerd: requests through the real Worker and React Router
   e2e/                    Playwright against the production build served locally

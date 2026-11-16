@@ -11,6 +11,10 @@ export default defineConfig({
 		reactRouter(),
 	],
 	test: {
-		include: ["app/**/*.test.ts", "tests/integration/**/*.test.ts"],
+		include: [
+			"app/**/*.test.ts",
+			"scripts/**/*.test.ts",
+			"tests/integration/**/*.test.ts",
+		],
 	},
 });

@@ -5,7 +5,10 @@
 		"vitest.config.ts",
 		"react-router.config.ts",
 		"playwright.config.ts",
-		"tests/e2e/**/*"
+		"tests/e2e/**/*",
+		"scripts/**/*.ts",
+		"scripts/fixtures/*.json",
+		"app/features/countries/*.ts"
 	],
 	"compilerOptions": {
 		"composite": true,
@@ -13,6 +16,8 @@
 		"lib": ["ES2022", "DOM"],
 		"target": "ES2022",
 		"module": "ES2022",
-		"moduleResolution": "bundler"
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"resolveJsonModule": true
 	}
 }
