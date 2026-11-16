@@ -545,6 +545,10 @@ function nearestContinent(
 	return nearest;
 }
 
+const continents = [
+	...new Set(countries.map((country) => country.continent)),
+].sort();
+
 function buildFile(
 	shapes: Shapes,
 	labels: Map<string, Label>,
@@ -577,21 +581,28 @@ function buildFile(
 			};
 		});
 
-	const neutral: MapNeutralFeature = {
-		type: "Feature",
-		properties: { neutral: true },
-		geometry: {
-			type: "MultiPolygon",
-			coordinates: closed(
-				shapes.neutral.filter(
-					(polygon) =>
-						continent === null ||
-						nearestContinent(polygon, labels) === continent,
-				),
-			),
-		},
+	// Neutral land is one feature per continent, also in the world file, so the
+	// map can swap a continent's coarse land for its detailed land in one go.
+	const neutralFeatures = continents
+		.filter((each) => continent === null || each === continent)
+		.map(
+			(each): MapNeutralFeature => ({
+				type: "Feature",
+				properties: { neutral: true, continent: each },
+				geometry: {
+					type: "MultiPolygon",
+					coordinates: closed(
+						shapes.neutral.filter(
+							(polygon) => nearestContinent(polygon, labels) === each,
+						),
+					),
+				},
+			}),
+		);
+	return {
+		type: "FeatureCollection",
+		features: [...countryFeatures, ...neutralFeatures],
 	};
-	return { type: "FeatureCollection", features: [...countryFeatures, neutral] };
 }
 
 // --- Main -----------------------------------------------------------------------
@@ -617,9 +628,6 @@ const labels = findLabels([
 const files: [name: string, file: MapFile, budget: number][] = [
 	["world", buildFile(coarse, labels, null), BUDGET_BYTES.world],
 ];
-const continents = [
-	...new Set(countries.map((country) => country.continent)),
-].sort();
 for (const continent of continents) {
 	files.push([
 		continent,

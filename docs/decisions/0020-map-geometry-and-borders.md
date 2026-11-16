@@ -75,7 +75,7 @@ Not borders, but hand-set, so recorded: a country's label point is the middle of
 - **The map's edge is 169° W,** in the Bering Strait, not 180°. Shapes are cut there, and longitudes run from -169 to 191. Russia and Oceania stay in one piece, in every projection. The cost: two Alaskan islands (St. Lawrence and Umnak) are cut in two.
 - **Each country carries** its ISO code, its label point (the same in every file), and a `marker` flag.
 - **Markers** follow a plain rule: a country gets one when it has no shape in the file, or when its largest piece of land is under 5,000 km² (15,000 km² in the world file).
-- **Neutral land** is one feature per file. A piece of neutral land goes in the file of the continent of the nearest country.
+- **Neutral land** is one feature per continent, in the world file too, so the map can swap a continent's coarse land for its detailed land in one go. A piece of neutral land belongs to the continent of the nearest country.
 - **Budgets,** gzipped: 60 KB for the world file and 100 KB for each continent file (Thor, 2026-11-16). The build fails over them. Today: world 40 KB; continents 18 to 83 KB.
 
 ## Alternatives considered
