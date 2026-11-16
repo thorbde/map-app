@@ -5,12 +5,11 @@
 # Needs WRANGLER_VERSION, CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN in the environment.
 set -euo pipefail
 
-# The first deploy of a new Worker can fail right after the upload: wrangler asks
-# Cloudflare about the Worker it just created, and Cloudflare answers "This Worker does
-# not exist on your account" (code 10007). Deploying the same Worker again works (seen
-# on PR #17: the app Worker failed on the first run and deployed on the re-run, where
-# the brand-new Storybook Worker then failed the same way). Only that error is retried;
-# anything else fails at once.
+# Cloudflare sometimes answers "This Worker does not exist on your account" (code 10007)
+# right after wrangler has uploaded a new Worker. Seen twice within two minutes on
+# PR #17 (first the app Worker, then on the re-run the Storybook Worker, while the app
+# Worker deployed fine the second time), and not on PR #18 minutes later. Deploying the
+# same Worker again works, so that one error is retried; anything else fails at once.
 attempts=3
 wait_seconds="${DEPLOY_RETRY_SECONDS:-15}"
 
