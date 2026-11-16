@@ -72,7 +72,7 @@ app/
     profiles/             profile, settings, visibility, export, delete account
     essays/               drafts, publishing, versions, rendering, editor
     maps/                 map components, geometry loading, written-state colouring
-      geometry/           the generated map files: world.json and one per continent (committed; checked by pnpm maps:check, ADR 0020)
+      geometry/           the generated map files: a coarse world.json and a detailed file per continent (committed; checked by pnpm maps:check, ADR 0020)
       map-file.ts         the format of those files
     countries/            static country data, region lists and reference facts (no DB, ADR 0012)
   server/
@@ -86,7 +86,7 @@ app/
       index.server.ts     the ONLY file other code may import from platform/
   lib/                    Shared pure utilities (errors, dates, zod helpers). No feature logic.
 scripts/
-  build-maps.ts           Natural Earth → Equal Earth → features/maps/geometry/*.json (border choices: ADR 0020)
+  build-maps.ts           Natural Earth → country shapes as GeoJSON in features/maps/geometry/ (border choices: ADR 0020)
   build-facts.ts          Wikidata + overrides → features/countries/facts.ts (monthly scheduled PR, reviewed before merge)
   facts-rules.ts          the pure rules behind it: picking values, validation, keeping the old value when Wikidata's is unusable
   wikidata-ids.ts         the Wikidata item for each country
