@@ -1,6 +1,6 @@
 # 0010: A map-first app shell
 
-- **Status:** accepted
+- **Status:** accepted; **the map engine is superseded by ADR 0021** (MapLibre replaces "our own SVG map, no map library", hand-written pan and zoom, and the server-rendered SVG). The shell, the URL-driven views and the navigation stand.
 - **Date:** 2026-11-15
 
 ## Context
