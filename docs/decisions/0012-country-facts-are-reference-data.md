@@ -32,7 +32,7 @@ The MVP spec had writers fill in a facts form for every essay: capital, language
   - borders are settled as pairs, so keeping one country's old list can't leave a border stated from one side;
   - if Wikidata doesn't answer, the run fails and opens nothing;
   - the job never merges. Tests fail the pull request if any entry is incomplete or out of step with the overrides.
-- **How the job's pull request gets CI: no token.** The job opens the pull request with the default Actions token and then starts the CI workflow on its branch through `workflow_dispatch`, which that token may do. It needs one repository setting, "Allow GitHub Actions to create and approve pull requests". **Not yet proven:** that the `main` ruleset accepts checks started this way. The first manual run shows it; the fallback is a GitHub App owned by Thor.
+- **How the job's pull request gets CI: no token.** The job opens the pull request with the default Actions token and then starts the CI workflow on its branch through `workflow_dispatch`, which that token may do. It needs one repository setting, "Allow GitHub Actions to create and approve pull requests". **Proven on 2026-11-16:** a deliberately wrong figure was merged (#22), and the job opened #23 to correct it, with `check` and `e2e` running on it and accepted by the `main` ruleset. If that ever stops working, the fallback is a GitHub App owned by Thor.
 - **No AI in the job:** `node`, `git` and `gh`, with no third-party actions and no install step (the script has no dependencies).
 
 ## Alternatives considered
