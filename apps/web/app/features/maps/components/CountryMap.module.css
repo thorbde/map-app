@@ -1,0 +1,24 @@
+/* The map fills whatever it is placed in. Until MapLibre has loaded, and when it
+   can't run at all, this is a plain ocean (ADR 0021). */
+.map {
+	position: absolute;
+	inset: 0;
+	background: var(--color-map-ocean);
+}
+
+/* MapLibre makes its container "position: relative", so this one is sized, not placed. */
+.canvas {
+	width: 100%;
+	height: 100%;
+}
+
+.note {
+	position: absolute;
+	inset-block-end: var(--space-4);
+	inset-inline: var(--space-4);
+	margin: 0;
+	color: var(--color-text-default);
+	font-family: var(--font-ui);
+	font-size: var(--font-size-sm);
+	text-align: center;
+}

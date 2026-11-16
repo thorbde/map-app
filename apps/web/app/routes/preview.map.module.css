@@ -1,0 +1,26 @@
+/* TEMPORARY, with preview.map.tsx: removed when the app shell arrives (M1 PR 5). */
+.page {
+	position: fixed;
+	inset: 0;
+}
+
+.status {
+	position: absolute;
+	inset-block-start: var(--space-4);
+	inset-inline-start: var(--space-4);
+	padding: var(--space-3) var(--space-4);
+	border-radius: var(--radius-md);
+	background: var(--color-bg-surface);
+	color: var(--color-text-default);
+	font-family: var(--font-ui);
+	font-size: var(--font-size-sm);
+}
+
+.status p {
+	margin: 0;
+}
+
+.title {
+	margin: 0 0 var(--space-1);
+	font-size: var(--font-size-md);
+}

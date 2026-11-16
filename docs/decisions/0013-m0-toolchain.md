@@ -152,6 +152,23 @@ In `apps/web`, as devDependencies. They run only in `scripts/build-maps.ts`; not
 - **Alternatives:** Natural Earth's shapefiles directly (newer data, but needs a shapefile parser and a topology builder), and `mapshaper` (does everything, but far larger). `world-atlas` with these three libraries made the M0 mockups, so it was known to work.
 - **`world-atlas` is listed in knip's `ignoreDependencies`:** the script reads its JSON files by path, which knip can't see.
 
+### Added in M1 PR 4 (the map component)
+
+In `apps/web`, as a dependency. It is the first package that is shipped to the browser but is not part of any page's first load.
+
+| Package | Version | Why | Size |
+|---|---|---|---|
+| `maplibre-gl` | 6.18.0 | Draws the map (ADR 0021): Equal Earth as a custom projection, pan and zoom, labels, and later the globe | 296 KB gzipped, plus its 148 KB worker file and 10 KB of CSS. Measured from the production build |
+
+- **It loads lazily,** after the page, and only in the browser: the file that uses it ends in `.client.ts`, so it is not in the Worker bundle either. The preview page's first load is 118 KB.
+- **It has a size limit of its own:** 500 KB gzipped for MapLibre, its worker, its CSS and our own map code together (459 KB today, plus about 10%). `pnpm size` checks it, and also fails if the map engine ever becomes part of a page's first load.
+- **MapLibre is a file of its own,** separate from our map code, and so is its worker. Their names only change when MapLibre is upgraded, so a returning visitor doesn't download them again after one of our deploys. Tried: a change to our map code changed our 3 KB file's name and left both of MapLibre's alone.
+- **Used directly, not through `react-map-gl`:** there is one map, it never unmounts, and Equal Earth needs MapLibre's own API. One dependency fewer.
+- **Labels are drawn by MapLibre with the page's own Montserrat.** Without a `glyphs` address in the style, MapLibre 6 draws text with the fonts the page has loaded. No font conversion, no glyph files, nothing extra to host.
+- **MapLibre's licence** (BSD 3-clause) asks that its notice stays with the code. The build strips it from the JavaScript, so the full text is served at `/licenses/maplibre-gl.txt`; `pnpm size` checks that it is there and matches the installed version.
+- **Vite has to be told to bundle MapLibre's worker file** (`?worker&url`, then `setWorkerUrl`). Without that it isn't served, and the map never starts.
+- **e2e tests need WebGL.** Headless Chromium has no graphics card, so `playwright.config.ts` tells it to draw in software.
+
 ### Planned, not yet installed
 Recorded here so the sizes are known before code depends on them (ADR 0006):
 
