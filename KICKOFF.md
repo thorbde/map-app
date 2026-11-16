@@ -20,6 +20,8 @@ Each milestone is several small PRs, and each PR starts with a plan you approve.
 
 Maps come before auth: they need no database or login, they're the heart of the product, and they carry the most UX risk.
 
+**M0 is done.** The plan for M1, its open questions, and a kickoff prompt for a new session are in `docs/specs/m1.md`.
+
 | # | Milestone | Done when |
 |---|---|---|
 | **M0** | **Foundation:** a pnpm workspace (`apps/web`, `packages/tokens`, `packages/ui`), React Router v8 on Workers, TS strict, Biome, dependency-cruiser rules from `ARCHITECTURE.md`, knip, Vitest (in workerd), Playwright, CI (`pnpm check` + e2e), preview deploys per PR, `@thorbde/tokens` (DTCG + Terrazzo, light and dark), `@thorbde/ui` with Storybook and a first set of Base UI components (Button, Field, Link, Dialog), a README with setup | A "hello" page built from `@thorbde/ui` deploys to a preview URL, CI is green, a boundary violation fails a test in CI |
