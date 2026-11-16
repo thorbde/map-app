@@ -38,7 +38,7 @@ Run these from the repository root.
 | `pnpm check` | Lint, typecheck, tokens in step with their JSON, import boundaries, knip and all tests except e2e. **Run before every commit.** |
 | `pnpm tokens` | Builds the design tokens into CSS (`packages/tokens/generated/`); commit the result |
 | `pnpm icons` | Builds the icon components from `packages/icons/svg/`; commit the result. How icons are drawn: `docs/design/icons.md` |
-| `pnpm test` | Unit and integration tests inside workerd, component tests (every Storybook story in Chromium, with accessibility checks), plus the boundary-rule tests |
+| `pnpm test` | Unit and integration tests inside workerd, component tests (every Storybook story in Chromium, with accessibility checks), plus the boundary-rule tests and the tests for the CI scripts |
 | `pnpm boundaries` | Checks the import rules from ARCHITECTURE.md (dependency-cruiser) |
 | `pnpm knip` | Finds unused files, exports and dependencies |
 | `pnpm graph` | Prints the dependency graph as a Mermaid diagram |

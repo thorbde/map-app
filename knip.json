@@ -3,7 +3,7 @@
 	"ignore": ["tests/boundaries/fixtures/**"],
 	"workspaces": {
 		".": {
-			"entry": ["tests/boundaries/*.test.mjs"]
+			"entry": ["tests/boundaries/*.test.mjs", "tests/scripts/*.test.mjs"]
 		},
 		"apps/web": {},
 		"packages/tokens": {
