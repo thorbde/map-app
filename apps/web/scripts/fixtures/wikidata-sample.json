@@ -1,0 +1,1340 @@
+{
+	"capital": {
+		"results": {
+			"bindings": [
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q34"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q1754"
+					},
+					"valueLabel": {
+						"value": "Stockholm"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q258"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q5465"
+					},
+					"valueLabel": {
+						"value": "Cape Town"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q258"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q3926"
+					},
+					"valueLabel": {
+						"value": "Pretoria"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q258"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q37701"
+					},
+					"valueLabel": {
+						"value": "Bloemfontein"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q750"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q1491"
+					},
+					"valueLabel": {
+						"value": "La Paz"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q750"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q2907"
+					},
+					"valueLabel": {
+						"value": "Sucre"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				}
+			]
+		}
+	},
+	"language": {
+		"results": {
+			"bindings": [
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q33"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q9027"
+					},
+					"valueLabel": {
+						"value": "Swedish"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q33"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q1412"
+					},
+					"valueLabel": {
+						"value": "Finnish"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q750"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q5218"
+					},
+					"valueLabel": {
+						"value": "Quechua"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q750"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q1321"
+					},
+					"valueLabel": {
+						"value": "Spanish"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q750"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q35876"
+					},
+					"valueLabel": {
+						"value": "Guarani"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q750"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q4627"
+					},
+					"valueLabel": {
+						"value": "Aymara"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				}
+			]
+		}
+	},
+	"population": {
+		"results": {
+			"bindings": [
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q948"
+					},
+					"value": {
+						"value": "11304500"
+					},
+					"valueLabel": {
+						"value": "11304500"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					},
+					"time": {
+						"value": "2016-01-01T00:00:00Z"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q948"
+					},
+					"value": {
+						"value": "11565204"
+					},
+					"valueLabel": {
+						"value": "11565204"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#PreferredRank"
+					},
+					"time": {
+						"value": "2018-01-01T00:00:00Z"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q948"
+					},
+					"value": {
+						"value": "11532127"
+					},
+					"valueLabel": {
+						"value": "11532127"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					},
+					"time": {
+						"value": "2017-01-01T00:00:00Z"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q948"
+					},
+					"value": {
+						"value": "10982754"
+					},
+					"valueLabel": {
+						"value": "10982754"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					},
+					"time": {
+						"value": "2014-01-01T00:00:00Z"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q948"
+					},
+					"value": {
+						"value": "11972169"
+					},
+					"valueLabel": {
+						"value": "11972169"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					},
+					"time": {
+						"value": "2024-01-01T00:00:00Z"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q948"
+					},
+					"value": {
+						"value": "37100000"
+					},
+					"valueLabel": {
+						"value": "37100000"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					},
+					"time": {
+						"value": "2026-01-01T00:00:00Z"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q948"
+					},
+					"value": {
+						"value": "12400000"
+					},
+					"valueLabel": {
+						"value": "12400000"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					},
+					"time": {
+						"value": "2026-01-01T00:00:00Z"
+					}
+				}
+			]
+		}
+	},
+	"government": {
+		"results": {
+			"bindings": [
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q49892"
+					},
+					"valueLabel": {
+						"value": "presidential system"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q49890"
+					},
+					"valueLabel": {
+						"value": "semi-presidential system"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q512187"
+					},
+					"valueLabel": {
+						"value": "federal republic"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q4446300"
+					},
+					"valueLabel": {
+						"value": "super-presidential republic"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#PreferredRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q1075404"
+					},
+					"valueLabel": {
+						"value": "soviet republic"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#DeprecatedRank"
+					},
+					"end": {
+						"value": "1993-12-25T00:00:00Z"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q34"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q188759"
+					},
+					"valueLabel": {
+						"value": "representative democracy"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q34"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q41614"
+					},
+					"valueLabel": {
+						"value": "constitutional monarchy"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q43702"
+					},
+					"valueLabel": {
+						"value": "federation"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q423"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q7270"
+					},
+					"valueLabel": {
+						"value": "republic"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q423"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q5433328"
+					},
+					"valueLabel": {
+						"value": "family dictatorship"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q423"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q50686"
+					},
+					"valueLabel": {
+						"value": "one-party state"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q423"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q181800"
+					},
+					"valueLabel": {
+						"value": "Juche"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q423"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q117405807"
+					},
+					"valueLabel": {
+						"value": "communist dictatorship"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q423"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q842112"
+					},
+					"valueLabel": {
+						"value": "socialist state"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q423"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q179164"
+					},
+					"valueLabel": {
+						"value": "unitary state"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				}
+			]
+		}
+	},
+	"border": {
+		"results": {
+			"bindings": [
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q17"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q15180"
+					},
+					"valueLabel": {
+						"value": "Soviet Union"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					},
+					"end": {
+						"value": "1991-01-01T00:00:00Z"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q17"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q884"
+					},
+					"valueLabel": {
+						"value": "South Korea"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#PreferredRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q17"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q865"
+					},
+					"valueLabel": {
+						"value": "Taiwan"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#PreferredRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q17"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"valueLabel": {
+						"value": "Russia"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#PreferredRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q17"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q30"
+					},
+					"valueLabel": {
+						"value": "United States"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#PreferredRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q17"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q148"
+					},
+					"valueLabel": {
+						"value": "People's Republic of China"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#PreferredRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q17"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q928"
+					},
+					"valueLabel": {
+						"value": "Philippines"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#PreferredRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q20"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q33"
+					},
+					"valueLabel": {
+						"value": "Finland"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#PreferredRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q20"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q458"
+					},
+					"valueLabel": {
+						"value": "European Union"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#PreferredRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q20"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q223"
+					},
+					"valueLabel": {
+						"value": "Greenland"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q20"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q35"
+					},
+					"valueLabel": {
+						"value": "Denmark"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					},
+					"nature": {
+						"value": "http://www.wikidata.org/entity/Q3089219"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q20"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"valueLabel": {
+						"value": "Russia"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#PreferredRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q20"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q145"
+					},
+					"valueLabel": {
+						"value": "United Kingdom"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q20"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q34"
+					},
+					"valueLabel": {
+						"value": "Sweden"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#PreferredRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q33"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q20"
+					},
+					"valueLabel": {
+						"value": "Norway"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#PreferredRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q33"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q34"
+					},
+					"valueLabel": {
+						"value": "Sweden"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#PreferredRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q33"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q15180"
+					},
+					"valueLabel": {
+						"value": "Soviet Union"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					},
+					"end": {
+						"value": "1991-01-01T00:00:00Z"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q33"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"valueLabel": {
+						"value": "Russia"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#PreferredRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q34"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q20"
+					},
+					"valueLabel": {
+						"value": "Norway"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#PreferredRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q34"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q36"
+					},
+					"valueLabel": {
+						"value": "Poland"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q34"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q37"
+					},
+					"valueLabel": {
+						"value": "Lithuania"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q34"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q191"
+					},
+					"valueLabel": {
+						"value": "Estonia"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q34"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q172107"
+					},
+					"valueLabel": {
+						"value": "Polish–Lithuanian Commonwealth"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					},
+					"end": {
+						"value": "1722-01-01T00:00:00Z"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q34"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q211"
+					},
+					"valueLabel": {
+						"value": "Latvia"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q34"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q33"
+					},
+					"valueLabel": {
+						"value": "Finland"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#PreferredRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q34"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q183"
+					},
+					"valueLabel": {
+						"value": "Germany"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q34"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q35"
+					},
+					"valueLabel": {
+						"value": "Denmark"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#PreferredRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q34"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"valueLabel": {
+						"value": "Russia"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q35"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q20"
+					},
+					"valueLabel": {
+						"value": "Norway"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#PreferredRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q35"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q458"
+					},
+					"valueLabel": {
+						"value": "European Union"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					},
+					"end": {
+						"value": "1972-12-31T00:00:00Z"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q35"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q34"
+					},
+					"valueLabel": {
+						"value": "Sweden"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#PreferredRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q35"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q183"
+					},
+					"valueLabel": {
+						"value": "Germany"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#PreferredRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q211"
+					},
+					"valueLabel": {
+						"value": "Latvia"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q17"
+					},
+					"valueLabel": {
+						"value": "Japan"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q37"
+					},
+					"valueLabel": {
+						"value": "Lithuania"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q212"
+					},
+					"valueLabel": {
+						"value": "Ukraine"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q423"
+					},
+					"valueLabel": {
+						"value": "North Korea"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q114318324"
+					},
+					"valueLabel": {
+						"value": "Kherson Oblast"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#DeprecatedRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q23427"
+					},
+					"valueLabel": {
+						"value": "South Ossetia"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#DeprecatedRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q232"
+					},
+					"valueLabel": {
+						"value": "Kazakhstan"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q16150196"
+					},
+					"valueLabel": {
+						"value": "Donetsk People's Republic"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#DeprecatedRank"
+					},
+					"end": {
+						"value": "2022-10-30T00:00:00Z"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q227"
+					},
+					"valueLabel": {
+						"value": "Azerbaijan"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q230"
+					},
+					"valueLabel": {
+						"value": "Georgia"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q16746854"
+					},
+					"valueLabel": {
+						"value": "Luhansk People's Republic"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#DeprecatedRank"
+					},
+					"end": {
+						"value": "2022-10-30T00:00:00Z"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q31354462"
+					},
+					"valueLabel": {
+						"value": "Republic of Abkhazia"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#DeprecatedRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q711"
+					},
+					"valueLabel": {
+						"value": "Mongolia"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q148"
+					},
+					"valueLabel": {
+						"value": "People's Republic of China"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q458"
+					},
+					"valueLabel": {
+						"value": "European Union"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q36"
+					},
+					"valueLabel": {
+						"value": "Poland"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q191"
+					},
+					"valueLabel": {
+						"value": "Estonia"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q184"
+					},
+					"valueLabel": {
+						"value": "Belarus"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q34"
+					},
+					"valueLabel": {
+						"value": "Sweden"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q30"
+					},
+					"valueLabel": {
+						"value": "United States"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q35"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q145"
+					},
+					"valueLabel": {
+						"value": "United Kingdom"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#DeprecatedRank"
+					},
+					"nature": {
+						"value": "http://www.wikidata.org/entity/Q3089219"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q20"
+					},
+					"valueLabel": {
+						"value": "Norway"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				},
+				{
+					"item": {
+						"value": "http://www.wikidata.org/entity/Q159"
+					},
+					"value": {
+						"value": "http://www.wikidata.org/entity/Q33"
+					},
+					"valueLabel": {
+						"value": "Finland"
+					},
+					"rank": {
+						"value": "http://wikiba.se/ontology#NormalRank"
+					}
+				}
+			]
+		}
+	}
+}

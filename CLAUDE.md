@@ -37,6 +37,7 @@ Look up current docs for these libraries instead of relying on memory. Their API
 | `pnpm icons` | Turn the icon SVGs into components (`packages/icons`); commit the result. Drawing icons: `docs/design/icons.md` |
 | `pnpm db:generate` | Generate a migration from the schema |
 | `pnpm db:migrate` | Apply migrations to the **local** D1 only |
+| `pnpm build:facts` | Regenerate the country facts from Wikidata (needs network; the monthly job does this, ADR 0012) |
 | `pnpm build:maps` | Regenerate the map geometry from Natural Earth |
 
 ## How to work

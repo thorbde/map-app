@@ -11,6 +11,8 @@
 			"**",
 			"!**/*.md",
 			"!packages/tokens/generated",
+			"!apps/web/app/features/countries/facts.ts",
+			"!apps/web/scripts/fixtures",
 			"!packages/icons/generated",
 			"!packages/icons/svg"
 		]

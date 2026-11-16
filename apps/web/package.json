@@ -8,6 +8,7 @@
 		"preview": "pnpm build && vite preview",
 		"typegen": "wrangler types && react-router typegen",
 		"typecheck": "pnpm typegen && tsc -b",
+		"build:facts": "node scripts/build-facts.ts",
 		"size": "node scripts/check-bundle-size.mjs",
 		"test": "vitest run",
 		"test:e2e": "playwright test"

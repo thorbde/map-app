@@ -11,6 +11,9 @@ on:
   pull_request:
   push:
     branches: [main]
+  # Started by the monthly facts refresh (facts.yml) on its own branch: a pull request
+  # opened with the default token doesn't trigger `pull_request` (ADR 0012).
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}

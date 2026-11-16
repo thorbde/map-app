@@ -33,7 +33,7 @@ This project is a long-term memory experiment. I write one short essay about eac
 
 ## Essay structure (400–600 words, plus the extras)
 
-- **Facts:** capital, languages, population, independence, neighbours, government. These come from Wikidata and are kept up to date by the site, so I don't copy them in. Copying isn't learning. I learn them by retrieval instead (see *Reviewing*).
+- **Facts:** capital, languages, population, neighbours, government. These come from Wikidata and are kept up to date by the site, so I don't copy them in. Copying isn't learning. I learn them by retrieval instead (see *Reviewing*).
 - **Geography and nature:** where it is, what the land is like, how that shapes life there
 - **Cities:** the capital plus the two to four largest or most important cities. For each one: where it lies (region, river, coast), why it grew there, what it's known for, and one concrete detail such as a landmark, an event, a person or a nickname
 - **History:** two or three turning points, with the reasons behind them
