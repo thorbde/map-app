@@ -128,6 +128,15 @@ Only Base UI is a runtime dependency; the rest are devDependencies. The Button i
 
 No npm packages: `@thorbde/icons` builds with a script of our own. The drawing tool, which only agents run and not CI, needs Python with Shapely 2.2.0 and svgpathtools 1.8.0 (`packages/icons/tools/requirements.txt`).
 
+### Added with the fonts (ADR 0017)
+
+In `packages/ui`, as dependencies:
+
+| Package | Version | Why | Size |
+|---|---|---|---|
+| `@fontsource/montserrat` | 5.3.0 | The interface font, self-hosted | About 19 KB per weight downloaded (Latin, WOFF2); we use two |
+| `@fontsource/source-serif-4` | 5.3.1 | The essay font, self-hosted | About 20 KB per face downloaded; we use three |
+
 ### Planned, not yet installed
 Recorded here so the sizes are known before code depends on them (ADR 0006):
 

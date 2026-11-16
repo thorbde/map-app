@@ -1,5 +1,6 @@
 import type { Preview } from "@storybook/react-vite";
 import "@thorbde/tokens/tokens.css";
+import "../src/fonts.css";
 import "../src/base.css";
 
 const preview: Preview = {
