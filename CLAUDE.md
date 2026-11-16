@@ -5,8 +5,9 @@ This app is built by agents and owned by Thor, a design systems engineer. Thor o
 ## Read first, every session
 
 1. `ARCHITECTURE.md`: structure, layers, boundaries
-2. `docs/decisions/`: why things are the way they are
-3. The spec for the task at hand, in `docs/specs/`
+2. `DESIGN.md`: the design rules: the values, what's never allowed, and how to work on design. Read it before any design or UI work, and again when a session has run long
+3. `docs/decisions/`: why things are the way they are
+4. The spec for the task at hand, in `docs/specs/`
 
 ## The product in one paragraph
 
@@ -56,6 +57,7 @@ Look up current docs for these libraries instead of relying on memory. Their API
 - **Never cache viewer-dependent responses in a shared cache.** See ADR 0003.
 - **Never render user markdown at request time, or with raw HTML enabled.** See ADR 0004.
 - **Never build UI from scratch in a feature.** Compose from `@thorbde/ui` and `@thorbde/icons`. **Never add an icon library;** new icons are drawn with the icon tool and approved by Thor (`docs/design/icons.md`). If a component or token is missing, propose it in the PR and **ask Thor**. Thor approves all changes to `packages/`.
+- **Never show Thor a design, or open a PR with UI in it, that breaks `DESIGN.md`.** Check it against the "Never" table first, and say in the PR that you did. If a rule seems wrong for a case, ask Thor; don't bend it quietly (ADR 0018).
 - **The design system never imports from the app.** `packages/*` must stay reusable in other apps (ADR 0008).
 - **Never push to `main`, run migrations against production, or read production secrets.**
 - **Never edit a migration that has been merged.** Write a new one.

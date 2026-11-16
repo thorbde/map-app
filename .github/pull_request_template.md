@@ -30,4 +30,5 @@
 - [ ] An ADR for every new dependency, pattern or decision
 - [ ] Reading another user's data goes through `access.server.ts`
 - [ ] No changes to `packages/` without Thor's approval
+- [ ] UI changes checked against `DESIGN.md`, row by row in its "Never" table (or: no UI changes)
 - [ ] No migration that has already been merged was edited

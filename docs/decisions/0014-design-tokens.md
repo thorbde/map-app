@@ -15,7 +15,7 @@ Components and the app need tokens to build on now. The colour palette was chose
 - **Scales are used directly:** space, radius, font size, font weight, line height, shadow, duration and easing. They have no semantic tier (a `space.4` doesn't mean anything more specific), so components use `var(--space-4)` or `var(--radius-md)`. Raw values (`16px`, `#fff`) are never used.
 - Component tokens are added only when a component needs a decision of its own.
 - **Naming:** dot paths in DTCG, dashes in CSS: `color.text.muted` becomes `--color-text-muted`.
-- **Colour is teal** (the brief has the table and what was rejected). The only other hue is a plain red, for errors only. `inverse` is the dark header block on panels. There's no second accent colour yet. Every pair that must pass contrast does:
+- **Colour is teal** (`DESIGN.md` has the table; the brief has what was rejected). The only other hue is a plain red, for errors only. `inverse` is the dark header block on panels. There's no second accent colour yet. Every pair that must pass contrast does:
   - text: body on white 14.4:1, muted on white 6.2:1 and on pale teal 5.5:1, white on the button teal 5.2:1, the header's secondary text 9.2:1, links at least 5.1:1 on every background (white, pale teal, the ocean), errors 5.6:1 on white;
   - input borders: 3.5:1 against white (WCAG 1.4.11);
   - map shapes: written against land 4.1:1, selected against written 3.5:1.
@@ -34,4 +34,4 @@ Components and the app need tokens to build on now. The colour palette was chose
 ## Consequences
 - **The app looked unfinished until the fonts landed** (ADR 0017), and that was intended.
 - **Changing a colour or font later** is an edit to `primitives.json` (and `semantic.json` if roles shift), followed by `pnpm tokens`.
-- **Contrast must be re-checked** whenever values change. The colour playground and the Tokens story help, and the brief lists the rules.
+- **Contrast must be re-checked** whenever values change. The colour playground and the Tokens story help, and `DESIGN.md` lists the rules.
