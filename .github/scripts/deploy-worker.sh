@@ -7,11 +7,12 @@ set -euo pipefail
 
 # The first deploy of a new Worker can fail right after the upload: wrangler asks
 # Cloudflare about the Worker it just created, and Cloudflare answers "This Worker does
-# not exist on your account" (code 10007) because the new Worker hasn't reached every
-# part of their API yet. Deploying again works. Only that error is retried; anything
-# else fails at once.
+# not exist on your account" (code 10007). Deploying the same Worker again works (seen
+# on PR #17: the app Worker failed on the first run and deployed on the re-run, where
+# the brand-new Storybook Worker then failed the same way). Only that error is retried;
+# anything else fails at once.
 attempts=3
-wait_seconds="${DEPLOY_RETRY_SECONDS:-10}"
+wait_seconds="${DEPLOY_RETRY_SECONDS:-15}"
 
 log="$(mktemp)"
 for attempt in $(seq 1 "$attempts"); do
