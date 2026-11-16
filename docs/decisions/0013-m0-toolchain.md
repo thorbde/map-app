@@ -137,6 +137,21 @@ In `packages/ui`, as dependencies:
 | `@fontsource/montserrat` | 5.3.0 | The interface font, self-hosted | About 19 KB per weight downloaded (Latin, WOFF2); we use two |
 | `@fontsource/source-serif-4` | 5.3.1 | The essay font, self-hosted | About 20 KB per face downloaded; we use three |
 
+### Added in M1 PR 3 (map geometry)
+
+In `apps/web`, as devDependencies. They run only in `scripts/build-maps.ts`; nothing from them reaches the Worker or the browser (the boundary rule against devDependencies in shipped code checks that). The generated map files are 11 to 34 KB gzipped each (ADR 0020).
+
+| Package | Version | Why | Unpacked size |
+|---|---|---|---|
+| `world-atlas` | 2.0.2 | Natural Earth's country shapes as TopoJSON, at three levels of detail | 8.2 MB |
+| `topojson-client` | 3.1.0 | Reads those files, and merges shapes (Somaliland into Somalia, Crimea into Ukraine) | 68 KB |
+| `topojson-simplify` | 3.0.3 | Removes detail while keeping shared borders identical | 51 KB |
+| `d3-geo` | 3.1.2 | The Equal Earth projection, with correct cutting at the map's edge | 255 KB, plus `d3-array` (115 KB) |
+| `@types/d3-geo`, `@types/topojson-client`, `@types/topojson-simplify` | 3.1.1, 3.1.5, 3.0.3 | Type definitions | 77 KB together |
+
+- **Alternatives:** Natural Earth's shapefiles directly (newer data, but needs a shapefile parser and a topology builder), and `mapshaper` (does everything, but far larger). `world-atlas` with these three libraries made the M0 mockups, so it was known to work.
+- **`world-atlas` is listed in knip's `ignoreDependencies`:** the script reads its JSON files by path, which knip can't see.
+
 ### Planned, not yet installed
 Recorded here so the sizes are known before code depends on them (ADR 0006):
 

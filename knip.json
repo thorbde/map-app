@@ -5,7 +5,9 @@
 		".": {
 			"entry": ["tests/boundaries/*.test.mjs", "tests/scripts/*.test.mjs"]
 		},
-		"apps/web": {},
+		"apps/web": {
+			"ignoreDependencies": ["world-atlas"]
+		},
 		"packages/tokens": {
 			"entry": ["terrazzo.config.mjs"]
 		},

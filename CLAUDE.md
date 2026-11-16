@@ -28,7 +28,7 @@ Look up current docs for these libraries instead of relying on memory. Their API
 | Command | What |
 |---|---|
 | `pnpm dev` | Local dev on the Workers runtime |
-| `pnpm check` | **Run before every commit:** lint + typecheck + tokens in step + boundaries + knip + tests |
+| `pnpm check` | **Run before every commit:** lint + typecheck + tokens, icons and maps in step + boundaries + knip + tests |
 | `pnpm boundaries` / `pnpm knip` | Import rules (dependency-cruiser) / unused files, exports and dependencies |
 | `pnpm graph` | The dependency graph as a Mermaid diagram |
 | `pnpm test` / `pnpm test:e2e` | Unit, integration and component tests (every story, with accessibility checks) / Playwright |
@@ -38,7 +38,7 @@ Look up current docs for these libraries instead of relying on memory. Their API
 | `pnpm db:generate` | Generate a migration from the schema |
 | `pnpm db:migrate` | Apply migrations to the **local** D1 only |
 | `pnpm build:facts` | Regenerate the country facts from Wikidata (needs network; the monthly job does this, ADR 0012) |
-| `pnpm build:maps` | Regenerate the map geometry from Natural Earth |
+| `pnpm build:maps` | Regenerate the map geometry from Natural Earth; commit the result. Border choices are in ADR 0020 |
 
 ## How to work
 
