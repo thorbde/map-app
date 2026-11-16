@@ -56,4 +56,4 @@ The direction lived in `docs/design/brief.md` as a mix of mood, values and a sho
 Thor saw the essay screen rebuilt to these rules, approved it, and named the design language **"Schoolbook comes alive"**: a high-quality geography textbook, which comes alive over time with playful animation at moments that matter. That settles the open points above:
 - the three mockup details change as described;
 - the serif essay text stays;
-- three choices the rules didn't cover are now in `DESIGN.md`: the fact box's radius, the essay text size, and the labels on the map.
+- three choices the rules didn't cover are now in `DESIGN.md`: the fact box's radius, the essay text size, and the labels on the map. Thor approved the board they appear on, not each one by name: that he accepts all three is inferred from "I love the current design". They were flagged to him as open choices when the board was shown, and any of them changes here if he says so.
