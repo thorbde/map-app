@@ -102,6 +102,51 @@ test("the view follows the address: a continent, then a country", async ({
 	await expect(opened(page)).not.toHaveText("nothing yet");
 });
 
+/** The detailed map files the page has fetched, by continent. */
+function watchDetailFiles(page: Page): string[] {
+	const fetched: string[] = [];
+	page.on("response", (response) => {
+		const match = new URL(response.url()).pathname.match(
+			/\/assets\/(africa|asia|europe|north-america|oceania|south-america)-[\w-]+\.json$/,
+		);
+		if (match?.[1] && response.ok()) fetched.push(match[1]);
+	});
+	return fetched;
+}
+
+test("the world view loads no detailed shapes", async ({ page }) => {
+	const fetched = watchDetailFiles(page);
+	await openPreview(page, "view=world");
+	await page.waitForLoadState("networkidle");
+	expect(fetched).toEqual([]);
+});
+
+test("zoomed in on a country, only its continent's detailed shapes load", async ({
+	page,
+}) => {
+	const fetched = watchDetailFiles(page);
+	await openPreview(page, "view=country:KE&owner=1");
+	await expect.poll(() => fetched).toEqual(["africa"]);
+	await page.waitForLoadState("networkidle");
+	expect(fetched).toEqual(["africa"]);
+
+	// The detailed shapes can be clicked like the coarse ones.
+	await clickMiddle(page);
+	await expect(opened(page)).toHaveText("KE");
+});
+
+test("a country that is only a dot on the world map has a shape once zoomed in", async ({
+	page,
+}) => {
+	// Malta: no shape in the world file, a shape in Europe's.
+	const fetched = watchDetailFiles(page);
+	await openPreview(page, "view=country:MT&owner=1");
+	await expect.poll(() => fetched).toContain("europe");
+	await page.waitForLoadState("networkidle");
+	await clickMiddle(page);
+	await expect(opened(page)).toHaveText("MT");
+});
+
 test("without WebGL the page still works, and says the map can't be shown", async ({
 	page,
 }) => {

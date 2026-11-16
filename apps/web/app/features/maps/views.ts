@@ -101,20 +101,16 @@ export function countryBounds(country: MapCountryFeature): Bounds {
 /** MapLibre draws the whole world square 512 px wide at zoom 0. */
 const WORLD_SQUARE_PX = 512;
 
+/** A box on the flat Equal Earth map, in its metres: left, bottom, right, top. */
+export type FlatBox = [minX: number, minY: number, maxX: number, maxY: number];
+
 /**
- * Where the camera goes to show a box of longitude and latitude in Equal Earth:
- * the centre, and the zoom at which the box just fits the viewport.
- *
- * MapLibre's own fitBounds only looks at the box's corners. In Equal Earth a box
- * is widest at the latitude nearest the equator, not at its corners, so the
- * edges are followed here.
+ * The box a piece of longitude and latitude takes up on the flat map. In Equal
+ * Earth a box is widest at the latitude nearest the equator, not at its corners,
+ * so its edges are followed.
  */
-export function cameraFor(
-	[[west, south], [east, north]]: Bounds,
-	viewport: { width: number; height: number },
-	padding = 24,
-): { center: [lng: number, lat: number]; zoom: number } {
-	let [minX, minY, maxX, maxY] = [Infinity, Infinity, -Infinity, -Infinity];
+export function flatBox([[west, south], [east, north]]: Bounds): FlatBox {
+	const box: FlatBox = [Infinity, Infinity, -Infinity, -Infinity];
 	const STEPS = 16;
 	for (let i = 0; i <= STEPS; i++) {
 		const lng = west + ((east - west) * i) / STEPS;
@@ -126,24 +122,47 @@ export function cameraFor(
 			[east, lat],
 		]) {
 			const [x = 0, y = 0] = equalEarth.forward(point);
-			minX = Math.min(minX, x);
-			maxX = Math.max(maxX, x);
-			minY = Math.min(minY, y);
-			maxY = Math.max(maxY, y);
+			box[0] = Math.min(box[0], x);
+			box[1] = Math.min(box[1], y);
+			box[2] = Math.max(box[2], x);
+			box[3] = Math.max(box[3], y);
 		}
 	}
+	return box;
+}
 
-	const metresPerSquare = equalEarthProjection.tileMatrixSet.extentAtZoom0;
+type Viewport = { width: number; height: number };
+type Camera = { center: [lng: number, lat: number]; zoom: number };
+
+/** Screen pixels per metre of the flat map, at a zoom. */
+function pixelsPerMetre(zoom: number): number {
+	return (
+		(WORLD_SQUARE_PX * 2 ** zoom) /
+		equalEarthProjection.tileMatrixSet.extentAtZoom0
+	);
+}
+
+/**
+ * Where the camera goes to show a box of longitude and latitude in Equal Earth:
+ * the centre, and the zoom at which the box just fits the viewport.
+ * (MapLibre's own fitBounds only looks at the box's corners.)
+ */
+export function cameraFor(
+	bounds: Bounds,
+	viewport: Viewport,
+	padding = 24,
+): Camera {
+	const [minX, minY, maxX, maxY] = flatBox(bounds);
 	const scaleToFit = (pixels: number, metres: number) =>
-		(Math.max(1, pixels - 2 * padding) * metresPerSquare) /
-		(WORLD_SQUARE_PX * metres);
+		Math.max(1, pixels - 2 * padding) / metres;
 	const zoom = Math.log2(
 		Math.min(
 			scaleToFit(viewport.width, maxX - minX),
 			scaleToFit(viewport.height, maxY - minY),
-		),
+		) / pixelsPerMetre(0),
 	);
 
+	const [[west, south], [east, north]] = bounds;
 	const middle = equalEarth.inverse([(minX + maxX) / 2, (minY + maxY) / 2]);
 	return {
 		center: [
@@ -152,4 +171,17 @@ export function cameraFor(
 		],
 		zoom,
 	};
+}
+
+/** The part of the flat map a camera shows. */
+export function viewBox(camera: Camera, viewport: Viewport): FlatBox {
+	const [x = 0, y = 0] = equalEarth.forward(camera.center);
+	const scale = pixelsPerMetre(camera.zoom);
+	const halfWidth = viewport.width / 2 / scale;
+	const halfHeight = viewport.height / 2 / scale;
+	return [x - halfWidth, y - halfHeight, x + halfWidth, y + halfHeight];
+}
+
+export function boxesOverlap(a: FlatBox, b: FlatBox): boolean {
+	return a[0] <= b[2] && a[2] >= b[0] && a[1] <= b[3] && a[3] >= b[1];
 }

@@ -5,9 +5,12 @@ import world from "./geometry/world.json";
 import type { MapCountryFeature, MapFile } from "./map-file";
 import {
 	type Bounds,
+	boxesOverlap,
 	CONTINENT_BOUNDS,
 	cameraFor,
 	countryBounds,
+	flatBox,
+	viewBox,
 	WORLD_BOUNDS,
 } from "./views";
 
@@ -162,5 +165,51 @@ describe("the camera", () => {
 		const europe = cameraFor(CONTINENT_BOUNDS.europe, viewport);
 		const world = cameraFor(WORLD_BOUNDS, viewport);
 		expect(europe.zoom).toBeGreaterThan(world.zoom + 1);
+	});
+});
+
+describe("what is in view", () => {
+	const viewport = { width: 1200, height: 700 };
+	const continentOf = new Map(
+		countries.map((each) => [each.iso, each.continent]),
+	);
+
+	/** The continents with a country on screen: the ones whose detail is worth loading. */
+	function continentsInView(bounds: Bounds): string[] {
+		const view = viewBox(cameraFor(bounds, viewport), viewport);
+		const found = new Set<string>();
+		for (const feature of features) {
+			if (boxesOverlap(flatBox(countryBounds(feature)), view)) {
+				found.add(continentOf.get(feature.properties.iso) as string);
+			}
+		}
+		return [...found].sort();
+	}
+
+	it("sees every continent in the world view", () => {
+		expect(continentsInView(WORLD_BOUNDS)).toHaveLength(6);
+	});
+
+	it("sees only Africa when looking at Kenya", () => {
+		expect(continentsInView(countryBounds(country("KE")))).toEqual(["africa"]);
+	});
+
+	it("sees Europe and its neighbours in the Europe view, but not the Americas or Oceania", () => {
+		const inView = continentsInView(CONTINENT_BOUNDS.europe);
+		expect(inView).toContain("europe");
+		expect(inView).toContain("asia"); // Türkiye
+		expect(inView).toContain("africa"); // the north coast
+		expect(inView).not.toContain("south-america");
+		expect(inView).not.toContain("oceania");
+	});
+
+	it("shows exactly the box the camera was asked to fit, plus the padding", () => {
+		const bounds = CONTINENT_BOUNDS.africa;
+		const view = viewBox(cameraFor(bounds, viewport, 0), viewport);
+		const box = flatBox(bounds);
+		expect(view[0]).toBeLessThanOrEqual(box[0] + 1);
+		expect(view[2]).toBeGreaterThanOrEqual(box[2] - 1);
+		expect(view[1]).toBeLessThanOrEqual(box[1] + 1);
+		expect(view[3]).toBeGreaterThanOrEqual(box[3] - 1);
 	});
 });

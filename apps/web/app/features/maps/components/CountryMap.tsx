@@ -20,6 +20,9 @@ type CountryMapProps = {
 const names = Object.fromEntries(
 	countries.map((country) => [country.iso, country.name]),
 );
+const continents = Object.fromEntries(
+	countries.map((country) => [country.iso, country.continent]),
+);
 
 /**
  * The map (ADR 0010, ADR 0021). It loads MapLibre after the page, so the page
@@ -55,6 +58,7 @@ export function CountryMap({
 				createMapEngine({
 					container: element,
 					names,
+					continents,
 					state: latest.current.state,
 					onOpenCountry: (iso) => latest.current.onOpenCountry(iso),
 				}),

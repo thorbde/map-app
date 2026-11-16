@@ -11,18 +11,30 @@ import type {
 // MapLibre does its heavy work in background workers, from a file of its own.
 // Vite has to be told to bundle that file, or it isn't served.
 import mapLibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
+import type { Continent } from "../countries";
 import { equalEarthProjection } from "./equal-earth";
 import equalEarthWorkerUrl from "./equal-earth.worker?worker&url";
 import worldUrl from "./geometry/world.json?url";
 import type { MapCountryFeature, MapFile } from "./map-file";
 import {
 	type Bounds,
+	boxesOverlap,
 	CONTINENT_BOUNDS,
 	cameraFor,
 	countryBounds,
+	type FlatBox,
+	flatBox,
 	type MapView,
+	viewBox,
 	WORLD_BOUNDS,
 } from "./views";
+
+// The detailed map files, one per continent (ADR 0020). Each is fetched only
+// when the viewer zooms in on that continent.
+const detailUrls = import.meta.glob<string>("./geometry/*.json", {
+	query: "?url",
+	import: "default",
+});
 
 export type MapState = {
 	view: MapView;
@@ -37,6 +49,8 @@ export type MapEngineOptions = {
 	container: HTMLElement;
 	/** English country names by ISO code, for the labels. */
 	names: Readonly<Record<string, string>>;
+	/** Each country's continent, by ISO code. */
+	continents: Readonly<Record<string, Continent>>;
 	state: MapState;
 	onOpenCountry: (iso: string) => void;
 };
@@ -49,8 +63,14 @@ export type MapEngine = {
 /** How far from a marker dot a click still counts, in pixels. */
 const CLICK_REACH = 6;
 
-/** The closest the camera gets. The detailed shapes that justify more arrive in M1 PR 6. */
-const MAX_ZOOM = 6;
+/** The closest the camera gets: about as close as the detailed shapes hold up. */
+const MAX_ZOOM = 7;
+
+/**
+ * From this zoom on, the continents in view get their detailed shapes. The
+ * world view on a laptop is around zoom 1.3, and a continent view around 3.
+ */
+const DETAIL_FROM_ZOOM = 2.2;
 
 // --- Colours come from the design tokens (ADR 0014) -----------------------------
 
@@ -129,6 +149,8 @@ function placesOf(
 	countries: MapCountryFeature[],
 	names: Readonly<Record<string, string>>,
 	state: MapState,
+	/** Countries whose detailed shape is on the map, and whether they still need a dot there. */
+	detailedMarkers: ReadonlyMap<string, boolean>,
 ): { type: "FeatureCollection"; features: Place[] } {
 	const written = new Set(state.written);
 	return {
@@ -138,7 +160,8 @@ function placesOf(
 			properties: {
 				iso: properties.iso,
 				name: names[properties.iso] ?? properties.iso,
-				marker: properties.marker === true,
+				marker:
+					detailedMarkers.get(properties.iso) ?? properties.marker === true,
 				written: written.has(properties.iso),
 				rank: written.has(properties.iso) ? 0 : 1,
 			},
@@ -200,6 +223,25 @@ export async function createMapEngine(
 	const countries = world.features.filter(isCountry);
 	const colours = readColours(container);
 
+	// Every coarse shape is tagged with its continent, so a continent's coarse
+	// shapes can be hidden when its detailed ones are on the map. (Neutral land
+	// is tagged in the file already.)
+	for (const country of countries) {
+		Object.assign(country.properties, {
+			continent: options.continents[country.properties.iso],
+		});
+	}
+	const countryBoxes = countries.map((country) => ({
+		continent: options.continents[country.properties.iso],
+		box: flatBox(countryBounds(country)),
+	}));
+
+	/** The continents whose detailed shapes are on the map. */
+	const detailed = new Set<Continent>();
+	const requested = new Set<Continent>();
+	const detailedMarkers = new Map<string, boolean>();
+	let destroyed = false;
+
 	const stateColour = (otherwise: string): ExpressionSpecification => [
 		"case",
 		isSelected,
@@ -255,7 +297,7 @@ export async function createMapEngine(
 				},
 				places: {
 					type: "geojson",
-					data: placesOf(countries, names, state),
+					data: placesOf(countries, names, state, detailedMarkers),
 					promoteId: "iso",
 				},
 			},
@@ -347,7 +389,13 @@ export async function createMapEngine(
 			{ layers: ["markers"] },
 		);
 		const under = map.queryRenderedFeatures(point, {
-			layers: ["label-selected", "marker-labels", "labels", "land"],
+			layers: [
+				"label-selected",
+				"marker-labels",
+				"labels",
+				...[...detailed].map((continent) => `detail-${continent}-land`),
+				"land",
+			],
 		});
 		const iso = [...near, ...under][0]?.properties.iso;
 		return typeof iso === "string" ? iso : undefined;
@@ -375,12 +423,17 @@ export async function createMapEngine(
 				written: state.written.includes(iso),
 				selected: iso === state.selected,
 			};
-			map.setFeatureState({ source: "countries", id: iso }, featureState);
-			map.setFeatureState({ source: "places", id: iso }, featureState);
+			for (const source of [
+				"countries",
+				"places",
+				...[...detailed].map((continent) => `detail-${continent}`),
+			]) {
+				map.setFeatureState({ source, id: iso }, featureState);
+			}
 		}
 		if (previous) {
 			(map.getSource("places") as GeoJSONSource).setData(
-				placesOf(countries, names, state),
+				placesOf(countries, names, state, detailedMarkers),
 			);
 		}
 		const selected = state.selected ?? "";
@@ -403,6 +456,96 @@ export async function createMapEngine(
 	paint(undefined);
 	await map.once("idle");
 
+	/** Puts a continent's detailed shapes on the map, in place of its coarse ones. */
+	function showDetail(continent: Continent, file: MapFile) {
+		const source = `detail-${continent}`;
+		map.addSource(source, {
+			type: "geojson",
+			data: file as unknown as GeoJSONSourceSpecification["data"],
+			promoteId: "iso",
+		});
+		// Under the marker dots and the labels, like the coarse shapes.
+		map.addLayer(
+			{
+				id: `${source}-land`,
+				type: "fill",
+				source,
+				paint: { "fill-color": stateColour(colours.land) },
+			},
+			"markers",
+		);
+		map.addLayer(
+			{
+				id: `${source}-borders`,
+				type: "line",
+				source,
+				paint: { "line-color": colours.border, "line-width": 1 },
+			},
+			"markers",
+		);
+		detailed.add(continent);
+		for (const { properties } of file.features.filter(isCountry)) {
+			// A country that is a dot on the world map may be big enough here.
+			detailedMarkers.set(properties.iso, properties.marker === true);
+		}
+
+		const coarseOnly: ExpressionSpecification = [
+			"!",
+			["in", ["get", "continent"], ["literal", [...detailed]]],
+		];
+		map.setFilter("land", coarseOnly);
+		map.setFilter("borders", coarseOnly);
+		// Colour the new shapes, and move the dots that are no longer needed.
+		for (const iso of new Set([...state.written, state.selected])) {
+			if (!iso) continue;
+			map.setFeatureState(
+				{ source, id: iso },
+				{
+					written: state.written.includes(iso),
+					selected: iso === state.selected,
+				},
+			);
+		}
+		(map.getSource("places") as GeoJSONSource).setData(
+			placesOf(countries, names, state, detailedMarkers),
+		);
+	}
+
+	/** Fetches the detailed shapes of the continents in view, once zoomed in. */
+	function loadDetailInView() {
+		if (map.getZoom() < DETAIL_FROM_ZOOM) return;
+		const center = map.getCenter();
+		const view: FlatBox = viewBox(
+			{ center: [center.lng, center.lat], zoom: map.getZoom() },
+			{ width: container.clientWidth, height: container.clientHeight },
+		);
+		const inView = new Set(
+			countryBoxes
+				.filter(({ box }) => boxesOverlap(box, view))
+				.map(({ continent }) => continent),
+		);
+		for (const continent of inView) {
+			const load = detailUrls[`./geometry/${continent}.json`];
+			if (!continent || !load || requested.has(continent)) continue;
+			requested.add(continent);
+			load()
+				.then((url) => fetch(url))
+				.then((response) => {
+					if (!response.ok) throw new Error("A map file didn't load");
+					return response.json() as Promise<MapFile>;
+				})
+				.then((file) => {
+					if (!destroyed) showDetail(continent, file);
+				})
+				.catch(() => {
+					// The coarse shapes stay. Try again the next time it is in view.
+					requested.delete(continent);
+				});
+		}
+	}
+	map.on("moveend", loadDetailInView);
+	loadDetailInView();
+
 	return {
 		update(next) {
 			const previous = state;
@@ -420,6 +563,7 @@ export async function createMapEngine(
 			}
 		},
 		destroy() {
+			destroyed = true;
 			map.remove();
 		},
 	};
