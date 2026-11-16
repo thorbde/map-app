@@ -1085,7 +1085,7 @@ export const facts: Record<string, CountryFacts> = {
 	SE: {
 		capitals: ["Stockholm"],
 		languages: ["Swedish"],
-		population: {"count":10609460,"year":2025},
+		population: {"count":10609459,"year":2025},
 		government: "constitutional monarchy",
 		neighbours: ["FI","NO"],
 	},
