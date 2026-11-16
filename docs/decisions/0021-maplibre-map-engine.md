@@ -55,4 +55,12 @@ A throwaway spike (2026-11-16) showed one MapLibre map drawing our own country s
 - **M1 changes shape** (`docs/specs/m1.md`): pan, zoom and pinch come with MapLibre, so the riskiest PR shrinks. New risks take its place: labels in our fonts on a WebGL map, and e2e tests that need WebGL in CI.
 - **`scripts/build-maps.ts` writes shapes as coordinates for MapLibre,** not SVG paths. Its country matching, border choices and tests carry over (M1 PR 3, reworked).
 - **Map colours still come from tokens,** but MapLibre needs colour values, not CSS classes: the map component reads the token values at run time.
-- **Decided in M1 PR 4's plan:** whether to use MapLibre directly or through the `react-map-gl` wrapper, and how labels are drawn.
+
+## What building it found (M1 PR 4, thorbde/map-app#26)
+- **MapLibre is used directly,** not through `react-map-gl`: there is one map, it never unmounts, and Equal Earth needs MapLibre's own API.
+- **Labels are drawn by MapLibre with the page's own Montserrat.** Without a `glyphs` address in the style, MapLibre 6 draws text with the fonts the page has loaded: no font conversion and nothing extra to host. Labels as ordinary page text were tried too; they collide without extra code.
+- **The map engine's limit is 500 KB gzipped** (459 KB measured: MapLibre 296 KB, its worker 148 KB, CSS 10 KB, our own code 4 KB). `pnpm size` checks it, and fails if the engine ever becomes part of a page's first load.
+- **MapLibre is a file of its own,** so its name, and a returning visitor's cached copy, survive our own deploys. Tried.
+- **MapLibre's fit-to-bounds doesn't suit Equal Earth:** it looks only at a box's corners, and an Equal Earth box is widest nearest the equator. The camera is framed with our own maths.
+- **The build strips MapLibre's licence notice from the JavaScript,** so the full text is served at `/licenses/maplibre-gl.txt`.
+- **e2e tests run WebGL in CI** when headless Chromium is told to draw in software.
