@@ -4,6 +4,8 @@
 // longitude and latitude. Longitudes run from -169 to 191, not -180 to 180: the
 // map's edge is the Bering Strait, so no shape is split at the 180° line.
 
+import type { Continent } from "../countries";
+
 /** One polygon: its outer ring first, then any holes. Each ring ends where it starts. */
 type PolygonCoordinates = [lng: number, lat: number][][];
 
@@ -24,12 +26,16 @@ export type MapCountryFeature = {
 /** Land that isn't a country in our list: never clickable, never coloured. */
 export type MapNeutralFeature = {
 	type: "Feature";
-	properties: { neutral: true };
+	/** The continent whose file this land is in: that of the nearest country. */
+	properties: { neutral: true; continent: Continent };
 	geometry: { type: "MultiPolygon"; coordinates: PolygonCoordinates[] };
 };
 
 export type MapFile = {
 	type: "FeatureCollection";
-	/** The countries in alphabetical order of ISO code, then the neutral land. */
+	/**
+	 * The countries in alphabetical order of ISO code, then the neutral land: one
+	 * feature per continent in the world file, and one in a continent's file.
+	 */
 	features: (MapCountryFeature | MapNeutralFeature)[];
 };

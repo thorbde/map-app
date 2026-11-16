@@ -7,7 +7,7 @@ import northAmerica from "./geometry/north-america.json";
 import oceania from "./geometry/oceania.json";
 import southAmerica from "./geometry/south-america.json";
 import world from "./geometry/world.json";
-import type { MapCountryFeature, MapFile } from "./map-file";
+import type { MapCountryFeature, MapFile, MapNeutralFeature } from "./map-file";
 
 // These tests read the committed files that scripts/build-maps.ts generates.
 // JSON imports lose the tuple and literal types, hence the casts.
@@ -38,12 +38,15 @@ function country(file: MapFile, iso: string): MapCountryFeature | undefined {
 	return countriesIn(file).find((feature) => feature.properties.iso === iso);
 }
 
+/** All the neutral land in a file, as one geometry. */
 function neutralOf(file: MapFile): Geometry {
 	const neutral = file.features.filter(
-		(feature) => "neutral" in feature.properties,
+		(feature): feature is MapNeutralFeature => "neutral" in feature.properties,
 	);
-	expect(neutral).toHaveLength(1);
-	return neutral[0]?.geometry as Geometry;
+	return {
+		type: "MultiPolygon",
+		coordinates: neutral.flatMap((feature) => feature.geometry.coordinates),
+	};
 }
 
 function ringContains(ring: Point[], [x, y]: Point): boolean {
@@ -201,6 +204,22 @@ describe("map geometry: the files are well formed", () => {
 					}
 				}
 			}
+		}
+	});
+
+	it("files neutral land by continent: one feature each in the world file, one in a continent's file", () => {
+		const neutralContinents = (file: MapFile) =>
+			file.features
+				.filter(
+					(feature): feature is MapNeutralFeature =>
+						"neutral" in feature.properties,
+				)
+				.map((feature) => feature.properties.continent);
+		expect(neutralContinents(worldFile).sort()).toEqual(
+			Object.keys(continentFiles).sort(),
+		);
+		for (const [continent, file] of Object.entries(continentFiles)) {
+			expect(neutralContinents(file)).toEqual([continent]);
 		}
 	});
 
