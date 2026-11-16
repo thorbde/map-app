@@ -8,6 +8,7 @@ import type { FactOverride } from "./facts-types";
 
 const noGovernment =
 	"Wikidata has no current form of government (November 2026). Filled in by hand.";
+const thor = "Thor's decision, 2026-11-16 (contested on Wikidata, so pinned):";
 const landOnly =
 	"Wikidata counts sea borders, or misses a land border. Only land borders count.";
 
@@ -30,6 +31,12 @@ export const factOverrides: Record<string, FactOverride> = {
 		languages: {
 			value: ["English"],
 			reason: "Wikidata also lists Spanish, which is not official.",
+		},
+	},
+	AL: {
+		neighbours: {
+			value: ["GR", "ME", "MK", "XK"],
+			reason: `${thor} Albania borders Kosovo, not Serbia. Wikidata lists both.`,
 		},
 	},
 	AO: {
@@ -144,6 +151,10 @@ export const factOverrides: Record<string, FactOverride> = {
 		neighbours: { value: ["MY", "PG", "TL"], reason: landOnly },
 	},
 	IL: {
+		capitals: {
+			value: ["Jerusalem"],
+			reason: `${thor} Wikidata's value: Israel's own position.`,
+		},
 		neighbours: { value: ["EG", "JO", "LB", "PS", "SY"], reason: landOnly },
 	},
 	IN: {
@@ -266,6 +277,10 @@ export const factOverrides: Record<string, FactOverride> = {
 		neighbours: { value: [], reason: landOnly },
 	},
 	PS: {
+		capitals: {
+			value: ["East Jerusalem", "Ramallah"],
+			reason: `${thor} Wikidata's value: Palestine's own position.`,
+		},
 		neighbours: { value: ["EG", "IL", "JO"], reason: landOnly },
 	},
 	PW: {
@@ -282,6 +297,12 @@ export const factOverrides: Record<string, FactOverride> = {
 	},
 	QA: {
 		neighbours: { value: ["SA"], reason: landOnly },
+	},
+	RS: {
+		neighbours: {
+			value: ["BA", "BG", "HR", "HU", "ME", "MK", "RO", "XK"],
+			reason: `${thor} Serbia borders Kosovo, not Albania. Wikidata lists both.`,
+		},
 	},
 	RU: {
 		government: { value: "semi-presidential system", reason: noGovernment },
@@ -352,7 +373,22 @@ export const factOverrides: Record<string, FactOverride> = {
 		government: { value: "constitutional monarchy", reason: noGovernment },
 	},
 	TW: {
-		neighbours: { value: [], reason: landOnly },
+		capitals: {
+			value: ["Taipei"],
+			reason: `${thor} Wikidata's value.`,
+		},
+		languages: {
+			value: ["Mandarin Chinese"],
+			reason: `${thor} Wikidata lists 22 national languages. Mandarin is the language of government and schools.`,
+		},
+		government: {
+			value: "semi-presidential system",
+			reason: `${thor} Wikidata's value.`,
+		},
+		neighbours: {
+			value: [],
+			reason: `${thor} An island. Wikidata lists sea borders with Japan and the Philippines.`,
+		},
 	},
 	TZ: {
 		government: { value: "presidential system", reason: noGovernment },
@@ -384,6 +420,24 @@ export const factOverrides: Record<string, FactOverride> = {
 	},
 	WS: {
 		government: { value: "parliamentary republic", reason: noGovernment },
+	},
+	XK: {
+		capitals: {
+			value: ["Pristina"],
+			reason: `${thor} Wikidata's value.`,
+		},
+		languages: {
+			value: ["Albanian", "Serbian"],
+			reason: `${thor} Wikidata's value.`,
+		},
+		government: {
+			value: "parliamentary republic",
+			reason: `${thor} Wikidata's value.`,
+		},
+		neighbours: {
+			value: ["AL", "ME", "MK", "RS"],
+			reason: `${thor} Wikidata's value. Kosovo is its own country here (ADR 0019), so it borders Serbia.`,
+		},
 	},
 	ZW: {
 		government: { value: "presidential system", reason: noGovernment },

@@ -37,7 +37,7 @@ export const facts: Record<string, CountryFacts> = {
 		languages: ["Albanian"],
 		population: {"count":2811655,"year":2023},
 		government: "parliamentary system",
-		neighbours: ["GR","ME","MK","RS","XK"],
+		neighbours: ["GR","ME","MK","XK"],
 	},
 	AM: {
 		capitals: ["Yerevan"],
@@ -1038,7 +1038,7 @@ export const facts: Record<string, CountryFacts> = {
 		languages: ["Serbian"],
 		population: {"count":6605168,"year":2024},
 		government: "parliamentary republic",
-		neighbours: ["AL","BA","BG","HR","HU","ME","MK","RO","XK"],
+		neighbours: ["BA","BG","HR","HU","ME","MK","RO","XK"],
 	},
 	RU: {
 		capitals: ["Moscow"],
@@ -1259,7 +1259,7 @@ export const facts: Record<string, CountryFacts> = {
 	},
 	TW: {
 		capitals: ["Taipei"],
-		languages: ["Amis","Atayal","Bunun","Kanakanavu","Kavalan","Kinmen dialect","Matsu dialect","Paiwan","Puyuma","Rukai","Saaroa","Saisiyat","Sakizaya","Seediq","Standard Taiwanese Mandarin","Taiwanese Hakka","Taiwanese Hokkien","Taiwanese Sign Language","Truku","Tsou","Wuqiu dialect","Yami"],
+		languages: ["Mandarin Chinese"],
 		population: {"count":23262544,"year":2026},
 		government: "semi-presidential system",
 		neighbours: [],
