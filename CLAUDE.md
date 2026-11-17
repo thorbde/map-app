@@ -78,7 +78,7 @@ Three times in one session an agent built its own mechanism for something that a
 - **Database access goes through Drizzle only,** with app-generated IDs and `db.batch()` for atomic writes (ADR 0006).
 - **Don't import Cloudflare-specific APIs outside `app/server/platform/`.** The app must stay portable to Node.
 - **YAGNI.** Build what the spec asks for. No speculative abstractions, no "while I'm here" refactors outside the PR's scope.
-- **Contested territory, recognition and international relations never hold the work up** (Thor, 2026-11-17). Prefer inclusion over exclusion, record every such choice as high risk in ADR 0019 (the country list) or ADR 0020 (the map; it arrives with thorbde/map-app#24), and carry on without asking. Thor revisits them all when the MVP is done.
+- **Contested territory, recognition and international relations never hold the work up** (Thor, 2026-11-17). Prefer inclusion over exclusion, record every such choice as high risk in ADR 0019 (the country list) or ADR 0020 (the map), and carry on without asking. Thor revisits them all when the MVP is done.
 - **Never reinvent what already exists** (Thor, 2026-11-17). Use what our data sources, our libraries and established products already do. It is more reliable and easier to maintain, and a little extra load time is an acceptable price (ADR 0021). The four rules under "Before you build" below are how this is checked.
 
 ## Conventions

@@ -19,7 +19,7 @@ A throwaway spike (2026-11-16) showed one MapLibre map drawing our own country s
 
 ## Decision
 - **MapLibre GL JS draws the map.** Version 6.18.0 today, pinned exactly.
-- **Our own country shapes only: no tile service, no MapTiler, no API key.** The shapes still come from `scripts/build-maps.ts` (Natural Earth; border choices in ADR 0020, which arrives with thorbde/map-app#24, M1 PR 3). Nothing about a visitor leaves the site, and the list of external services in `ARCHITECTURE.md` stays as it is. Tiles can be added later, as a decision of their own, when a feature needs them.
+- **Our own country shapes only: no tile service, no MapTiler, no API key.** The shapes still come from `scripts/build-maps.ts` (Natural Earth; border choices in ADR 0020). Nothing about a visitor leaves the site, and the list of external services in `ARCHITECTURE.md` stays as it is. Tiles can be added later, as a decision of their own, when a feature needs them.
 - **Projections:**
   - **Equal Earth is the default for now.** Thor hasn't decided between Equal Earth and Mercator as the final default.
   - Mercator and the globe are options. The user-facing setting arrives with accounts and settings, not in M1.
