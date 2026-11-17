@@ -142,7 +142,7 @@ Not borders, but recorded, because they decide what a viewer reads first.
 - **Every map takes positions that some readers will object to,** and some countries regulate how their borders may be shown (India and China among them). This is the same exposure as ADR 0019, and it grows when sign-up opens.
 - **A change in the source data can't move a border unnoticed.** The source is pinned by version and checksum, the tests pin every row of the tables above to a place on the ground, and the build stops if a shape or a code the script relies on is no longer there.
 - **`pnpm check` needs the source files:** about 30 MB, downloaded once into `apps/web/.cache/`. With no cache and no network, the check fails. Behind a proxy, run it with `NODE_USE_ENV_PROXY=1`.
-- **The edge of the map relies on a mapshaper command that isn't in its documentation** (ADR 0013).
+- **The edge of the map relies on a mapshaper command, `-rotate`, that isn't in its documentation.** A known soft spot, accepted by Thor on 2026-11-17. The fallback is `d3-geo` for that one step (ADR 0013).
 - **Every visit downloads about 2 MB of map data,** once (it is cached), on top of the map engine. The map takes a couple of seconds to appear on a normal connection, and longer on a slow one. Phones are expected to use an app with the map files bundled in (Thor, 2026-11-17).
 - **The repo carries a 6.6 MB generated file,** which a change to the build script rewrites.
 - **City-level zoom needs more than this.** Streets and city detail need map tiles, which is a separate decision (ADR 0021).

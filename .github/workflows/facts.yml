@@ -1,7 +1,7 @@
 # The monthly refresh of the country facts from Wikidata. See docs/decisions/0012.
 #
 # No AI in the loop: a plain script, then `git` and `gh`. It never merges anything.
-# - The script writes facts.ts only when all 197 countries have a complete entry.
+# - The script writes facts.ts only when every country in the list has a complete entry.
 #   A missing, malformed or wildly different value keeps the one we have, and the
 #   pull request lists it under "Kept the old value, needs a look".
 # - If Wikidata is down the script fails, no pull request is opened, and GitHub

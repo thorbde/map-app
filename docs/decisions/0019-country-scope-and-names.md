@@ -55,7 +55,7 @@ Thor asked which other places have the same status as Western Sahara. None is qu
 | **Abkhazia, South Ossetia** | Declared independence from Georgia; recognised by Russia and a few other UN members | Part of Georgia |
 | **Somaliland** | Declared independence from Somalia in 1991; little or no recognition by UN members | Part of Somalia |
 | **Transnistria** | Declared independence from Moldova; recognised by no UN member | Part of Moldova |
-| **Cook Islands, Niue** | Self-governing states in free association with New Zealand; not UN members, not disputed, with ISO codes and diplomatic relations of their own | Neutral land |
+| **Cook Islands, Niue** | Self-governing states in free association with New Zealand; not UN members, not disputed, with ISO codes and diplomatic relations of their own | Countries in the list since, each with its own shape |
 
 **The Cook Islands and Niue have since been added** (see "Decision"). The other five have not, and under the standing rule they would be: what stops it today is that our sources have no ISO code or CLDR name for them, and no shape for three of them. Natural Earth's disputed-areas layer does have shapes for all five (found 2026-11-17), so this is to be looked at again when the map data is rebuilt on Natural Earth's own files (`docs/specs/m1.md`).
 
