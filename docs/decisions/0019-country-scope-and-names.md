@@ -13,7 +13,7 @@ The spec also asked for "common English short names" without naming a source, wh
 ## Thor's standing rule (2026-11-17)
 Questions of recognition, contested territory and international relations must not hold the work up.
 - **Prefer inclusion over exclusion.**
-- **Record every such decision here, or in ADR 0020 for the map, as high risk.**
+- **Record every such decision here, or in ADR 0020 for the map, as high risk.** ADR 0020 arrives with thorbde/map-app#24 (M1 PR 3).
 - **Don't stop to ask Thor about each one.** He revisits them all when the MVP is done.
 
 ## Decision
@@ -22,7 +22,7 @@ Questions of recognition, contested territory and international relations must n
   - It has an official ISO code (`EH`), and CLDR's name for it is "Western Sahara".
   - Its region is North Africa. The African Union, whose regions we use for Africa, counts it (as the Sahrawi Arab Democratic Republic) among its members.
   - Its facts come from Wikidata's entry for the Sahrawi Arab Democratic Republic, pinned in the overrides file and **waiting for Thor's review**: two capitals (Laayoune, which the republic claims and Morocco controls, and Tifariti, its temporary capital), Arabic and Spanish, "republic". Its borders with Morocco, Algeria and Mauritania are added by hand on both sides.
-  - On the map it is its own shape, cut from Morocco's along the parallel 27°40′ N (ADR 0020).
+  - On the map it is to be its own shape. The cut from Morocco's, along the parallel 27°40′ N, is made in thorbde/map-app#24 and recorded there in ADR 0020; it is not in this change.
 - **The Cook Islands (CK) and Niue (NU) are in the list too:** 200 countries. Added by the agent on 2026-11-17 under the standing rule above. Both are self-governing states in free association with New Zealand: not UN members, not disputed, with ISO codes, CLDR names and diplomatic relations of their own. Their region is Polynesia, as in UN M49. Wikidata has no form of government for either; "constitutional monarchy" is filled in by hand.
 - **Kosovo and Taiwan get regions by convention,** because UN M49 lists neither: Kosovo in Southern Europe, Taiwan in Eastern Asia.
 - **Names are Unicode CLDR's English names,** copied as they are, including "Türkiye", "Congo - Kinshasa", "Congo - Brazzaville" and "&" in names like "Bosnia & Herzegovina". CLDR is the list browsers and operating systems use. Where the spec and CLDR differ and the spec gives no reason, CLDR wins.
@@ -49,7 +49,7 @@ Questions of recognition, contested territory and international relations must n
 ## Others looked at (2026-11-17)
 Thor asked which other places have the same status as Western Sahara. None is quite alike: Western Sahara has an official ISO code, membership of the African Union, and recognition by dozens of UN members. **The facts below are from the agent's general knowledge and should be checked before any of them is acted on.**
 
-| Place | Status | On the map today (ADR 0020) |
+| Place | Status | On the map in thorbde/map-app#24 (ADR 0020) |
 |---|---|---|
 | **Northern Cyprus** | Declared independence in 1983; recognised only by Türkiye | Neutral land |
 | **Abkhazia, South Ossetia** | Declared independence from Georgia; recognised by Russia and a few other UN members | Part of Georgia |
