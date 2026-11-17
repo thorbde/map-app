@@ -37,6 +37,7 @@ export const wikidataIds: Record<string, string> = {
 	CG: "Q971",
 	CH: "Q39",
 	CI: "Q1008",
+	CK: "Q26988",
 	CL: "Q298",
 	CM: "Q1009",
 	CN: "Q148",
@@ -55,6 +56,9 @@ export const wikidataIds: Record<string, string> = {
 	EC: "Q736",
 	EE: "Q191",
 	EG: "Q79",
+	// The Sahrawi Arab Democratic Republic. Wikidata's entry for the territory
+	// (Q6250) has no capital and no government (ADR 0019).
+	EH: "Q40362",
 	ER: "Q986",
 	ES: "Q29",
 	ET: "Q115",
@@ -136,6 +140,7 @@ export const wikidataIds: Record<string, string> = {
 	NO: "Q20",
 	NP: "Q837",
 	NR: "Q697",
+	NU: "Q34020",
 	NZ: "Q664",
 	OM: "Q842",
 	PA: "Q804",

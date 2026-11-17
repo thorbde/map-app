@@ -242,6 +242,13 @@ export const facts: Record<string, CountryFacts> = {
 		government: "republic",
 		neighbours: ["BF","GH","GN","LR","ML"],
 	},
+	CK: {
+		capitals: ["Avarua"],
+		languages: ["Cook Islands Maori","English"],
+		population: {"count":14222,"year":2023},
+		government: "constitutional monarchy",
+		neighbours: [],
+	},
 	CL: {
 		capitals: ["Santiago"],
 		languages: ["Spanish"],
@@ -345,7 +352,7 @@ export const facts: Record<string, CountryFacts> = {
 		languages: ["Arabic","Standard Algerian Berber"],
 		population: {"count":46164219,"year":2023},
 		government: "semi-presidential system",
-		neighbours: ["LY","MA","ML","MR","NE","TN"],
+		neighbours: ["EH","LY","MA","ML","MR","NE","TN"],
 	},
 	EC: {
 		capitals: ["Quito"],
@@ -367,6 +374,13 @@ export const facts: Record<string, CountryFacts> = {
 		population: {"count":114535772,"year":2023},
 		government: "republic",
 		neighbours: ["IL","LY","PS","SD"],
+	},
+	EH: {
+		capitals: ["Laayoune","Tifariti"],
+		languages: ["Arabic","Spanish"],
+		population: {"count":607292,"year":2021},
+		government: "republic",
+		neighbours: ["DZ","MA","MR"],
 	},
 	ER: {
 		capitals: ["Asmara"],
@@ -758,7 +772,7 @@ export const facts: Record<string, CountryFacts> = {
 		languages: ["Arabic","Standard Moroccan Tamazight"],
 		population: {"count":36828330,"year":2024},
 		government: "constitutional monarchy",
-		neighbours: ["DZ","ES"],
+		neighbours: ["DZ","EH","ES"],
 	},
 	MC: {
 		capitals: ["Monaco"],
@@ -828,7 +842,7 @@ export const facts: Record<string, CountryFacts> = {
 		languages: ["Arabic","French"],
 		population: {"count":4736139,"year":2022},
 		government: "presidential system",
-		neighbours: ["DZ","ML","SN"],
+		neighbours: ["DZ","EH","ML","SN"],
 	},
 	MT: {
 		capitals: ["Valletta"],
@@ -933,6 +947,13 @@ export const facts: Record<string, CountryFacts> = {
 		languages: ["English","Nauruan"],
 		population: {"count":13650,"year":2017},
 		government: "parliamentary republic",
+		neighbours: [],
+	},
+	NU: {
+		capitals: ["Alofi"],
+		languages: ["English","Niuean"],
+		population: {"count":1821,"year":2025},
+		government: "constitutional monarchy",
 		neighbours: [],
 	},
 	NZ: {

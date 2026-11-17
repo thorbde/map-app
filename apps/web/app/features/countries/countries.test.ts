@@ -13,8 +13,8 @@ function sorted(isos: string): string[] {
 }
 
 describe("countries", () => {
-	it("has 197 countries", () => {
-		expect(countries).toHaveLength(197);
+	it("has 200 countries", () => {
+		expect(countries).toHaveLength(200);
 	});
 
 	it("has the right number of countries in each continent", () => {
@@ -31,12 +31,12 @@ describe("countries", () => {
 		}
 
 		expect(counts).toEqual({
-			africa: 54,
+			africa: 55,
 			europe: 45,
 			asia: 49,
 			"north-america": 23,
 			"south-america": 12,
-			oceania: 14,
+			oceania: 16,
 		});
 	});
 
@@ -64,7 +64,7 @@ describe("countries", () => {
 
 	// The African Union's regions, exactly as docs/specs/mvp.md §1 lists them.
 	it("uses the African Union's regions for Africa", () => {
-		expect(isosIn("north-africa")).toEqual(sorted("DZ EG LY MR MA TN"));
+		expect(isosIn("north-africa")).toEqual(sorted("DZ EG EH LY MR MA TN"));
 		expect(isosIn("west-africa")).toEqual(
 			sorted("BJ BF CV CI GM GH GN GW LR ML NE NG SN SL TG"),
 		);
