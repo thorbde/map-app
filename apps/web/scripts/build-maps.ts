@@ -92,11 +92,16 @@ const NAMED_FEATURES: Record<string, string> = {
 };
 
 /**
- * Western Sahara. The source data draws everything west of the sand wall as
- * Morocco, and only the strip east of it as a separate shape. We draw the whole
- * territory as neutral land: Morocco ends at its border, the parallel 27°40′ N.
+ * Western Sahara, a country in our list (ADR 0019). The source data draws
+ * everything west of the sand wall as Morocco, and only the strip east of it as
+ * a separate shape. We draw the whole territory as Western Sahara: Morocco ends
+ * at its border, the parallel 27°40′ N.
  */
-const WESTERN_SAHARA = { feature: "W. Sahara", northernBorder: 27 + 40 / 60 };
+const WESTERN_SAHARA = {
+	iso: "EH",
+	feature: "W. Sahara",
+	northernBorder: 27 + 40 / 60,
+};
 
 /**
  * Label points that can't be worked out from the shape.
@@ -420,9 +425,12 @@ function shapesOf(land: Land, decimals: number): Shapes {
 		let polygons = mergedAndFlat(land.topology, arcs, decimals);
 		if (iso === "MA") {
 			// Morocco was joined with Western Sahara in sortLand(). Cut it at its
-			// border: the north is Morocco, the south is neutral.
+			// border: the north is Morocco, the south is Western Sahara.
 			const border = WESTERN_SAHARA.northernBorder;
-			neutral.push(...clipPolygons(polygons, border, false, decimals));
+			byIso.set(
+				WESTERN_SAHARA.iso,
+				clipPolygons(polygons, border, false, decimals),
+			);
 			polygons = clipPolygons(polygons, border, true, decimals);
 		}
 		byIso.set(iso, polygons);
