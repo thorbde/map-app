@@ -147,6 +147,12 @@ Recorded here so the sizes are known before code depends on them (ADR 0006):
 
 Their effect on the Worker bundle is measured when they're added in M2.
 
+**The map engine** (ADR 0021), added in M1 PR 4:
+
+| Package | Version today | Where it runs | Size |
+|---|---|---|---|
+| `maplibre-gl` | 6.18.0 | The browser, loaded lazily after the page | About 296 KB gzipped, plus a worker file of about 150 KB and about 10 KB of CSS (measured on the draft thorbde/map-app#26, 2026-11-17) |
+
 ## Alternatives considered
 - **React Router 7.18 (the last v7):** still maintained, but a dead end for a new project: we'd migrate to v8 within months.
 - **ESLint + Prettier instead of Biome:** more plugins, but two tools, slower, and more configuration. ADR 0001 already chose Biome.
@@ -155,6 +161,7 @@ Their effect on the Worker bundle is measured when they're added in M2.
 
 ## Consequences
 - **The JavaScript budget is 150 KB gzipped on reading pages** (decided by Thor), replacing "under 100 KB". React and React Router alone are about 114 KB, so at most **~40 KB is ours**: our code, the map shell, pan and zoom, and any Base UI components a reading page uses. The editor's CodeMirror is outside the budget, since it loads only on `/write/*`.
-- **Initial load stays fast** because pages are server-rendered: the text and the map's SVG are visible before any JavaScript runs, and the JavaScript only makes them interactive. A size check in CI (added in M0 PR 2) will fail any PR that goes over the budget, and M5's Lighthouse CI also measures load and interactivity on a mid-range phone profile.
+- **The map engine is outside the first-load budget too** (ADR 0021, decided by Thor on 2026-11-16). MapLibre is about 296 KB gzipped, twice the whole budget, so it loads lazily after the page and gets a limit of its own: 500 KB, proposed in M1 PR 4 (thorbde/map-app#26). The "~40 KB is ours" figure no longer includes the map engine; it still covers our own code on reading pages.
+- **Initial load stays fast** because pages are server-rendered: the page's text and the panel are visible before any JavaScript runs, and the JavaScript only makes them interactive. The map appears once its engine has loaded (ADR 0021). A size check in CI (added in M0 PR 2) will fail any PR that goes over the budget, and M5's Lighthouse CI also measures load and interactivity on a mid-range phone profile.
 - **Upgrades are deliberate:** exact versions mean nothing changes until someone bumps it, ideally one tool per PR.
 - **Biome formats Markdown too** since 2.6; it's switched off for `*.md` in `biome.json`, so the docs keep their hand-written formatting.
