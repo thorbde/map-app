@@ -55,6 +55,9 @@ export const wikidataIds: Record<string, string> = {
 	EC: "Q736",
 	EE: "Q191",
 	EG: "Q79",
+	// The Sahrawi Arab Democratic Republic. Wikidata's entry for the territory
+	// (Q6250) has no capital and no government (ADR 0019).
+	EH: "Q40362",
 	ER: "Q986",
 	ES: "Q29",
 	ET: "Q115",

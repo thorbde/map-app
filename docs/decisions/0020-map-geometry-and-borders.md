@@ -15,7 +15,7 @@ Thor's instruction (2026-11-16): **contested borders, areas and data are to be t
 ## Decision
 
 ### The rule
-**Draw what the source data has, except for the choices in the first table.** Everything that isn't one of the 197 countries (ADR 0019) is **neutral land:** not clickable, and never coloured.
+**Draw what the source data has, except for the choices in the first table.** Everything that isn't one of the countries in the list (ADR 0019) is **neutral land:** not clickable, and never coloured.
 
 **How to change a border:** edit the settings at the top of `scripts/build-maps.ts`, update the table here, and add or change the matching test in `app/features/maps/geometry.test.ts`. Every row below has a test that checks a real place on the ground.
 
@@ -27,7 +27,7 @@ Thor's instruction (2026-11-16): **contested borders, areas and data are to be t
 | **Taiwan** | Its own shape | Its own country, `TW` | Thor, 2026-11-16 (ADR 0019) |
 | **Somaliland** | A shape without an ISO code | Part of Somalia | The spec (mvp.md §2) |
 | **Crimea** | Part of Russia | Part of Ukraine, the UN General Assembly's position | Thor, 2026-11-16 |
-| **Western Sahara** | Everything west of the sand wall is part of Morocco; only the strip east of it is a separate shape | All of it neutral. Morocco ends at its border, the parallel 27°40′ N | Thor, 2026-11-16, as the spec expects |
+| **Western Sahara** | Everything west of the sand wall is part of Morocco; only the strip east of it is a separate shape | Its own country, `EH`, in one piece. Morocco ends at its border, the parallel 27°40′ N | Thor: separate from Morocco on 2026-11-16, a country in the list on 2026-11-17 (ADR 0019) |
 | **Åland** | A separate shape | Part of Finland | Thor, 2026-11-16 |
 | **France's overseas departments** (French Guiana, Guadeloupe, Martinique, Réunion, Mayotte) | Part of France's shape | Neutral | Thor, 2026-11-16. The spec asks for French Guiana; the other four are the same kind of place |
 | **The Caribbean Netherlands** (Bonaire, Sint Eustatius, Saba) | Part of the Netherlands' shape | Neutral | Proposed by the agent by analogy with France's; confirmed by Thor, 2026-11-16 |
@@ -68,7 +68,7 @@ Not borders, but hand-set, so recorded: a country's label point is the middle of
 ### Geometry
 - **The files are GeoJSON that MapLibre draws as it is** (ADR 0021): longitude and latitude, with no projection applied. The projection (Equal Earth for now) belongs to the map component.
 - **Seven files,** generated and **committed** in `app/features/maps/geometry/`:
-  - `world.json`: all 197 countries, coarse (from the 110m data, coordinates to 0.1°). Every visit loads it.
+  - `world.json`: every country in the list, coarse (from the 110m data, coordinates to 0.1°). Every visit loads it.
   - one file per continent: only that continent's countries (M49), detailed (from the 50m data, simplified, coordinates to 0.01°). Loaded when zooming in.
 - **Every country is in exactly one continent file.** All detailed files are cut from one set of shapes simplified once, so a border is identical in the files on both sides of it. Russia is whole in the Europe file.
 - **`pnpm maps:check`,** part of `pnpm check`, fails when the committed files differ from a fresh build. A change to a border therefore always shows up as a diff in a PR.
