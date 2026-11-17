@@ -27,7 +27,7 @@ The MVP spec had writers fill in a facts form for every essay: capital, language
 - **Countries are looked up by Wikidata item,** from a hand-checked list (`scripts/wikidata-ids.ts`), not by ISO code. Looking up by code timed out, and the code NL sits on the Kingdom of the Netherlands.
 - **Wikidata needed more correcting than expected:** about 100 overrides in the first version, mostly sea borders listed as borders (about 45 countries) and missing forms of government (41). Each override carries its reason. If the neighbour data stays this poor, deriving neighbours from the map geometry is the likely fix, as its own decision.
 - **How the monthly job stays non-breaking:**
-  - the script writes `facts.ts` only when all 197 countries have a complete entry, so the file is never half-written;
+  - the script writes `facts.ts` only when every country in the list has a complete entry, so the file is never half-written;
   - a missing, malformed or wildly different value (a population change over a quarter, an older figure, several neighbours gone at once) **keeps the value we have**, and the pull request lists it under "Kept the old value, needs a look";
   - borders are settled as pairs, so keeping one country's old list can't leave a border stated from one side;
   - if Wikidata doesn't answer, the run fails and opens nothing;

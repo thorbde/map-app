@@ -1,5 +1,6 @@
 // The countries in scope (docs/specs/mvp.md §1, ADR 0019): the 193 UN members,
-// Palestine and the Vatican (the UN's two observer states), and Kosovo and Taiwan.
+// Palestine and the Vatican (the UN's two observer states), and Kosovo, Taiwan and
+// Western Sahara.
 //
 // - Names are Unicode CLDR's English names (CLDR 48.0), copied as they are.
 //   Palestine and Myanmar use CLDR's short form.
@@ -61,6 +62,7 @@ const rows: readonly Omit<Country, "continent">[] = [
 	{ iso: "MR", name: "Mauritania", region: "north-africa" },
 	{ iso: "MA", name: "Morocco", region: "north-africa" },
 	{ iso: "TN", name: "Tunisia", region: "north-africa" },
+	{ iso: "EH", name: "Western Sahara", region: "north-africa" },
 	// West Africa
 	{ iso: "BJ", name: "Benin", region: "west-africa" },
 	{ iso: "BF", name: "Burkina Faso", region: "west-africa" },

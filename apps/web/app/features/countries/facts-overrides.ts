@@ -9,6 +9,14 @@ import type { FactOverride } from "./facts-types";
 const noGovernment =
 	"Wikidata has no current form of government (November 2026). Filled in by hand.";
 const thor = "Thor's decision, 2026-11-16 (contested on Wikidata, so pinned):";
+// Western Sahara is in the list by Thor's decision of 2026-11-17 (ADR 0019). Most of
+// it is controlled by Morocco, and its facts are contested. The values below were
+// proposed by the agent and are waiting for Thor's review: change them with him.
+const westernSahara =
+	"Western Sahara is in the list (Thor, 2026-11-17). Wikidata doesn't list this border.";
+const westernSaharaPinned =
+	"Wikidata's value for the Sahrawi Arab Democratic Republic (Q40362), pinned because it is contested. For Thor's review:";
+
 const landOnly =
 	"Wikidata counts sea borders, or misses a land border. Only land borders count.";
 
@@ -111,6 +119,27 @@ export const factOverrides: Record<string, FactOverride> = {
 	},
 	DO: {
 		government: { value: "presidential system", reason: noGovernment },
+	},
+	DZ: {
+		neighbours: {
+			value: ["EH", "LY", "MA", "ML", "MR", "NE", "TN"],
+			reason: westernSahara,
+		},
+	},
+	EH: {
+		capitals: {
+			value: ["Laayoune", "Tifariti"],
+			reason: `${westernSaharaPinned} Laayoune is the capital the republic claims, and is under Moroccan control; Tifariti is its temporary capital. The alternatives are either one alone.`,
+		},
+		languages: {
+			value: ["Arabic", "Spanish"],
+			reason: `${westernSaharaPinned} the republic's official languages.`,
+		},
+		government: {
+			value: "republic",
+			reason: `${westernSaharaPinned} the republic governs from exile and controls the part east of the sand wall.`,
+		},
+		neighbours: { value: ["DZ", "MA", "MR"], reason: westernSahara },
 	},
 	ER: {
 		government: { value: "one-party state", reason: noGovernment },
@@ -215,6 +244,9 @@ export const factOverrides: Record<string, FactOverride> = {
 	LK: {
 		neighbours: { value: [], reason: landOnly },
 	},
+	MA: {
+		neighbours: { value: ["DZ", "EH", "ES"], reason: westernSahara },
+	},
 	MG: {
 		neighbours: { value: [], reason: landOnly },
 	},
@@ -223,6 +255,9 @@ export const factOverrides: Record<string, FactOverride> = {
 	},
 	ML: {
 		government: { value: "military junta", reason: noGovernment },
+	},
+	MR: {
+		neighbours: { value: ["DZ", "EH", "ML", "SN"], reason: westernSahara },
 	},
 	MT: {
 		neighbours: { value: [], reason: landOnly },
