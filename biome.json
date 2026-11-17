@@ -14,7 +14,8 @@
 			"!apps/web/app/features/countries/facts.ts",
 			"!apps/web/scripts/fixtures",
 			"!packages/icons/generated",
-			"!packages/icons/svg"
+			"!packages/icons/svg",
+			"!apps/web/app/features/maps/geometry"
 		]
 	},
 	"formatter": {

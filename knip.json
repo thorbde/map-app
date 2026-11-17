@@ -5,7 +5,6 @@
 		".": {
 			"entry": ["tests/boundaries/*.test.mjs", "tests/scripts/*.test.mjs"]
 		},
-		"apps/web": {},
 		"packages/tokens": {
 			"entry": ["terrazzo.config.mjs"]
 		},

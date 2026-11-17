@@ -137,6 +137,24 @@ In `packages/ui`, as dependencies:
 | `@fontsource/montserrat` | 5.3.0 | The interface font, self-hosted | About 19 KB per weight downloaded (Latin, WOFF2); we use two |
 | `@fontsource/source-serif-4` | 5.3.1 | The essay font, self-hosted | About 20 KB per face downloaded; we use three |
 
+### Added in M1 PR 3 (map geometry)
+
+In `apps/web`, as a devDependency. It runs only in `scripts/build-maps.ts`; nothing from it reaches the Worker or the browser (the boundary rule against devDependencies in shipped code checks that). The generated map file is 2.0 MB gzipped (ADR 0020).
+
+| Package | Version | Why | Unpacked size |
+|---|---|---|---|
+| `mapshaper` | 0.8.4 | The standard tool for preparing map data. Cuts one shape out of another, merges shapes, cuts them at the map's edge, simplifies while keeping shared borders identical, and rounds coordinates | 18 MB, and 171 MB installed with the 33 packages it depends on. MPL-2.0 |
+
+- **The map data is not a package.** The script downloads Natural Earth 5.1.2's own files from its GitHub repository, pinned by version and by each file's SHA-256, into `apps/web/.cache/` (not committed). ADR 0020 says which files, what they provide and what they leave out.
+- **What mapshaper provides:** every geometry step the script needs, as about ten commands.
+- **What it leaves out:**
+  - **Type definitions.** `scripts/mapshaper.d.ts` declares the one function we call.
+  - **A documented way to move the map's edge that works.** Its documented commands lose the holes in countries when used for this. The script uses `-rotate`, which is in mapshaper but not in its documentation, and only works before simplifying. The tests would catch a change: every country present, Lesotho and San Marino still holes, no ring jumping across the map. **A known soft spot, which Thor accepted on 2026-11-17.** The fallback, if a mapshaper upgrade breaks it: bring back `d3-geo` (255 KB) for that one step, as the first version did.
+- **It replaced** `world-atlas` 2.0.2 (Natural Earth 4.1.0, from 2018, with everything but the names and numeric codes stripped out), `topojson-client`, `topojson-simplify`, `d3-geo` and their type packages, and about 400 lines of our own geometry code. Thor's decision of 2026-11-17: use Natural Earth's own files, and what the standard tools already do.
+- **Alternatives:**
+  - **Keep `topojson` and `d3-geo`, and only swap the data:** small packages, but they can't cut one shape out of another, which is what moving Crimea and Western Sahara needs. That part would stay our own code.
+  - **Commit the source files instead of downloading them:** no network needed for `pnpm check`, but 30 MB in the repo.
+
 ### Planned, not yet installed
 Recorded here so the sizes are known before code depends on them (ADR 0006):
 

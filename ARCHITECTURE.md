@@ -72,6 +72,8 @@ app/
     profiles/             profile, settings, visibility, export, delete account
     essays/               drafts, publishing, versions, rendering, editor
     maps/                 map components, geometry loading, written-state colouring
+      geometry/world.json the generated map file: every country, at one level of detail (committed; checked by pnpm maps:check, ADR 0020)
+      map-file.ts         the format of that file
     countries/            static country data, region lists and reference facts (no DB, ADR 0012)
   server/
     access.server.ts      canViewProfile / canViewEssay, see ADR 0003
@@ -84,7 +86,7 @@ app/
       index.server.ts     the ONLY file other code may import from platform/
   lib/                    Shared pure utilities (errors, dates, zod helpers). No feature logic.
 scripts/
-  build-maps.ts           Natural Earth → simplified static geometry
+  build-maps.ts           Natural Earth's own files → mapshaper → country shapes and label fields as GeoJSON in features/maps/geometry/ (border choices: ADR 0020)
   build-facts.ts          Wikidata + overrides → features/countries/facts.ts (monthly scheduled PR, reviewed before merge)
   facts-rules.ts          the pure rules behind it: picking values, validation, keeping the old value when Wikidata's is unusable
   wikidata-ids.ts         the Wikidata item for each country
@@ -166,7 +168,7 @@ D1 has no interactive transactions. "Atomic" below means one `db.batch([...])`: 
 - **Map shell (ADR 0010):**
   1. the shell's layout route renders `<CountryMap>` once and keeps it mounted; it loads MapLibre lazily and draws our own country shapes (ADR 0021)
   2. each child route's loader returns the panel's data plus the map view (world, continent or country) and, through `access.server.ts`, the list of written ISO codes the viewer may see
-  3. the map geometry is one static hashed asset, the whole world in detail (ADR 0020, which arrives with thorbde/map-app#24, M1 PR 3); written and selected countries are coloured through MapLibre, with colours read from the tokens
+  3. the map geometry is one static hashed asset, the whole world in detail (ADR 0020); written and selected countries are coloured through MapLibre, with colours read from the tokens
   4. clicking a country navigates: for the owner, to the editor or the essay; for visitors, only written countries respond. The panel lists the same countries as real links
 
 ## Environments
