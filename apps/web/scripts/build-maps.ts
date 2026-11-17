@@ -1,7 +1,8 @@
 // Builds the map geometry (docs/specs/mvp.md §2, ADR 0020, ADR 0021):
 // Natural Earth (world-atlas) → simplified country shapes per ISO code, as
-// GeoJSON that MapLibre draws. Writes a coarse world file and a detailed file
-// per continent to app/features/maps/geometry/.
+// GeoJSON that MapLibre draws. Writes three levels of detail to
+// app/features/maps/geometry/: a coarse world file, a detailed file per
+// continent, and a fine file per country.
 //
 // Run with `pnpm build:maps`, and commit the result. `pnpm maps:check` fails
 // when the committed files differ from a fresh build.
@@ -9,7 +10,7 @@
 // EVERY BORDER CHOICE made here is recorded in ADR 0020, a high-risk decision.
 // Change the two together, and add a test for the choice in geometry.test.ts.
 
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -41,8 +42,8 @@ import { isoNumeric } from "./iso-numeric.ts";
  */
 const CENTRE_LONGITUDE = 11;
 
-/** Each map file must stay under this, gzipped (docs/specs/m1.md). */
-const BUDGET_BYTES = { world: 60_000, continent: 100_000 };
+/** Each map file must stay under this, gzipped (docs/specs/m1.md, ADR 0020). */
+const BUDGET_BYTES = { world: 60_000, continent: 100_000, country: 250_000 };
 
 /**
  * A country gets a marker dot when its largest piece of land is smaller than
@@ -50,15 +51,15 @@ const BUDGET_BYTES = { world: 60_000, continent: 100_000 };
  */
 const MARKER_BELOW_KM2 = { world: 15_000, continent: 5_000 };
 
-/** Decimals kept in coordinates: 0.1° is about 11 km, 0.01° about 1 km. */
-const DECIMALS = { world: 1, continent: 2 };
+/** Decimals kept in coordinates: 0.1° is about 11 km, 0.01° about 1 km, 0.001° about 100 m. */
+const DECIMALS = { world: 1, continent: 2, country: 3 };
 
 /**
  * How much detail the continent files keep: points that change a shape by less
  * than this area, in square kilometres, are removed. One value for all of them,
  * so a border comes out identical in the files on both sides of it.
  */
-const SIMPLIFY_KM2 = 6;
+const SIMPLIFY_KM2 = { continent: 6, country: 0.3 };
 
 type LonLat = [lng: number, lat: number];
 type LonLatBox = [west: number, south: number, east: number, north: number];
@@ -84,11 +85,15 @@ const EUROPEAN_PART: Record<string, LonLatBox> = {
  * - Kosovo is a country in our list (ADR 0019).
  * - Somaliland is drawn as Somalia (mvp.md §2).
  * - Åland is part of Finland; the source data has it as a separate shape.
+ * - Baikonur is part of Kazakhstan, likewise.
  */
 const NAMED_FEATURES: Record<string, string> = {
 	Kosovo: "XK",
 	Somaliland: "SO",
 	Åland: "FI",
+	// Only in the finest data. The Baikonur cosmodrome is Kazakh territory,
+	// leased to Russia; the source data cuts it out of Kazakhstan.
+	Baikonur: "KZ",
 };
 
 /**
@@ -237,14 +242,14 @@ function sortLand(topology: Atlas): Land {
 	return { topology, byIso, neutral };
 }
 
-function simplified(land: Land): Land {
+function simplified(land: Land, km2: number): Land {
 	const EARTH_RADIUS_KM = 6371;
 	const topology = simplify(
 		presimplify(
 			land.topology as Parameters<typeof presimplify>[0],
 			sphericalTriangleArea,
 		),
-		SIMPLIFY_KM2 / EARTH_RADIUS_KM ** 2,
+		km2 / EARTH_RADIUS_KM ** 2,
 	) as Atlas;
 	return { ...land, topology };
 }
@@ -622,15 +627,23 @@ const outDir = resolve(
 mkdirSync(outDir, { recursive: true });
 
 const detailedLand = sortLand(readAtlas("50m"));
+const fineLand = sortLand(readAtlas("10m"));
 const coarse = shapesOf(sortLand(readAtlas("110m")), DECIMALS.world);
-const detailed = shapesOf(simplified(detailedLand), DECIMALS.continent);
+const detailed = shapesOf(
+	simplified(detailedLand, SIMPLIFY_KM2.continent),
+	DECIMALS.continent,
+);
+const fine = shapesOf(
+	simplified(fineLand, SIMPLIFY_KM2.country),
+	DECIMALS.country,
+);
 // Label points come from the shapes before they are simplified and rounded:
-// the smallest countries are smaller than the rounding. The 10m data is only
-// used to place the few countries the 50m data lacks (Tuvalu).
+// the smallest countries are smaller than the rounding. The 10m data places
+// the few countries the 50m data lacks (Tuvalu).
 const LABEL_DECIMALS = 5;
 const labels = findLabels([
 	shapesOf(detailedLand, LABEL_DECIMALS),
-	shapesOf(sortLand(readAtlas("10m")), LABEL_DECIMALS),
+	shapesOf(fineLand, LABEL_DECIMALS),
 ]);
 
 const files: [name: string, file: MapFile, budget: number][] = [
@@ -644,22 +657,75 @@ for (const continent of continents) {
 	]);
 }
 
+// The fine level: one file per country, with only that country in it. The
+// folder is emptied first, so a country that leaves the list leaves no file.
+rmSync(resolve(outDir, "countries"), { recursive: true, force: true });
+mkdirSync(resolve(outDir, "countries"));
+// The very smallest countries don't survive the simplifying and rounding, and
+// the finest source data has the Vatican squashed flat. Each country takes the
+// first of these that has a shape for it.
+const fineSources = [
+	fine,
+	shapesOf(fineLand, DECIMALS.country + 1),
+	shapesOf(detailedLand, DECIMALS.country + 1),
+];
+for (const { iso } of countries) {
+	const polygons =
+		fineSources
+			.map((source) => source.byIso.get(iso) ?? [])
+			.find((shape) => shape.length > 0) ?? [];
+	const label = labels.get(iso);
+	if (polygons.length === 0 || !label) {
+		throw new Error(`No fine shape for ${iso}`);
+	}
+	files.push([
+		`countries/${iso}`,
+		{
+			type: "FeatureCollection",
+			features: [
+				{
+					type: "Feature",
+					properties: { iso, label: label.at },
+					geometry: { type: "MultiPolygon", coordinates: closed(polygons) },
+				},
+			],
+		},
+		BUDGET_BYTES.country,
+	]);
+}
+
 const overBudget: string[] = [];
+const countrySizes: [name: string, size: number][] = [];
 for (const [name, file, budget] of files) {
 	const json = `${JSON.stringify(file)}\n`;
 	const size = gzipSync(json, { level: 9 }).length;
 	const all = file.features.filter(
 		(each): each is MapCountryFeature => "iso" in each.properties,
 	);
-	console.log(
-		`${name.padEnd(14)} ${(size / 1000).toFixed(1).padStart(5)} KB gzipped ` +
-			`(budget ${budget / 1000}), ${all.length} countries, ` +
-			`${all.filter((each) => each.properties.marker).length} markers, ` +
-			`${all.filter((each) => each.geometry === null).length} without a shape`,
-	);
+	if (name.startsWith("countries/")) {
+		countrySizes.push([name, size]);
+	} else {
+		console.log(
+			`${name.padEnd(14)} ${(size / 1000).toFixed(1).padStart(5)} KB gzipped ` +
+				`(budget ${budget / 1000}), ${all.length} countries, ` +
+				`${all.filter((each) => each.properties.marker).length} markers, ` +
+				`${all.filter((each) => each.geometry === null).length} without a shape`,
+		);
+	}
 	if (size > budget) overBudget.push(name);
 	writeFileSync(resolve(outDir, `${name}.json`), json);
 }
+countrySizes.sort((a, b) => b[1] - a[1]);
+const kb = (bytes: number) => `${(bytes / 1000).toFixed(1)} KB`;
+console.log(
+	`countries/      ${countrySizes.length} files, ` +
+		`${kb(countrySizes.reduce((sum, [, size]) => sum + size, 0))} gzipped in all ` +
+		`(budget ${BUDGET_BYTES.country / 1000} each). The largest: ` +
+		countrySizes
+			.slice(0, 5)
+			.map(([name, size]) => `${name.slice(-2)} ${kb(size)}`)
+			.join(", "),
+);
 if (overBudget.length > 0) {
 	throw new Error(`Over the size budget: ${overBudget.join(", ")}`);
 }

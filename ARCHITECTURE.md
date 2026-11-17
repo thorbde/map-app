@@ -72,7 +72,8 @@ app/
     profiles/             profile, settings, visibility, export, delete account
     essays/               drafts, publishing, versions, rendering, editor
     maps/                 map components, geometry loading, written-state colouring
-      geometry/           the generated map files: a coarse world.json and a detailed file per continent (committed; checked by pnpm maps:check, ADR 0020)
+      geometry/           the generated map files, in three levels of detail: a coarse world.json, a detailed file per continent,
+                          and a fine file per country in countries/ (committed; checked by pnpm maps:check, ADR 0020)
       map-file.ts         the format of those files
       map-engine.client.ts  everything that touches MapLibre; loaded lazily by the map component, never on the server (ADR 0021)
       equal-earth.ts      the Equal Earth projection, registered with MapLibre (and with its workers: equal-earth.worker.ts)

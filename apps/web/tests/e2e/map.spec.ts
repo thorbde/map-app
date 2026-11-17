@@ -174,6 +174,41 @@ test("a country that is only a dot on the world map has a shape once zoomed in",
 	await expect(opened(page)).toHaveText("MT");
 });
 
+/** The fine map files the page has fetched, by country code. */
+function watchCountryFiles(page: Page): string[] {
+	const fetched: string[] = [];
+	page.on("response", (response) => {
+		const match = new URL(response.url()).pathname.match(
+			/\/assets\/([A-Z]{2})-[\w-]+\.json$/,
+		);
+		if (match?.[1] && response.ok()) fetched.push(match[1]);
+	});
+	return fetched;
+}
+
+test("a continent view loads no country's fine shape", async ({ page }) => {
+	const fetched = watchCountryFiles(page);
+	await openPreview(page, "view=continent:africa");
+	await page.waitForLoadState("networkidle");
+	expect(fetched).toEqual([]);
+});
+
+test("zoomed in on a country, its fine shape loads and can be clicked", async ({
+	page,
+}) => {
+	const fetched = watchCountryFiles(page);
+	await openPreview(page, "view=country:KE&written=KE");
+	await expect.poll(() => fetched).toContain("KE");
+	await page.waitForLoadState("networkidle");
+	// Its neighbours in view load too, and nothing far away does.
+	expect(fetched).toContain("UG");
+	expect(fetched).not.toContain("BR");
+	expect(fetched).not.toContain("SE");
+
+	await clickMiddle(page);
+	await expect(opened(page)).toHaveText("KE");
+});
+
 test("without WebGL the page still works, and says the map can't be shown", async ({
 	page,
 }) => {

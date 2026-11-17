@@ -20,6 +20,22 @@ const continentFiles: Record<Continent, MapFile> = {
 	oceania: oceania as unknown as MapFile,
 	"south-america": southAmerica as unknown as MapFile,
 };
+// The fine level: one file per country (198 of them), found by name.
+const countryFiles = Object.fromEntries(
+	Object.entries(
+		import.meta.glob<MapFile>("./geometry/countries/*.json", {
+			eager: true,
+			import: "default",
+		}),
+	).map(([path, file]) => [path.slice(-7, -5), file]),
+);
+
+/** A country's shape at the fine level. */
+function fine(iso: string): Geometry | null | undefined {
+	const file = countryFiles[iso];
+	return file ? country(file, iso)?.geometry : undefined;
+}
+
 const allFiles: [string, MapFile][] = [
 	["world", worldFile],
 	...Object.entries(continentFiles),
@@ -235,6 +251,83 @@ describe("map geometry: the files are well formed", () => {
 		for (const [name, file] of Object.entries(continentFiles)) {
 			expect(await gzippedSize(file), name).toBeLessThan(100_000);
 		}
+	});
+});
+
+describe("map geometry: the fine level, one file per country", () => {
+	it("has a file for every country, with only that country's shape in it", () => {
+		expect(Object.keys(countryFiles).sort()).toEqual(
+			countries.map((each) => each.iso).sort(),
+		);
+		for (const [iso, file] of Object.entries(countryFiles)) {
+			expect(file.features, iso).toHaveLength(1);
+			expect(fine(iso)?.coordinates.length, iso).toBeGreaterThan(0);
+		}
+	});
+
+	it("uses the same label point as the world file", () => {
+		for (const [iso, file] of Object.entries(countryFiles)) {
+			expect(country(file, iso)?.properties.label, iso).toEqual(
+				country(worldFile, iso)?.properties.label,
+			);
+		}
+	});
+
+	it("has more detail than the continent's file", () => {
+		const points = (geometry: Geometry | null | undefined) =>
+			(geometry?.coordinates ?? []).flat(2).length;
+		for (const iso of ["DK", "NO", "GR", "JP", "CL", "NZ"]) {
+			const continent = countries.find((each) => each.iso === iso)?.continent;
+			if (!continent) throw new Error(`No continent for ${iso}`);
+			const detailed = country(continentFiles[continent], iso)?.geometry;
+			expect(points(fine(iso)), iso).toBeGreaterThan(2 * points(detailed));
+		}
+	});
+
+	it("keeps every coordinate between the map's edges, and every ring closed", () => {
+		for (const [iso, file] of Object.entries(countryFiles)) {
+			for (const ring of (
+				country(file, iso)?.geometry?.coordinates ?? []
+			).flat()) {
+				expect(ring[0], iso).toEqual(ring[ring.length - 1]);
+				for (const [lng, lat] of ring) {
+					expect(lng >= -169 && lng <= 191, `${iso}: longitude ${lng}`).toBe(
+						true,
+					);
+					expect(lat >= -90 && lat <= 90, `${iso}: latitude ${lat}`).toBe(true);
+				}
+			}
+		}
+	});
+
+	it("keeps every country file under 250 KB gzipped", async () => {
+		for (const [iso, file] of Object.entries(countryFiles)) {
+			expect(await gzippedSize(file), iso).toBeLessThan(250_000);
+		}
+	});
+
+	// The border choices of ADR 0020 again, at this level: the fine data is a
+	// different source file, with its own quirks.
+	it("applies the same border choices", () => {
+		const inFine = (iso: string, point: Point) => contains(fine(iso), point);
+		expect(inFine("UA", [34.1, 44.95])).toBe(true); // Simferopol
+		expect(inFine("RU", [34.1, 44.95])).toBe(false);
+		expect(inFine("XK", [21.17, 42.66])).toBe(true); // Pristina
+		expect(inFine("RS", [21.17, 42.66])).toBe(false);
+		expect(inFine("SO", [44.06, 9.56])).toBe(true); // Hargeisa
+		expect(inFine("EH", [-13.0, 27.0])).toBe(true); // near Laayoune
+		expect(inFine("EH", [-9.5, 26.5])).toBe(true); // east of the sand wall
+		expect(inFine("MA", [-13.0, 27.0])).toBe(false);
+		expect(inFine("MA", [-6.5, 33.5])).toBe(true); // near Rabat
+		expect(inFine("FI", [19.95, 60.25])).toBe(true); // Åland
+		expect(inFine("FR", [-53, 4])).toBe(false); // French Guiana
+		expect(inFine("FR", [9.1, 42.2])).toBe(true); // Corsica
+		expect(inFine("NL", [-68.3, 12.2])).toBe(false); // Bonaire
+		expect(inFine("KZ", [63.3, 45.9])).toBe(true); // Baikonur
+		expect(inFine("RU", [63.3, 45.9])).toBe(false);
+		expect(inFine("RU", [185, 66.5])).toBe(true); // Chukotka, past 180°
+		expect(inFine("CY", [33.6, 35.3])).toBe(false); // Northern Cyprus
+		expect(inFine("IL", [35.8, 33.0])).toBe(true); // Golan Heights, as the source has it
 	});
 });
 

@@ -29,11 +29,18 @@ import {
 	WORLD_BOUNDS,
 } from "./views";
 
-// The detailed map files, one per continent (ADR 0020). Each is fetched only
-// when the viewer zooms in on that continent.
+// The addresses of the detailed map files, one per continent, and of the fine
+// ones, one per country (ADR 0020). Only the addresses are part of this file:
+// each map file is fetched when the viewer zooms in on what it holds.
 const detailUrls = import.meta.glob<string>("./geometry/*.json", {
 	query: "?url",
 	import: "default",
+	eager: true,
+});
+const fineUrls = import.meta.glob<string>("./geometry/countries/*.json", {
+	query: "?url",
+	import: "default",
+	eager: true,
 });
 
 export type MapState = {
@@ -77,6 +84,12 @@ const WORLD_MARGIN = 24;
  * world view on a laptop is around zoom 1.3, and a continent view around 3.
  */
 const DETAIL_FROM_ZOOM = 2.2;
+
+/**
+ * From this zoom on, the countries in view get their fine shapes. A view of a
+ * mid-sized country (Denmark, Kenya) is around zoom 5 to 6.
+ */
+const FINE_FROM_ZOOM = 4.5;
 
 // --- Colours come from the design tokens (ADR 0014) -----------------------------
 
@@ -238,6 +251,7 @@ export async function createMapEngine(
 		});
 	}
 	const countryBoxes = countries.map((country) => ({
+		iso: country.properties.iso,
 		continent: options.continents[country.properties.iso],
 		box: flatBox(countryBounds(country)),
 	}));
@@ -248,6 +262,11 @@ export async function createMapEngine(
 	const swapped = new Set<Continent>();
 	const requested = new Set<Continent>();
 	const detailedMarkers = new Map<string, boolean>();
+	/** The countries whose fine shapes are on the map, and the shapes themselves. */
+	const fineCountries: MapCountryFeature[] = [];
+	/** The countries whose coarser shapes have been taken away again. */
+	const fineSwapped = new Set<string>();
+	const fineRequested = new Set<string>();
 	let destroyed = false;
 
 	const stateColour = (otherwise: string): ExpressionSpecification => [
@@ -303,6 +322,12 @@ export async function createMapEngine(
 					data: world as unknown as GeoJSONSourceSpecification["data"],
 					promoteId: "iso",
 				},
+				// Empty until the viewer zooms in on a country.
+				fine: {
+					type: "geojson",
+					data: { type: "FeatureCollection", features: [] },
+					promoteId: "iso",
+				},
 				places: {
 					type: "geojson",
 					data: placesOf(countries, names, state, detailedMarkers),
@@ -325,6 +350,18 @@ export async function createMapEngine(
 					id: "borders",
 					type: "line",
 					source: "countries",
+					paint: { "line-color": colours.border, "line-width": 1 },
+				},
+				{
+					id: "fine-land",
+					type: "fill",
+					source: "fine",
+					paint: { "fill-color": stateColour(colours.land) },
+				},
+				{
+					id: "fine-borders",
+					type: "line",
+					source: "fine",
 					paint: { "line-color": colours.border, "line-width": 1 },
 				},
 				{
@@ -419,6 +456,7 @@ export async function createMapEngine(
 				"label-selected",
 				"marker-labels",
 				"labels",
+				"fine-land",
 				...[...detailed].map((continent) => `detail-${continent}-land`),
 				"land",
 			],
@@ -444,6 +482,7 @@ export async function createMapEngine(
 				"countries",
 				"places",
 				...[...detailed].map((continent) => `detail-${continent}`),
+				"fine",
 			]) {
 				map.setFeatureState({ source, id: iso }, featureState);
 			}
@@ -493,6 +532,61 @@ export async function createMapEngine(
 
 	await map.once("idle");
 
+	/** Leaves out the countries whose fine shapes are on the map. (Neutral land has no ISO code.) */
+	function withoutFine(): ExpressionSpecification {
+		return [
+			"!",
+			["in", ["coalesce", ["get", "iso"], ""], ["literal", [...fineSwapped]]],
+		];
+	}
+
+	/** Hides every shape that a more detailed one has replaced. */
+	function hideReplacedShapes() {
+		const stillCoarse: ExpressionSpecification = [
+			"all",
+			["!", ["in", ["get", "continent"], ["literal", [...swapped]]]],
+			withoutFine(),
+		];
+		map.setFilter("land", stillCoarse);
+		map.setFilter("borders", stillCoarse);
+		for (const continent of detailed) {
+			map.setFilter(`detail-${continent}-land`, withoutFine());
+			map.setFilter(`detail-${continent}-borders`, withoutFine());
+		}
+	}
+
+	/** Puts some countries' fine shapes on the map, in place of their coarser ones. */
+	function showFine(files: MapFile[]) {
+		const added = files.flatMap((file) => file.features.filter(isCountry));
+		if (added.length === 0) return;
+		fineCountries.push(...added);
+		(map.getSource("fine") as GeoJSONSource).setData({
+			type: "FeatureCollection",
+			features: fineCountries,
+		} as unknown as GeoJSONSourceSpecification["data"]);
+		for (const { properties } of added) {
+			map.setFeatureState(
+				{ source: "fine", id: properties.iso },
+				{
+					written: state.written.includes(properties.iso),
+					selected: properties.iso === state.selected,
+				},
+			);
+		}
+		// As with a continent: the coarser shapes stay until these are drawn.
+		map.once("idle", () => {
+			if (destroyed) return;
+			for (const { properties } of added) fineSwapped.add(properties.iso);
+			hideReplacedShapes();
+		});
+	}
+
+	async function fetchMapFile(url: string): Promise<MapFile> {
+		const response = await fetch(url);
+		if (!response.ok) throw new Error("A map file didn't load");
+		return response.json() as Promise<MapFile>;
+	}
+
 	/** Puts a continent's detailed shapes on the map, in place of its coarse ones. */
 	function showDetail(continent: Continent, file: MapFile) {
 		const source = `detail-${continent}`;
@@ -501,24 +595,26 @@ export async function createMapEngine(
 			data: file as unknown as GeoJSONSourceSpecification["data"],
 			promoteId: "iso",
 		});
-		// Under the marker dots and the labels, like the coarse shapes.
+		// Over the coarse shapes, and under the fine ones.
 		map.addLayer(
 			{
 				id: `${source}-land`,
 				type: "fill",
 				source,
+				filter: withoutFine(),
 				paint: { "fill-color": stateColour(colours.land) },
 			},
-			"markers",
+			"fine-land",
 		);
 		map.addLayer(
 			{
 				id: `${source}-borders`,
 				type: "line",
 				source,
+				filter: withoutFine(),
 				paint: { "line-color": colours.border, "line-width": 1 },
 			},
-			"markers",
+			"fine-land",
 		);
 		detailed.add(continent);
 		for (const { properties } of file.features.filter(isCountry)) {
@@ -532,12 +628,7 @@ export async function createMapEngine(
 		map.once("idle", () => {
 			if (destroyed) return;
 			swapped.add(continent);
-			const stillCoarse: ExpressionSpecification = [
-				"!",
-				["in", ["get", "continent"], ["literal", [...swapped]]],
-			];
-			map.setFilter("land", stillCoarse);
-			map.setFilter("borders", stillCoarse);
+			hideReplacedShapes();
 		});
 		// Colour the new shapes, and move the dots that are no longer needed.
 		for (const iso of new Set([...state.written, state.selected])) {
@@ -555,29 +646,25 @@ export async function createMapEngine(
 		);
 	}
 
-	/** Fetches the detailed shapes of the continents in view, once zoomed in. */
+	/**
+	 * Fetches more detail for what is in view: a continent's detailed shapes once
+	 * zoomed in on it, and a country's fine shape once zoomed in close.
+	 */
 	function loadDetailInView() {
-		if (map.getZoom() < DETAIL_FROM_ZOOM) return;
+		const zoom = map.getZoom();
+		if (zoom < DETAIL_FROM_ZOOM) return;
 		const center = map.getCenter();
 		const view: FlatBox = viewBox(
-			{ center: [center.lng, center.lat], zoom: map.getZoom() },
+			{ center: [center.lng, center.lat], zoom },
 			{ width: container.clientWidth, height: container.clientHeight },
 		);
-		const inView = new Set(
-			countryBoxes
-				.filter(({ box }) => boxesOverlap(box, view))
-				.map(({ continent }) => continent),
-		);
-		for (const continent of inView) {
-			const load = detailUrls[`./geometry/${continent}.json`];
-			if (!continent || !load || requested.has(continent)) continue;
+		const inView = countryBoxes.filter(({ box }) => boxesOverlap(box, view));
+
+		for (const continent of new Set(inView.map((each) => each.continent))) {
+			const url = detailUrls[`./geometry/${continent}.json`];
+			if (!continent || !url || requested.has(continent)) continue;
 			requested.add(continent);
-			load()
-				.then((url) => fetch(url))
-				.then((response) => {
-					if (!response.ok) throw new Error("A map file didn't load");
-					return response.json() as Promise<MapFile>;
-				})
+			fetchMapFile(url)
 				.then((file) => {
 					if (!destroyed) showDetail(continent, file);
 				})
@@ -586,6 +673,26 @@ export async function createMapEngine(
 					requested.delete(continent);
 				});
 		}
+
+		if (zoom < FINE_FROM_ZOOM) return;
+		const wanted = inView
+			.map((each) => each.iso)
+			.filter((iso) => !fineRequested.has(iso));
+		for (const iso of wanted) fineRequested.add(iso);
+		// One update of the map for all of them, not one each.
+		Promise.all(
+			wanted.map((iso) => {
+				const url = fineUrls[`./geometry/countries/${iso}.json`];
+				if (!url) return undefined;
+				return fetchMapFile(url).catch(() => {
+					// The coarser shape stays. Try again the next time it is in view.
+					fineRequested.delete(iso);
+					return undefined;
+				});
+			}),
+		).then((files) => {
+			if (!destroyed) showFine(files.filter((file) => file !== undefined));
+		});
 	}
 	map.on("moveend", loadDetailInView);
 	loadDetailInView();
