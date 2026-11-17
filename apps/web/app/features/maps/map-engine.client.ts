@@ -66,8 +66,11 @@ const START_TIMEOUT_MS = 20_000;
 /** How far from a marker dot a click still counts, in pixels. */
 const CLICK_REACH = 6;
 
-/** The closest the camera gets: about as close as the detailed shapes hold up. */
-const MAX_ZOOM = 7;
+/** The closest the camera gets: close enough to look at a city. */
+const MAX_ZOOM = 12;
+
+/** How much room is left around the whole world at the furthest zoom out, in pixels. */
+const WORLD_MARGIN = 24;
 
 /**
  * From this zoom on, the continents in view get their detailed shapes. The
@@ -371,16 +374,34 @@ export async function createMapEngine(
 						"text-font": ["Montserrat Bold", "Montserrat"],
 						"text-size": 16,
 						"text-max-width": 8,
+						// Always drawn, and the other labels make room for it.
 						"text-allow-overlap": true,
-						"text-ignore-placement": true,
 					},
-					paint: { "text-color": colours.labelOnSelected },
+					paint: {
+						"text-color": colours.labelOnSelected,
+						// Where the name is wider than the country, the letters that
+						// reach over a neighbour or the sea keep a dark edge to stand on.
+						"text-halo-color": colours.selected,
+						"text-halo-width": 2,
+					},
 				},
 			],
 		},
 	});
 	map.touchZoomRotate.disableRotation();
 	map.keyboard.disableRotation();
+
+	/** The furthest zoom out shows the whole world with a small margin, and no more. */
+	function limitZoomOut() {
+		const whole = cameraFor(
+			WORLD_BOUNDS,
+			{ width: container.clientWidth, height: container.clientHeight },
+			WORLD_MARGIN,
+		);
+		map.setMinZoom(whole.zoom);
+	}
+	limitZoomOut();
+	map.on("resize", limitZoomOut);
 
 	const canOpen = (iso: string) => state.owner || state.written.includes(iso);
 
