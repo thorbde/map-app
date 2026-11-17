@@ -17,6 +17,9 @@ const westernSahara =
 const westernSaharaPinned =
 	"Wikidata's value for the Sahrawi Arab Democratic Republic (Q40362), pinned because it is contested. For Thor's review:";
 
+const freeAssociation =
+	"Wikidata has no form of government. A self-governing parliamentary democracy in free association with New Zealand, whose monarch is its head of state. In the list under Thor's rule of 2026-11-17: prefer inclusion (ADR 0019).";
+
 const landOnly =
 	"Wikidata counts sea borders, or misses a land border. Only land borders count.";
 
@@ -67,6 +70,9 @@ export const factOverrides: Record<string, FactOverride> = {
 	},
 	CF: {
 		government: { value: "presidential system", reason: noGovernment },
+	},
+	CK: {
+		government: { value: "constitutional monarchy", reason: freeAssociation },
 	},
 	CN: {
 		languages: {
@@ -296,6 +302,9 @@ export const factOverrides: Record<string, FactOverride> = {
 				'Wikidata calls it "Yaren District". Nauru has no official capital; Yaren is where the government sits.',
 		},
 		government: { value: "parliamentary republic", reason: noGovernment },
+	},
+	NU: {
+		government: { value: "constitutional monarchy", reason: freeAssociation },
 	},
 	OM: {
 		neighbours: { value: ["AE", "SA", "YE"], reason: landOnly },

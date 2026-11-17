@@ -13,8 +13,8 @@ function sorted(isos: string): string[] {
 }
 
 describe("countries", () => {
-	it("has 198 countries", () => {
-		expect(countries).toHaveLength(198);
+	it("has 200 countries", () => {
+		expect(countries).toHaveLength(200);
 	});
 
 	it("has the right number of countries in each continent", () => {
@@ -36,7 +36,7 @@ describe("countries", () => {
 			asia: 49,
 			"north-america": 23,
 			"south-america": 12,
-			oceania: 14,
+			oceania: 16,
 		});
 	});
 

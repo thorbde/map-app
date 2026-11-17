@@ -14,7 +14,7 @@
 - `continent`: `africa` | `europe` | `asia` | `north-america` | `south-america` | `oceania`
 - `region`
 
-**Scope:** the 193 UN members plus Palestine (PS) and the Vatican (VA), and Kosovo (XK), Taiwan (TW) and Western Sahara (EH), for 198 in total. Including these three is a **high-risk decision to revisit** (ADR 0019).
+**Scope:** the 193 UN members plus Palestine (PS) and the Vatican (VA), and Kosovo (XK), Taiwan (TW), Western Sahara (EH), the Cook Islands (CK) and Niue (NU), for 200 in total. Including these five is a **high-risk decision to revisit** (ADR 0019). The rule for such choices: **prefer inclusion over exclusion,** record each one in ADR 0019 or ADR 0020, and Thor revisits them when the MVP is done.
 
 **Regions:**
 - **Africa uses the African Union's regions exactly as listed:**
@@ -27,7 +27,7 @@
 
 **Facts** (ADR 0012): `facts.ts`, a reviewed static dataset per ISO code: capital, languages, population (with its year), government type and land neighbours (no independence date: Wikidata has no usable one, and it belongs in the essay). It's generated from **Wikidata** by `scripts/build-facts.ts`, plus a small overrides file. A **monthly scheduled job** regenerates it and opens a PR with the changes for Thor to review. Writers don't type facts in.
 
-**Tests:** 55 countries in Africa, 198 in total, no duplicates, and every country has a complete fact entry.
+**Tests:** 55 countries in Africa, 200 in total, no duplicates, and every country has a complete fact entry.
 
 ## 2. Maps and the app shell (`features/maps`)
 
@@ -84,7 +84,7 @@ Every page below is a panel over the map (§2).
 
 - **`/u/:username`:** the world map, and a panel with:
   - name, bio
-  - progress in total and per continent ("12 / 198", "4 / 55" for Africa)
+  - progress in total and per continent ("12 / 200", "4 / 55" for Africa)
   - when it's your own profile: "Continue writing", "In progress" (drafts and unpublished changes), and a hint that clicking a country starts an essay
   - recently published essays
   - a link to `/method`

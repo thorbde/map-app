@@ -242,6 +242,13 @@ export const facts: Record<string, CountryFacts> = {
 		government: "republic",
 		neighbours: ["BF","GH","GN","LR","ML"],
 	},
+	CK: {
+		capitals: ["Avarua"],
+		languages: ["Cook Islands Maori","English"],
+		population: {"count":14222,"year":2023},
+		government: "constitutional monarchy",
+		neighbours: [],
+	},
 	CL: {
 		capitals: ["Santiago"],
 		languages: ["Spanish"],
@@ -940,6 +947,13 @@ export const facts: Record<string, CountryFacts> = {
 		languages: ["English","Nauruan"],
 		population: {"count":13650,"year":2017},
 		government: "parliamentary republic",
+		neighbours: [],
+	},
+	NU: {
+		capitals: ["Alofi"],
+		languages: ["English","Niuean"],
+		population: {"count":1821,"year":2025},
+		government: "constitutional monarchy",
 		neighbours: [],
 	},
 	NZ: {
