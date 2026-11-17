@@ -72,8 +72,8 @@ app/
     profiles/             profile, settings, visibility, export, delete account
     essays/               drafts, publishing, versions, rendering, editor
     maps/                 map components, geometry loading, written-state colouring
-      geometry/           the generated map files: a coarse world.json and a detailed file per continent (committed; checked by pnpm maps:check, ADR 0020)
-      map-file.ts         the format of those files
+      geometry/world.json the generated map file: every country, at one level of detail (committed; checked by pnpm maps:check, ADR 0020)
+      map-file.ts         the format of that file
     countries/            static country data, region lists and reference facts (no DB, ADR 0012)
   server/
     access.server.ts      canViewProfile / canViewEssay, see ADR 0003

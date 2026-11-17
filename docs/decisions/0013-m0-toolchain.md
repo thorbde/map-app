@@ -139,11 +139,11 @@ In `packages/ui`, as dependencies:
 
 ### Added in M1 PR 3 (map geometry)
 
-In `apps/web`, as devDependencies. They run only in `scripts/build-maps.ts`; nothing from them reaches the Worker or the browser (the boundary rule against devDependencies in shipped code checks that). The generated map files are 18 to 83 KB gzipped each (ADR 0020).
+In `apps/web`, as devDependencies. They run only in `scripts/build-maps.ts`; nothing from them reaches the Worker or the browser (the boundary rule against devDependencies in shipped code checks that). The generated map file is 1.9 MB gzipped (ADR 0020).
 
 | Package | Version | Why | Unpacked size |
 |---|---|---|---|
-| `world-atlas` | 2.0.2 | Natural Earth's country shapes as TopoJSON, at three levels of detail | 8.2 MB |
+| `world-atlas` | 2.0.2 | Natural Earth's country shapes as TopoJSON. We use its finest level | 8.2 MB |
 | `topojson-client` | 3.1.0 | Reads those files, and merges shapes (Somaliland into Somalia, Crimea into Ukraine, Åland into Finland) | 68 KB |
 | `topojson-simplify` | 3.0.3 | Removes detail while keeping shared borders identical | 51 KB |
 | `d3-geo` | 3.1.2 | Cuts shapes correctly at the map's edge (the source data is drawn for a sphere) | 255 KB, plus `d3-array` (115 KB) |
