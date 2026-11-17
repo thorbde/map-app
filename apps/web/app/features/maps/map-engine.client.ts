@@ -46,6 +46,9 @@ export type MapEngine = {
 	destroy: () => void;
 };
 
+/** How long the map may take to start before the page says it can't be shown. */
+const START_TIMEOUT_MS = 20_000;
+
 /** How far from a marker dot a click still counts, in pixels. */
 const CLICK_REACH = 6;
 
@@ -353,15 +356,6 @@ export async function createMapEngine(
 		return typeof iso === "string" ? iso : undefined;
 	}
 
-	map.on("click", (event) => {
-		const iso = countryAt(event.point);
-		if (iso && canOpen(iso)) onOpenCountry(iso);
-	});
-	map.on("mousemove", (event) => {
-		const iso = countryAt(event.point);
-		map.getCanvas().style.cursor = iso && canOpen(iso) ? "pointer" : "";
-	});
-
 	/** Colours the written and selected countries, and updates the labels. */
 	function paint(previous: MapState | undefined) {
 		for (const iso of new Set([
@@ -389,18 +383,38 @@ export async function createMapEngine(
 		map.setFilter("marker-labels", labelFilter(true, state.selected));
 	}
 
-	// If the map can't start (its worker or its data fails), say so instead of
-	// leaving the page waiting for ever.
+	// If the map hasn't started after a while (its worker or its style failed),
+	// say so instead of leaving the page waiting for ever. A single error event
+	// is not taken as failure: MapLibre reports many things that way that it
+	// carries on from.
 	try {
 		await new Promise<void>((resolve, reject) => {
-			map.once("load", () => resolve());
-			map.once("error", (event) => reject(event.error));
+			const giveUp = setTimeout(
+				() => reject(new Error("The map didn't start")),
+				START_TIMEOUT_MS,
+			);
+			map.once("load", () => {
+				clearTimeout(giveUp);
+				resolve();
+			});
 		});
 	} catch (error) {
 		map.remove();
 		throw error;
 	}
 	paint(undefined);
+
+	// Only now does the map listen to the mouse: before the style has loaded
+	// there are no layers to ask about.
+	map.on("click", (event) => {
+		const iso = countryAt(event.point);
+		if (iso && canOpen(iso)) onOpenCountry(iso);
+	});
+	map.on("mousemove", (event) => {
+		const iso = countryAt(event.point);
+		map.getCanvas().style.cursor = iso && canOpen(iso) ? "pointer" : "";
+	});
+
 	await map.once("idle");
 
 	return {

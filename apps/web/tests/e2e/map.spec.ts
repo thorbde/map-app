@@ -54,6 +54,33 @@ test("the page is there before the map, and the map then loads without errors", 
 	expect(elsewhere).toEqual([]);
 });
 
+test("the map loads while the mouse is moving over it", async ({ page }) => {
+	// A real visitor's mouse is already moving when the page opens. The map must
+	// not mistake that for a failure. (It did: thorbde/map-app#26.)
+	const errors: string[] = [];
+	page.on("pageerror", (error) => errors.push(error.message));
+	page.on("console", (message) => {
+		if (message.type() === "error") errors.push(message.text());
+	});
+
+	await page.goto("/preview/map?view=world&owner=1");
+	let moving = true;
+	const wiggle = (async () => {
+		for (let i = 0; moving; i++) {
+			await page.mouse.move(300 + (i % 40) * 10, 300 + (i % 7) * 20);
+		}
+	})();
+	try {
+		await expect(map(page)).toHaveAttribute("data-status", "ready", {
+			timeout: 30_000,
+		});
+	} finally {
+		moving = false;
+		await wiggle;
+	}
+	expect(errors).toEqual([]);
+});
+
 test("the owner can open any country by clicking it", async ({ page }) => {
 	await openPreview(page, "view=country:BR&owner=1");
 	await expect(opened(page)).toHaveText("nothing yet");
