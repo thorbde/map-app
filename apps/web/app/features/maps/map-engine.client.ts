@@ -176,6 +176,33 @@ function placesOf(
 	};
 }
 
+/**
+ * Gives every shape in a map file a key the map can address it by: a country's
+ * ISO code, or "neutral:<continent>" for neutral land. Returns the keys.
+ */
+function tagWithKeys(file: MapFile): string[] {
+	return file.features.map((feature) => {
+		const key = isCountry(feature)
+			? feature.properties.iso
+			: `neutral:${feature.properties.continent}`;
+		Object.assign(feature.properties, { key });
+		return key;
+	});
+}
+
+/** Fully visible while a shape's flag has the wanted value, and invisible otherwise. */
+function visibleWhile(
+	flag: "shown" | "replaced",
+	wanted: boolean,
+): ExpressionSpecification {
+	return [
+		"case",
+		["==", ["boolean", ["feature-state", flag], false], wanted],
+		1,
+		0,
+	];
+}
+
 function boundsOf(view: MapView, countries: MapCountryFeature[]): Bounds {
 	if (view.kind === "continent") return CONTINENT_BOUNDS[view.continent];
 	if (view.kind === "country") {
@@ -237,6 +264,7 @@ export async function createMapEngine(
 			continent: options.continents[country.properties.iso],
 		});
 	}
+	tagWithKeys(world);
 	const countryBoxes = countries.map((country) => ({
 		continent: options.continents[country.properties.iso],
 		box: flatBox(countryBounds(country)),
@@ -301,7 +329,7 @@ export async function createMapEngine(
 					type: "geojson",
 					// Our file format is GeoJSON, described with our own types.
 					data: world as unknown as GeoJSONSourceSpecification["data"],
-					promoteId: "iso",
+					promoteId: "key",
 				},
 				places: {
 					type: "geojson",
@@ -319,13 +347,22 @@ export async function createMapEngine(
 					id: "land",
 					type: "fill",
 					source: "countries",
-					paint: { "fill-color": stateColour(colours.land) },
+					paint: {
+						"fill-color": stateColour(colours.land),
+						// The coarse shapes vanish the instant more detailed ones
+						// replace them: see showDetail().
+						"fill-opacity": visibleWhile("replaced", false),
+					},
 				},
 				{
 					id: "borders",
 					type: "line",
 					source: "countries",
-					paint: { "line-color": colours.border, "line-width": 1 },
+					paint: {
+						"line-color": colours.border,
+						"line-width": 1,
+						"line-opacity": visibleWhile("replaced", false),
+					},
 				},
 				{
 					id: "markers",
@@ -493,13 +530,22 @@ export async function createMapEngine(
 
 	await map.once("idle");
 
-	/** Puts a continent's detailed shapes on the map, in place of its coarse ones. */
+	/**
+	 * Puts a continent's detailed shapes on the map, in place of its coarse ones.
+	 *
+	 * The swap happens in a single frame. The detailed shapes are first drawn
+	 * invisibly; once they are ready, they are shown and the coarse ones hidden
+	 * at the same instant. Showing them first would leave both visible for a
+	 * moment, with the coarse land sticking out past the new coastline; hiding
+	 * the coarse ones first would leave the continent empty.
+	 */
 	function showDetail(continent: Continent, file: MapFile) {
 		const source = `detail-${continent}`;
+		const keys = tagWithKeys(file);
 		map.addSource(source, {
 			type: "geojson",
 			data: file as unknown as GeoJSONSourceSpecification["data"],
-			promoteId: "iso",
+			promoteId: "key",
 		});
 		// Under the marker dots and the labels, like the coarse shapes.
 		map.addLayer(
@@ -507,7 +553,10 @@ export async function createMapEngine(
 				id: `${source}-land`,
 				type: "fill",
 				source,
-				paint: { "fill-color": stateColour(colours.land) },
+				paint: {
+					"fill-color": stateColour(colours.land),
+					"fill-opacity": visibleWhile("shown", true),
+				},
 			},
 			"markers",
 		);
@@ -516,30 +565,14 @@ export async function createMapEngine(
 				id: `${source}-borders`,
 				type: "line",
 				source,
-				paint: { "line-color": colours.border, "line-width": 1 },
+				paint: {
+					"line-color": colours.border,
+					"line-width": 1,
+					"line-opacity": visibleWhile("shown", true),
+				},
 			},
 			"markers",
 		);
-		detailed.add(continent);
-		for (const { properties } of file.features.filter(isCountry)) {
-			// A country that is a dot on the world map may be big enough here.
-			detailedMarkers.set(properties.iso, properties.marker === true);
-		}
-
-		// The coarse shapes stay until the detailed ones have been drawn over
-		// them. Hiding them first would leave the continent empty for a moment,
-		// to the eye and to a click.
-		map.once("idle", () => {
-			if (destroyed) return;
-			swapped.add(continent);
-			const stillCoarse: ExpressionSpecification = [
-				"!",
-				["in", ["get", "continent"], ["literal", [...swapped]]],
-			];
-			map.setFilter("land", stillCoarse);
-			map.setFilter("borders", stillCoarse);
-		});
-		// Colour the new shapes, and move the dots that are no longer needed.
 		for (const iso of new Set([...state.written, state.selected])) {
 			if (!iso) continue;
 			map.setFeatureState(
@@ -550,9 +583,44 @@ export async function createMapEngine(
 				},
 			);
 		}
-		(map.getSource("places") as GeoJSONSource).setData(
-			placesOf(countries, names, state, detailedMarkers),
-		);
+
+		map.once("idle", () => {
+			if (destroyed) return;
+			// The swap itself. These take effect together, in the next frame.
+			for (const key of keys) {
+				map.setFeatureState({ source, id: key }, { shown: true });
+			}
+			for (const feature of world.features) {
+				const properties = feature.properties as {
+					key?: string;
+					continent?: Continent;
+				};
+				if (properties.continent === continent && properties.key) {
+					map.setFeatureState(
+						{ source: "countries", id: properties.key },
+						{ replaced: true },
+					);
+				}
+			}
+			detailed.add(continent);
+			swapped.add(continent);
+			// A country that is a dot on the world map may be big enough here.
+			for (const { properties } of file.features.filter(isCountry)) {
+				detailedMarkers.set(properties.iso, properties.marker === true);
+			}
+			(map.getSource("places") as GeoJSONSource).setData(
+				placesOf(countries, names, state, detailedMarkers),
+			);
+			// The hidden coarse shapes are then taken off the map altogether, so
+			// that a click near a coast can't land on one. That takes a moment,
+			// which no longer shows.
+			const stillCoarse: ExpressionSpecification = [
+				"!",
+				["in", ["get", "continent"], ["literal", [...swapped]]],
+			];
+			map.setFilter("land", stillCoarse);
+			map.setFilter("borders", stillCoarse);
+		});
 	}
 
 	/** Fetches the detailed shapes of the continents in view, once zoomed in. */
