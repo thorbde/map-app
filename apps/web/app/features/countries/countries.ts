@@ -1,6 +1,6 @@
 // The countries in scope (docs/specs/mvp.md §1, ADR 0019): the 193 UN members,
-// Palestine and the Vatican (the UN's two observer states), and Kosovo, Taiwan and
-// Western Sahara.
+// Palestine and the Vatican (the UN's two observer states), and Kosovo, Taiwan,
+// Western Sahara, the Cook Islands and Niue.
 //
 // - Names are Unicode CLDR's English names (CLDR 48.0), copied as they are.
 //   Palestine and Myanmar use CLDR's short form.
