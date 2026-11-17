@@ -49,6 +49,19 @@ Look up current docs for these libraries instead of relying on memory. Their API
 4. **Update the docs in the same PR.** If the structure changes, update `ARCHITECTURE.md`. If a decision is made, add an ADR.
 5. **Definition of done:** `pnpm check` is green, the e2e tests touching the feature pass, the docs are updated, and the PR description is complete.
 
+## Before you build: what already exists
+
+Three times in one session an agent built its own mechanism for something that already existed: levels of detail (MapLibre does it), a rule for small countries (Natural Earth ships label ranks), and label positions (Natural Earth ships those too). Thor caught each one. These rules exist so that the plan catches it instead.
+
+1. **Every plan starts with a section called "What already exists",** with links. No plan is approved without it. It answers, in this order:
+   - What does our **data source** already contain for this? List the fields.
+   - What do the **libraries we use** already do for this?
+   - How do **two established products** solve it?
+   - Only then: what we build ourselves, and why nothing above fits.
+2. **Building our own version of a solved problem needs an ADR** that names what exists and says why it isn't used. No ADR, no custom mechanism.
+3. **When adopting a data source or a package, record what it provides and what it leaves out,** in the ADR that adds it. A package that strips data we may need is a reason to use the original.
+4. **Two workarounds means stop.** If a feature needs a second fix for the same underlying problem, stop and re-check the approach instead of adding a third.
+
 ## Hard rules
 
 - **Never weaken, skip or delete a test to make it pass.** If a test seems wrong, stop and explain why in the PR.
@@ -65,7 +78,7 @@ Look up current docs for these libraries instead of relying on memory. Their API
 - **Database access goes through Drizzle only,** with app-generated IDs and `db.batch()` for atomic writes (ADR 0006).
 - **Don't import Cloudflare-specific APIs outside `app/server/platform/`.** The app must stay portable to Node.
 - **YAGNI.** Build what the spec asks for. No speculative abstractions, no "while I'm here" refactors outside the PR's scope.
-- **Lean on the libraries and technologies we already use, instead of reinventing what they do.** Before building a mechanism, check whether MapLibre, React Router, Base UI or the platform already has it, and use that. It is more reliable and easier to maintain. A little extra load time is an acceptable price (ADR 0021).
+- **Never reinvent what already exists** (Thor, 2026-11-17). Use what our data sources, our libraries and established products already do. It is more reliable and easier to maintain, and a little extra load time is an acceptable price (ADR 0021). The four rules under "Before you build" below are how this is checked.
 
 ## Conventions
 
