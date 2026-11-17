@@ -37,14 +37,14 @@
 
 - **`scripts/build-maps.ts`:**
   - Natural Earth (`world-atlas`) → **simplified** country shapes per ISO code, as coordinates MapLibre can draw
-  - a coarse world file first, and more detailed shapes that load when zooming in
+  - one detailed file of the whole world. MapLibre draws a suitably simplified version at each zoom itself, so nothing is swapped as the viewer zooms (ADR 0020)
   - shapes that cross the map's edge are cut there
   - output as hashed static assets, **not in the Worker bundle**
-  - a size budget per file, set in the PR's plan
+  - a size budget for the file (ADR 0020)
   - every border choice is recorded in ADR 0020
 - **The shell:** a layout route renders the map full-screen and keeps it mounted. Child routes render only the panel. The URL decides the view: the world, a continent, or a selected country. Moving between views animates, unless the user prefers reduced motion.
 - **`<CountryMap view written selected owner />`:**
-  - loads MapLibre lazily, after the page; until then the page shows a plain ocean-coloured background
+  - loads MapLibre and the map file lazily, after the page; until they are there, the page shows a plain ocean-coloured background and "Loading the map". A couple of seconds is accepted (ADR 0021)
   - `view`: the world, a continent, or a country to zoom to
   - **written countries:** filled with the accent colour; **the selected country** uses a clearly different shade of it (no outline)
   - **for visitors:** written countries can be clicked; unwritten ones are neutral and do nothing

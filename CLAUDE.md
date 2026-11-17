@@ -65,6 +65,7 @@ Look up current docs for these libraries instead of relying on memory. Their API
 - **Database access goes through Drizzle only,** with app-generated IDs and `db.batch()` for atomic writes (ADR 0006).
 - **Don't import Cloudflare-specific APIs outside `app/server/platform/`.** The app must stay portable to Node.
 - **YAGNI.** Build what the spec asks for. No speculative abstractions, no "while I'm here" refactors outside the PR's scope.
+- **Lean on the libraries and technologies we already use, instead of reinventing what they do.** Before building a mechanism, check whether MapLibre, React Router, Base UI or the platform already has it, and use that. It is more reliable and easier to maintain. A little extra load time is an acceptable price (ADR 0021).
 
 ## Conventions
 

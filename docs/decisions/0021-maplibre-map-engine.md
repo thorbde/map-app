@@ -27,7 +27,10 @@ A throwaway spike (2026-11-16) showed one MapLibre map drawing our own country s
 - **The size budget changes** (decided by Thor):
   - **MapLibre loads lazily, after the page, and is outside the first-load budget,** the way CodeMirror is. The 150 KB first-load budget stays for everything else: the panel, the essay text and navigation arrive first and work before the map engine does.
   - **The map engine gets a limit of its own,** set from what is measured when it is added (M1 PR 4), so it can't grow unnoticed. Measured today: 296 KB gzipped, plus a 147 KB worker file that loads in the background and 10 KB of CSS.
-- **Before the map has loaded,** the page shows a plain ocean-coloured background. Nothing is drawn on the server.
+- **Before the map has loaded,** the page shows a plain ocean-coloured background and "Loading the map". Nothing is drawn on the server.
+- **The map may take a couple of seconds to appear** (Thor, 2026-11-17). It will be heavy on animation anyway, so the effort goes into making it good once it is loaded, not into shaving the load. The map data is one detailed file of about 1.9 MB gzipped (ADR 0020), on top of the engine.
+- **Phones are expected to use an app,** with the map files bundled in, more than the website (Thor, 2026-11-17). The website on a phone is not what the load time is tuned for.
+- **Lean on what MapLibre already does** (Thor, 2026-11-17), instead of building our own version beside it. The first attempt loaded three levels of detail as the viewer zoomed, which is MapLibre's own job, and its swaps showed. See `CLAUDE.md`, "Hard rules".
 - **Accessibility:** a canvas has no links in it, so **the panel carries the navigation:** every country the viewer may open is a real link in a list in the panel. The map remains a labelled region with keyboard pan and zoom, but it is never the only way to reach a country.
 - **No attribution on the map.** Natural Earth is public domain, and MapLibre's licence (BSD 3-clause) asks only that its licence text stays with the code. The build must keep that notice. This changes if tiles are added: most tile data requires a visible credit.
 
