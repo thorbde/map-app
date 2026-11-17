@@ -53,7 +53,7 @@ const START_TIMEOUT_MS = 20_000;
  * A country gets a marker dot while its largest piece of land is fewer than
  * this many pixels across, at the zoom the viewer is at.
  */
-const MARKER_BELOW_PX = 14;
+const MARKER_BELOW_PX = 6;
 
 /** How far from a marker dot a click still counts, in pixels. */
 const CLICK_REACH = 6;
@@ -197,6 +197,39 @@ function labelFilter(
 	];
 }
 
+/** The selected country's label: one layer for when it is a shape, one for when it is a dot. */
+function selectedFilter(
+	marker: boolean,
+	selected: string | undefined,
+): ExpressionSpecification {
+	return [
+		"all",
+		marker ? isMarker : ["!", isMarker],
+		["==", ["get", "iso"], selected ?? ""],
+	];
+}
+
+/** A marker dot as a picture, for MapLibre to place like a label. */
+function dotImage(fill: string, outline: string) {
+	const RADIUS = 4;
+	const OUTLINE = 1.5;
+	const pixelRatio = 2;
+	const size = Math.ceil((RADIUS + OUTLINE) * 2 + 2) * pixelRatio;
+	const canvas = document.createElement("canvas");
+	canvas.width = size;
+	canvas.height = size;
+	const context = canvas.getContext("2d");
+	if (!context) throw new Error("No canvas to draw the marker dots on");
+	context.beginPath();
+	context.arc(size / 2, size / 2, RADIUS * pixelRatio, 0, 2 * Math.PI);
+	context.fillStyle = fill;
+	context.fill();
+	context.lineWidth = OUTLINE * pixelRatio;
+	context.strokeStyle = outline;
+	context.stroke();
+	return { image: context.getImageData(0, 0, size, size), pixelRatio };
+}
+
 const isSelected: ExpressionSpecification = [
 	"boolean",
 	["feature-state", "selected"],
@@ -248,6 +281,23 @@ export async function createMapEngine(
 		"text-color": colours.label,
 		"text-halo-color": colours.land,
 		"text-halo-width": 3,
+	};
+
+	const selectedLabelLayout = {
+		"text-field": ["get", "name"] as ExpressionSpecification,
+		// "Bold" in the first name is what makes MapLibre draw at 700.
+		"text-font": ["Montserrat Bold", "Montserrat"],
+		"text-size": 16,
+		"text-max-width": 8,
+		// Always drawn, and the other labels make room for it.
+		"text-allow-overlap": true,
+	};
+	const selectedLabelPaint = {
+		"text-color": colours.labelOnSelected,
+		// Where the name is wider than the country, the letters that reach over a
+		// neighbour or the sea keep a dark edge to stand on.
+		"text-halo-color": colours.selected,
+		"text-halo-width": 2,
 	};
 
 	// Throws when the browser has no WebGL: the component shows a note instead.
@@ -304,18 +354,6 @@ export async function createMapEngine(
 					source: "countries",
 					paint: { "line-color": colours.border, "line-width": 1 },
 				},
-				{
-					id: "markers",
-					type: "circle",
-					source: "places",
-					filter: isMarker,
-					paint: {
-						"circle-radius": 4,
-						"circle-color": stateColour(colours.land),
-						"circle-stroke-width": 1.5,
-						"circle-stroke-color": stateColour(colours.markerOutline),
-					},
-				},
 				// DESIGN.md, "Labels on the map": 12 px, in the text colour, with a
 				// 3 px white outline so borders don't cut through the letters.
 				{
@@ -327,40 +365,13 @@ export async function createMapEngine(
 					paint: labelPaint,
 				},
 				{
-					// A marker's label sits beside its dot, never on top of it.
-					id: "marker-labels",
-					type: "symbol",
-					source: "places",
-					filter: labelFilter(true, state.selected),
-					layout: {
-						...labelLayout,
-						"text-variable-anchor": ["top", "bottom", "left", "right"],
-						"text-radial-offset": 0.6,
-					},
-					paint: labelPaint,
-				},
-				{
 					// The selected country: white, 16 px, bold, inside the shape.
 					id: "label-selected",
 					type: "symbol",
 					source: "places",
-					filter: ["==", ["get", "iso"], state.selected ?? ""],
-					layout: {
-						"text-field": ["get", "name"],
-						// "Bold" in the first name is what makes MapLibre draw at 700.
-						"text-font": ["Montserrat Bold", "Montserrat"],
-						"text-size": 16,
-						"text-max-width": 8,
-						// Always drawn, and the other labels make room for it.
-						"text-allow-overlap": true,
-					},
-					paint: {
-						"text-color": colours.labelOnSelected,
-						// Where the name is wider than the country, the letters that
-						// reach over a neighbour or the sea keep a dark edge to stand on.
-						"text-halo-color": colours.selected,
-						"text-halo-width": 2,
-					},
+					filter: selectedFilter(false, state.selected),
+					layout: selectedLabelLayout,
+					paint: selectedLabelPaint,
 				},
 			],
 		},
@@ -389,10 +400,10 @@ export async function createMapEngine(
 				[point.x - CLICK_REACH, point.y - CLICK_REACH],
 				[point.x + CLICK_REACH, point.y + CLICK_REACH],
 			],
-			{ layers: ["markers"] },
+			{ layers: ["marker-selected", "markers"] },
 		);
 		const under = map.queryRenderedFeatures(point, {
-			layers: ["label-selected", "marker-labels", "labels", "land"],
+			layers: ["label-selected", "labels", "land"],
 		});
 		const iso = [...near, ...under][0]?.properties.iso;
 		return typeof iso === "string" ? iso : undefined;
@@ -419,10 +430,10 @@ export async function createMapEngine(
 				placesOf(countries, names, state),
 			);
 		}
-		const selected = state.selected ?? "";
-		map.setFilter("label-selected", ["==", ["get", "iso"], selected]);
 		map.setFilter("labels", labelFilter(false, state.selected));
-		map.setFilter("marker-labels", labelFilter(true, state.selected));
+		map.setFilter("markers", labelFilter(true, state.selected));
+		map.setFilter("label-selected", selectedFilter(false, state.selected));
+		map.setFilter("marker-selected", selectedFilter(true, state.selected));
 	}
 
 	// If the map hasn't started after a while (its worker or its style failed),
@@ -444,6 +455,59 @@ export async function createMapEngine(
 		map.remove();
 		throw error;
 	}
+
+	// The marker dots. Each dot and its name are one symbol, which MapLibre
+	// places like any label: where dots would overlap, one gives way, and comes
+	// back when the viewer zooms in and there is room. Written countries go first.
+	const dots = {
+		dot: dotImage(colours.land, colours.markerOutline),
+		"dot-written": dotImage(colours.written, colours.written),
+		"dot-selected": dotImage(colours.selected, colours.selected),
+	};
+	for (const [name, { image, pixelRatio }] of Object.entries(dots)) {
+		map.addImage(name, image, { pixelRatio });
+	}
+	const beside = {
+		// A marker's name sits beside its dot, never on top of it.
+		"text-variable-anchor": ["top", "bottom", "left", "right"] as [
+			"top",
+			"bottom",
+			"left",
+			"right",
+		],
+		"text-radial-offset": 0.6,
+	};
+	map.addLayer(
+		{
+			id: "markers",
+			type: "symbol",
+			source: "places",
+			filter: labelFilter(true, state.selected),
+			layout: {
+				...labelLayout,
+				...beside,
+				"icon-image": ["case", ["get", "written"], "dot-written", "dot"],
+				// The dot is what makes a small country clickable, so it stays
+				// when only its name doesn't fit.
+				"text-optional": true,
+			},
+			paint: labelPaint,
+		},
+		"label-selected",
+	);
+	map.addLayer({
+		id: "marker-selected",
+		type: "symbol",
+		source: "places",
+		filter: selectedFilter(true, state.selected),
+		layout: {
+			...selectedLabelLayout,
+			...beside,
+			"icon-image": "dot-selected",
+			"icon-allow-overlap": true,
+		},
+		paint: selectedLabelPaint,
+	});
 	paint(undefined);
 
 	// Only now does the map listen to the mouse: before the style has loaded
