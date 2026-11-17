@@ -89,7 +89,7 @@ async function gzippedSize(file: MapFile): Promise<number> {
 }
 
 describe("map geometry: every country is there", () => {
-	it("has all 197 countries in the world file, each with a shape or a marker", () => {
+	it("has every country in the list in the world file, each with a shape or a marker", () => {
 		const isos = countriesIn(worldFile).map(
 			(feature) => feature.properties.iso,
 		);
@@ -268,17 +268,19 @@ describe("map geometry: border choices (ADR 0020)", () => {
 		expect(at(worldFile, simferopol)).toEqual(["UA"]);
 	});
 
-	it("draws all of Western Sahara as neutral land, and Morocco north of 27°40′ N", () => {
+	it("draws Western Sahara as its own country, and Morocco north of 27°40′ N", () => {
 		for (const file of [africa, worldFile]) {
-			expect(at(file, [-13.0, 27.0])).toEqual(["neutral"]); // near Laayoune
-			expect(at(file, [-15.5, 23.8])).toEqual(["neutral"]); // near Dakhla
-			expect(at(file, [-9.5, 26.5])).toEqual(["neutral"]); // east of the sand wall
+			expect(at(file, [-13.0, 27.0])).toEqual(["EH"]); // near Laayoune
+			expect(at(file, [-15.5, 23.8])).toEqual(["EH"]); // near Dakhla
+			expect(at(file, [-9.5, 26.5])).toEqual(["EH"]); // east of the sand wall
 			expect(at(file, [-10.0, 28.5])).toEqual(["MA"]); // near Tan-Tan
 			expect(at(file, [-6.5, 33.5])).toEqual(["MA"]); // near Rabat
 		}
 		const morocco = country(africa, "MA")?.geometry?.coordinates.flat(2) ?? [];
 		const southernmost = Math.min(...morocco.map(([, lat]) => lat));
 		expect(southernmost).toBeCloseTo(27.67, 2);
+		// One shape: the sand wall that splits it in the source data is gone.
+		expect(country(africa, "EH")?.geometry?.coordinates).toHaveLength(1);
 	});
 
 	it("draws Åland as part of Finland", () => {
