@@ -238,6 +238,8 @@ export async function createMapEngine(
 
 	/** The continents whose detailed shapes are on the map. */
 	const detailed = new Set<Continent>();
+	/** The continents whose coarse shapes have been taken away again. */
+	const swapped = new Set<Continent>();
 	const requested = new Set<Continent>();
 	const detailedMarkers = new Map<string, boolean>();
 	let destroyed = false;
@@ -489,12 +491,19 @@ export async function createMapEngine(
 			detailedMarkers.set(properties.iso, properties.marker === true);
 		}
 
-		const coarseOnly: ExpressionSpecification = [
-			"!",
-			["in", ["get", "continent"], ["literal", [...detailed]]],
-		];
-		map.setFilter("land", coarseOnly);
-		map.setFilter("borders", coarseOnly);
+		// The coarse shapes stay until the detailed ones have been drawn over
+		// them. Hiding them first would leave the continent empty for a moment,
+		// to the eye and to a click.
+		map.once("idle", () => {
+			if (destroyed) return;
+			swapped.add(continent);
+			const stillCoarse: ExpressionSpecification = [
+				"!",
+				["in", ["get", "continent"], ["literal", [...swapped]]],
+			];
+			map.setFilter("land", stillCoarse);
+			map.setFilter("borders", stillCoarse);
+		});
 		// Colour the new shapes, and move the dots that are no longer needed.
 		for (const iso of new Set([...state.written, state.selected])) {
 			if (!iso) continue;
