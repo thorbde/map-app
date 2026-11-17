@@ -13,9 +13,9 @@ This app is built by agents and owned by Thor, a design systems engineer. Thor o
 
 People learn about the countries of the world by writing short essays, one country at a time, following an evidence-based method (`docs/METHOD.md`). Each user has a world map that fills in as they publish. Profiles can be public or private. Social features come later (`docs/specs/roadmap.md`). The MVP is defined in `docs/specs/mvp.md`.
 
-## Stack (see ADRs 0001, 0006, 0007, 0008, 0013)
+## Stack (see ADRs 0001, 0006, 0007, 0008, 0013, 0021)
 
-React Router v8 (framework mode) · TypeScript strict · Cloudflare Workers · Cloudflare D1 (EU jurisdiction) · Drizzle ORM · Better Auth (Google sign-in) · CodeMirror 6 · remark/rehype + rehype-sanitize · Base UI · DTCG tokens + Terrazzo · CSS Modules · Vitest (Cloudflare Vitest plugin, tests run in workerd) · Playwright · Storybook · Biome · dependency-cruiser · knip · pnpm workspaces
+React Router v8 (framework mode) · TypeScript strict · Cloudflare Workers · Cloudflare D1 (EU jurisdiction) · Drizzle ORM · Better Auth (Google sign-in) · CodeMirror 6 · MapLibre GL JS · remark/rehype + rehype-sanitize · Base UI · DTCG tokens + Terrazzo · CSS Modules · Vitest (Cloudflare Vitest plugin, tests run in workerd) · Playwright · Storybook · Biome · dependency-cruiser · knip · pnpm workspaces
 
 Versions are pinned exactly; ADR 0013 lists every package, why it's there, and its size. Add new ones there too.
 
@@ -38,7 +38,7 @@ Look up current docs for these libraries instead of relying on memory. Their API
 | `pnpm db:generate` | Generate a migration from the schema |
 | `pnpm db:migrate` | Apply migrations to the **local** D1 only |
 | `pnpm build:facts` | Regenerate the country facts from Wikidata (needs network; the monthly job does this, ADR 0012) |
-| `pnpm build:maps` | Regenerate the map geometry from Natural Earth |
+| `pnpm build:maps` | Regenerate the map geometry from Natural Earth; commit the result. Border choices are in ADR 0020, which arrives with thorbde/map-app#24, M1 PR 3 |
 
 ## How to work
 
@@ -48,6 +48,19 @@ Look up current docs for these libraries instead of relying on memory. Their API
    **Open PRs as drafts.** Mark a PR ready for review only when the definition of done is met: that starts the automated Claude review (ADR 0009). Fix or answer its findings before asking Thor to merge.
 4. **Update the docs in the same PR.** If the structure changes, update `ARCHITECTURE.md`. If a decision is made, add an ADR.
 5. **Definition of done:** `pnpm check` is green, the e2e tests touching the feature pass, the docs are updated, and the PR description is complete.
+
+## Before you build: what already exists
+
+Three times in one session an agent built its own mechanism for something that already existed: levels of detail (MapLibre does it), a rule for small countries (Natural Earth ships label ranks), and label positions (Natural Earth ships those too). Thor caught each one. These rules exist so that the plan catches it instead.
+
+1. **Every plan starts with a section called "What already exists",** with links. No plan is approved without it. It answers, in this order:
+   - What does our **data source** already contain for this? List the fields.
+   - What do the **libraries we use** already do for this?
+   - How do **two established products** solve it?
+   - Only then: what we build ourselves, and why nothing above fits.
+2. **Building our own version of a solved problem needs an ADR** that names what exists and says why it isn't used. No ADR, no custom mechanism.
+3. **When adopting a data source or a package, record what it provides and what it leaves out,** in the ADR that adds it. A package that strips data we may need is a reason to use the original.
+4. **Two workarounds means stop.** If a feature needs a second fix for the same underlying problem, stop and re-check the approach instead of adding a third.
 
 ## Hard rules
 
@@ -65,6 +78,8 @@ Look up current docs for these libraries instead of relying on memory. Their API
 - **Database access goes through Drizzle only,** with app-generated IDs and `db.batch()` for atomic writes (ADR 0006).
 - **Don't import Cloudflare-specific APIs outside `app/server/platform/`.** The app must stay portable to Node.
 - **YAGNI.** Build what the spec asks for. No speculative abstractions, no "while I'm here" refactors outside the PR's scope.
+- **Contested territory, recognition and international relations never hold the work up** (Thor, 2026-11-17). Prefer inclusion over exclusion, record every such choice as high risk in ADR 0019 (the country list) or ADR 0020 (the map; it arrives with thorbde/map-app#24), and carry on without asking. Thor revisits them all when the MVP is done.
+- **Never reinvent what already exists** (Thor, 2026-11-17). Use what our data sources, our libraries and established products already do. It is more reliable and easier to maintain, and a little extra load time is an acceptable price (ADR 0021). The four rules under "Before you build" below are how this is checked.
 
 ## Conventions
 
@@ -75,7 +90,7 @@ Look up current docs for these libraries instead of relying on memory. Their API
 - **Naming:** `camelCase` in TypeScript and `snake_case` in the database (Drizzle maps between them).
 - **Style with tokens, never raw values** (ADR 0014): colours and fonts through semantic tokens only (`var(--color-text-muted)`, `var(--font-ui)`); scales such as space, radius and font size directly (`var(--space-4)`).
 - **Accessibility is not optional.** Use semantic HTML, make everything keyboard-reachable, keep focus visible, and label everything. Base UI for interactive primitives.
-- **Performance budgets:** at most 150 KB gzipped JS on reading pages, of which at most ~40 KB is our own code and the map (React and React Router are ~114 KB; ADR 0013), one database round trip per page where possible, and CodeMirror only on `/write/*`.
+- **Performance budgets:** at most 150 KB gzipped of first-load JS on reading pages, of which at most ~40 KB is our own code (React and React Router are ~114 KB; ADR 0013), one database round trip per page where possible. The map engine (MapLibre) loads lazily with a limit of its own (ADR 0021), and CodeMirror only on `/write/*`.
 - **The UI copy is English.** Keep the tone friendly, short and concrete.
 
 ## When unsure
