@@ -37,11 +37,13 @@ The tokens are the source of truth (`packages/tokens/tokens/`, ADR 0014). This i
 | Text | `#0B2F2C`, muted `#4A6663` |
 | Links | `#096A60` |
 | Primary buttons, focus ring | `#0B7A6F`, hover `#096A60` |
-| Written countries | `#0E8C7F`; selected `#0B2F2C` |
+| Written countries | `#0E8C7F`; selected `#096A60` |
 | Errors | `#C62828` |
 | Input borders | `#748E8B`; hairlines `#D4D4D4` |
 
-**Contrast.** Text is at least 4.5:1 against its background. Map shapes and control borders are at least 3:1 against their neighbours (WCAG 1.4.11), including "selected" against "written". Every pair above passes; a new pair is checked before it's used.
+**Contrast.** Text is at least 4.5:1 against its background. Map shapes and control borders are at least 3:1 against their neighbours (WCAG 1.4.11). Every pair above passes; a new pair is checked before it's used.
+
+**One exception, decided by Thor (2026-11-17): "selected" against "written" is 1.6:1.** The colour that reached 3:1 (`#0B2F2C`) was too dark on the map. The selected country is told apart by its label instead: white, bold and larger. Selected still reaches 3:1 against unwritten land (6.5:1) and the ocean (5.3:1).
 
 **Type.**
 - **Montserrat** for everything in the interface, including every heading. Two weights: 400 and 700.
@@ -63,7 +65,7 @@ The tokens are the source of truth (`packages/tokens/tokens/`, ADR 0014). This i
 **Labels on the map.** 12 px, sentence case.
 - On land that isn't written: text colour with a 3 px white outline, so borders don't cut through the letters.
 - On a written country: the same. White text on the teal would only reach 4.1:1, under the minimum.
-- On the selected country: white, 16 px, 700, inside the shape (14.4:1).
+- On the selected country: white, 16 px, 700, inside the shape (6.5:1), with an outline in the selected colour for the letters that reach outside it.
 
 ## Never
 

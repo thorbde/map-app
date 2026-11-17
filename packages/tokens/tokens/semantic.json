@@ -102,8 +102,8 @@
 				"$value": "{color.teal.600}"
 			},
 			"selected": {
-				"$description": "Must reach 3:1 against written.",
-				"$value": "{color.teal.950}"
+				"$description": "Told apart from written by its label (white, bold, larger), not by 3:1 contrast: Thor found the darker teal that reached it too dark (DESIGN.md). Reaches 3:1 against land and ocean.",
+				"$value": "{color.teal.800}"
 			}
 		},
 		"icon": {
