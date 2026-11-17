@@ -36,7 +36,8 @@
 **MapLibre draws the map** (ADR 0021), with our own country shapes and no tile service. Equal Earth is the default projection for now; Mercator and the globe are options, with the setting arriving later.
 
 - **`scripts/build-maps.ts`:**
-  - Natural Earth (`world-atlas`) → **simplified** country shapes per ISO code, as coordinates MapLibre can draw
+  - Natural Earth's own files (not the `world-atlas` package, which strips everything but the shapes) → country shapes per ISO code, as coordinates MapLibre can draw
+  - what Natural Earth already provides is used as it is: label points, the zoom each label appears from, disputed areas, overseas parts as their own units
   - one detailed file of the whole world. MapLibre draws a suitably simplified version at each zoom itself, so nothing is swapped as the viewer zooms (ADR 0020)
   - shapes that cross the map's edge are cut there
   - output as hashed static assets, **not in the Worker bundle**
@@ -57,7 +58,8 @@
   - Somaliland is merged into Somalia.
   - Unknown features render neutral and never crash.
   - No Antarctica.
-- **Small states** that are too small or missing at the scale get a marker dot. This is a generic rule; for Africa that means at least CV, ST, KM, MU and SC. **Test:** every country can be reached in its continent view: clicked on the map, and as a link in the panel.
+- **Labels appear by rank, as on Google Earth** (Thor, 2026-11-17): each country's name shows from the zoom Natural Earth gives it, so the large countries are named first and the small ones as the viewer zooms in. Written and selected countries always show their name.
+- **No marker dots for small states** (Thor, 2026-11-17; to be revisited). A country too small to hit at the current zoom is reached by zooming in, by its name on the map, or from the list in the panel. **Test:** every country can be reached in its continent view: on the map, and as a link in the panel.
 - **Phones:** the panel becomes a bottom sheet over the map, and can be expanded to read.
 - **Keep the component's interface clean,** since the map's look will be redesigned later without changes elsewhere.
 
