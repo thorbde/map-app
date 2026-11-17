@@ -13,14 +13,20 @@ export type MapCountryFeature = {
 	properties: {
 		/** ISO 3166-1 alpha-2, as in the country list. */
 		iso: string;
-		/** Where the country's label and its marker dot go. */
+		/**
+		 * Where the country's name goes: Natural Earth's label point. For a
+		 * country of islands it can be in the sea between them.
+		 */
 		label: [lng: number, lat: number];
 		/**
-		 * How big the country's largest piece of land is: the side of a square of
-		 * the same area, in kilometres. The map shows a marker dot for a country
-		 * while this is too few pixels to click.
+		 * The zoom level the name appears from and the one it disappears after, as
+		 * Natural Earth has them (MIN_LABEL, MAX_LABEL). They are tuned for
+		 * ordinary web maps: Russia 1.7, Denmark 3, Luxembourg 5.7.
 		 */
-		sizeKm: number;
+		labelMinZoom: number;
+		labelMaxZoom: number;
+		/** Natural Earth's LABELRANK: 2 for the most prominent countries, up to 9. */
+		labelRank: number;
 	};
 	geometry: { type: "MultiPolygon"; coordinates: PolygonCoordinates[] };
 };

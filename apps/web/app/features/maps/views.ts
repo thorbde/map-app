@@ -46,6 +46,10 @@ export const CONTINENT_BOUNDS: Record<Continent, Bounds> = {
 		[-83, -57],
 		[-33, 14],
 	],
+	// Oceania runs from Australia to Niue, at the map's right edge. The Cook
+	// Islands are just past that edge, so they are at the far left of the map
+	// and reached by panning (Thor, 2026-11-17). To be looked at again when the
+	// projection is settled.
 	oceania: [
 		[110, -50],
 		[191, 22],
@@ -54,6 +58,19 @@ export const CONTINENT_BOUNDS: Record<Continent, Bounds> = {
 
 /** A country with no shape, or a tiny one, still gets a view this many degrees across. */
 const SMALLEST_VIEW = 4;
+
+/** Land this close to a name that is off the land belongs in the country's view. */
+const NEAR_LABEL_KM = 150;
+
+/** The distance between two points that are near each other, roughly. */
+function kmBetween(
+	[lngA, latA]: [number, number],
+	[lngB, latB]: [number, number],
+): number {
+	const KM_PER_DEGREE = 111.2;
+	const narrowing = Math.cos((((latA + latB) / 2) * Math.PI) / 180);
+	return Math.hypot((lngA - lngB) * narrowing, latA - latB) * KM_PER_DEGREE;
+}
 
 function ringContains(
 	ring: [number, number][],
@@ -80,13 +97,21 @@ export function countryBounds(country: MapCountryFeature): Bounds {
 	const outerRings = country.geometry.coordinates.flatMap(([outer]) =>
 		outer ? [outer] : [],
 	);
-	const ring = outerRings.find((outer) => ringContains(outer, label));
+	// The piece of land the name is on. Some names are beside their land or
+	// between its islands (New Zealand, the Vatican: ADR 0020); those countries
+	// are framed by the land near the name instead.
+	const onLand = outerRings.find((outer) => ringContains(outer, label));
+	const rings = onLand
+		? [onLand]
+		: outerRings.filter((outer) =>
+				outer.some((point) => kmBetween(point, label) < NEAR_LABEL_KM),
+			);
 
-	// Starts from the label point itself: two are hand-set (ADR 0020). A loop,
-	// because a large country's coast has more points than Math.min can take.
+	// Starts from the label point itself. A loop, because a large country's
+	// coast has more points than Math.min can take.
 	let [west, south] = label;
 	let [east, north] = label;
-	for (const [lng, lat] of ring ?? []) {
+	for (const [lng, lat] of rings.flat()) {
 		west = Math.min(west, lng);
 		east = Math.max(east, lng);
 		south = Math.min(south, lat);

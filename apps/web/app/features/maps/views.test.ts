@@ -35,13 +35,18 @@ describe("map views", () => {
 		}
 	});
 
-	it("shows every country's label point in its continent's view", () => {
+	it("shows every country's label point in its continent's view, but for the Cook Islands", () => {
+		// The Cook Islands are at the map's left edge and the rest of Oceania is
+		// at its right, so no view of Oceania holds both: they are reached by
+		// panning (Thor, 2026-11-17). Any other country outside its view fails.
+		const outside: string[] = [];
 		for (const { iso, continent } of countries) {
 			const [[west, south], [east, north]] = CONTINENT_BOUNDS[continent];
 			const [lng, lat] = country(iso).properties.label;
-			expect(lng >= west && lng <= east, iso).toBe(true);
-			expect(lat >= south && lat <= north, iso).toBe(true);
+			const inside = lng >= west && lng <= east && lat >= south && lat <= north;
+			if (!inside) outside.push(iso);
 		}
+		expect(outside).toEqual(["CK"]);
 	});
 
 	it("frames a country around its largest piece of land", () => {
@@ -67,6 +72,31 @@ describe("map views", () => {
 		const [lng, lat] = malta.properties.label;
 		expect(Math.abs((west + east) / 2 - lng)).toBeLessThan(0.2);
 		expect(Math.abs((south + north) / 2 - lat)).toBeLessThan(0.2);
+	});
+
+	it("frames both main islands of New Zealand, whose name is in the strait between them", () => {
+		const [[west, south], [east, north]] = countryBounds(country("NZ"));
+		// From Fiordland in the south-west to East Cape and Cape Reinga in the north.
+		expect(west).toBeLessThan(167);
+		expect(south).toBeLessThan(-46);
+		expect(east).toBeGreaterThan(178);
+		expect(north).toBeGreaterThan(-35);
+	});
+
+	it("frames the Vatican's land together with its name, which is beside it", () => {
+		const vatican = country("VA");
+		const [[west, south], [east, north]] = countryBounds(vatican);
+		for (const [lng, lat] of vatican.geometry.coordinates[0]?.[0] ?? []) {
+			expect(lng).toBeGreaterThan(west);
+			expect(lng).toBeLessThan(east);
+			expect(lat).toBeGreaterThan(south);
+			expect(lat).toBeLessThan(north);
+		}
+	});
+
+	it("frames Kiribati around Tarawa, not the whole Pacific", () => {
+		const [[west], [east]] = countryBounds(country("KI"));
+		expect(east - west).toBeLessThan(6);
 	});
 
 	it("always contains the label point", () => {

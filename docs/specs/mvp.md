@@ -14,7 +14,7 @@
 - `continent`: `africa` | `europe` | `asia` | `north-america` | `south-america` | `oceania`
 - `region`
 
-**Scope:** the 193 UN members plus Palestine (PS) and the Vatican (VA), and Kosovo (XK), Taiwan (TW) and Western Sahara (EH), for 198 in total. Including these three is a **high-risk decision to revisit** (ADR 0019).
+**Scope:** the 193 UN members plus Palestine (PS) and the Vatican (VA), and Kosovo (XK), Taiwan (TW), Western Sahara (EH), the Cook Islands (CK) and Niue (NU), for 200 in total. Including these five is a **high-risk decision to revisit** (ADR 0019). The rule for such choices: **prefer inclusion over exclusion,** record each one in ADR 0019 or ADR 0020, and Thor revisits them when the MVP is done.
 
 **Regions:**
 - **Africa uses the African Union's regions exactly as listed:**
@@ -27,31 +27,39 @@
 
 **Facts** (ADR 0012): `facts.ts`, a reviewed static dataset per ISO code: capital, languages, population (with its year), government type and land neighbours (no independence date: Wikidata has no usable one, and it belongs in the essay). It's generated from **Wikidata** by `scripts/build-facts.ts`, plus a small overrides file. A **monthly scheduled job** regenerates it and opens a PR with the changes for Thor to review. Writers don't type facts in.
 
-**Tests:** 55 countries in Africa, 198 in total, no duplicates, and every country has a complete fact entry.
+**Tests:** 55 countries in Africa, 200 in total, no duplicates, and every country has a complete fact entry.
 
 ## 2. Maps and the app shell (`features/maps`)
 
 **The map is always the base of the app** (ADR 0010). It fills the screen, and every page is a floating panel on top of it. The design is in `docs/design/README.md`.
 
+**MapLibre draws the map** (ADR 0021), with our own country shapes and no tile service. Equal Earth is the default projection for now; Mercator and the globe are options, with the setting arriving later.
+
 - **`scripts/build-maps.ts`:**
-  - Natural Earth (`world-atlas`) → `d3-geo` → **simplified, quantized** SVG path data per ISO code
-  - **Equal Earth** projection: one world map, plus more detailed geometry per continent that loads when zooming in
+  - Natural Earth's own files (not the `world-atlas` package, which strips everything but the shapes) → country shapes per ISO code, as coordinates MapLibre can draw
+  - what Natural Earth already provides is used as it is: label points, the zoom each label appears from, disputed areas, overseas parts as their own units
+  - one detailed file of the whole world. MapLibre draws a suitably simplified version at each zoom itself, so nothing is swapped as the viewer zooms (ADR 0020, which arrives with thorbde/map-app#24, M1 PR 3)
+  - shapes that cross the map's edge are cut there
   - output as hashed static assets, **not in the Worker bundle**
-  - budget: **under ~50 KB compressed per map file**
+  - a size budget for the file (ADR 0020)
+  - every border choice is recorded in ADR 0020
 - **The shell:** a layout route renders the map full-screen and keeps it mounted. Child routes render only the panel. The URL decides the view: the world, a continent, or a selected country. Moving between views animates, unless the user prefers reduced motion.
 - **`<CountryMap view written selected owner />`:**
+  - loads MapLibre and the map file lazily, after the page; until they are there, the page shows a plain ocean-coloured background and "Loading the map". A couple of seconds is accepted (ADR 0021)
   - `view`: the world, a continent, or a country to zoom to
   - **written countries:** filled with the accent colour; **the selected country** uses a clearly different shade of it (no outline)
-  - **for visitors:** written countries are focusable links with an `aria-label`; unwritten ones are neutral and not links
-  - **for the owner:** every country is a link. No published essay → the editor; published → the essay, with an Edit button
-  - colour via CSS classes using tokens
+  - **for visitors:** written countries can be clicked; unwritten ones are neutral and do nothing
+  - **for the owner:** every country can be clicked. No published essay → the editor; published → the essay, with an Edit button
+  - colours come from the tokens, read at run time
+- **The panel carries the navigation** (ADR 0021): a map on a canvas has no links, so every country the viewer may open is also a real link, with a clear label, in a list in the panel.
 - **Map controls:** zoom in and out buttons, and continent chips (World, Africa, Europe, Asia, North America, South America, Oceania) that switch the view. No legend.
 - **Edge cases:**
   - Disputed or non-sovereign areas (Western Sahara, Northern Cyprus, Greenland, French Guiana, Puerto Rico and so on) are neutral and not clickable.
   - Somaliland is merged into Somalia.
   - Unknown features render neutral and never crash.
   - No Antarctica.
-- **Small states** that are too small or missing at the scale get a marker dot. This is a generic rule; for Africa that means at least CV, ST, KM, MU and SC. **Test:** every country can be clicked in its continent view.
+- **Labels appear by rank, as on Google Earth** (Thor, 2026-11-17): each country's name shows from the zoom Natural Earth gives it, so the large countries are named first and the small ones as the viewer zooms in. Written and selected countries always show their name.
+- **No marker dots for small states** (Thor, 2026-11-17; to be revisited). A country too small to hit at the current zoom is reached by zooming in, by its name on the map, or from the list in the panel. **Test:** every country can be reached in its continent view: on the map, and as a link in the panel.
 - **Phones:** the panel becomes a bottom sheet over the map, and can be expanded to read.
 - **Keep the component's interface clean,** since the map's look will be redesigned later without changes elsewhere.
 
@@ -84,7 +92,7 @@ Every page below is a panel over the map (§2).
 
 - **`/u/:username`:** the world map, and a panel with:
   - name, bio
-  - progress in total and per continent ("12 / 198", "4 / 55" for Africa)
+  - progress in total and per continent ("12 / 200", "4 / 55" for Africa)
   - when it's your own profile: "Continue writing", "In progress" (drafts and unpublished changes), and a hint that clicking a country starts an essay
   - recently published essays
   - a link to `/method`
@@ -124,8 +132,8 @@ Every page below is a panel over the map (§2).
 ## 8. Quality bar
 
 - **Performance:**
-  - at most 150 KB gzipped JS on reading pages, of which at most ~40 KB is our own code, **including the map shell and its pan and zoom** (ADR 0013) and CodeMirror only on `/write/*`
-  - fast first load: the page content and the map's SVG are server-rendered, so they're visible before any JavaScript runs
+  - at most 150 KB gzipped of first-load JS on reading pages (ADR 0013). Two things load lazily and are outside it: the map engine, with a limit of its own (ADR 0021), and CodeMirror, only on `/write/*`
+  - fast first load: the page content is server-rendered, so it's readable before any JavaScript runs. The map appears when its engine has loaded
   - `prefetch="intent"` on map countries, prev/next and profile links
   - Smart Placement on
   - no layout shift around the map or the fact box

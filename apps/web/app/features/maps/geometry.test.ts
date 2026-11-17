@@ -41,6 +41,18 @@ function contains(geometry: Geometry | undefined, point: Point): boolean {
 	);
 }
 
+/** How far a point is from the nearest point of a shape's outline, in kilometres. */
+function kmToLand(geometry: Geometry, [lng, lat]: Point): number {
+	const radians = Math.PI / 180;
+	let nearest = Number.POSITIVE_INFINITY;
+	for (const [x, y] of geometry.coordinates.flat(2)) {
+		const dLat = (y - lat) * radians;
+		const dLng = (x - lng) * radians * Math.cos(lat * radians);
+		nearest = Math.min(nearest, 6371 * Math.hypot(dLat, dLng));
+	}
+	return nearest;
+}
+
 /** Which countries the point is in, and "neutral" for neutral land. */
 function at(point: Point): string[] {
 	const found = countryFeatures
@@ -66,36 +78,44 @@ describe("map geometry: every country is there", () => {
 		expect(neutralFeatures).toHaveLength(1);
 	});
 
-	it("puts every label point inside its country", () => {
+	it("puts every label point on its country, or within 150 km of its land", () => {
+		// The label points are Natural Earth's. For a country of islands it puts
+		// the name in the sea between them, as an atlas does (ADR 0020).
+		const atSea: string[] = [];
 		for (const feature of countryFeatures) {
-			// Kiribati's is hand-set on Tarawa, which is smaller than a point in the
-			// file. Russia's is checked in its own test below.
-			if (feature.properties.iso === "KI") continue;
-			expect(
-				contains(feature.geometry, feature.properties.label),
-				feature.properties.iso,
-			).toBe(true);
+			const { iso, label } = feature.properties;
+			if (contains(feature.geometry, label)) continue;
+			atSea.push(iso);
+			expect(kmToLand(feature.geometry, label), iso).toBeLessThan(150);
 		}
+		// Antigua & Barbuda, Equatorial Guinea, Kiribati (hand-set on Tarawa, which
+		// is narrower than the file's detail), New Zealand, São Tomé & Príncipe,
+		// Trinidad & Tobago, St Vincent & the Grenadines. And the Vatican: its
+		// label is where the Vatican is, and its shape, from the coarser data, is
+		// drawn 1.3 km to the west.
+		expect(atSea).toEqual(["AG", "GQ", "KI", "NZ", "ST", "TT", "VA", "VC"]);
 	});
 
-	it("knows how big each country is, for the marker dots", () => {
-		const sizeOf = (iso: string) => country(iso)?.properties.sizeKm ?? 0;
-		// The side of a square as large as the country's largest piece of land.
-		expect(sizeOf("VA")).toBeLessThan(1);
-		expect(sizeOf("MT")).toBeGreaterThan(10); // Malta's main island, 246 km²
-		expect(sizeOf("MT")).toBeLessThan(20);
-		expect(sizeOf("DK")).toBeGreaterThan(150); // Jutland
-		expect(sizeOf("RU")).toBeGreaterThan(3000);
-		// Africa's small island states are small enough to need a dot (mvp.md §2).
-		for (const iso of ["CV", "ST", "KM", "MU", "SC"]) {
-			expect(sizeOf(iso), iso).toBeGreaterThan(0);
-			expect(sizeOf(iso), iso).toBeLessThan(50);
-		}
+	it("carries Natural Earth's label zooms and rank for every country", () => {
 		for (const feature of countryFeatures) {
-			expect(feature.properties.sizeKm, feature.properties.iso).toBeGreaterThan(
-				0,
-			);
+			const { iso, labelMinZoom, labelMaxZoom, labelRank } = feature.properties;
+			expect(labelMinZoom, iso).toBeGreaterThanOrEqual(1);
+			expect(labelMaxZoom, iso).toBeGreaterThan(labelMinZoom);
+			expect(labelRank, iso).toBeGreaterThanOrEqual(1);
+			expect(labelRank, iso).toBeLessThanOrEqual(10);
 		}
+		// Big countries are named first as the viewer zooms in.
+		const minZoom = (iso: string) => country(iso)?.properties.labelMinZoom;
+		expect(minZoom("RU")).toBe(1.7);
+		expect(minZoom("BR")).toBe(1.7);
+		expect(minZoom("DK")).toBe(3);
+		expect(minZoom("LU")).toBe(5.7);
+		expect(country("RU")?.properties.labelRank).toBe(2);
+		expect(country("LU")?.properties.labelRank).toBe(6);
+	});
+
+	it("labels Kiribati on Tarawa, its capital", () => {
+		expect(country("KI")?.properties.label).toEqual([173, 1.4]);
 	});
 
 	it("has enough detail to look at a country: Denmark's coast has over a thousand points", () => {
@@ -165,7 +185,7 @@ describe("map geometry: border choices (ADR 0020)", () => {
 		expect(at([34.1, 44.95])).toEqual(["UA"]); // Simferopol
 	});
 
-	it("draws Western Sahara as its own country, and Morocco north of 27°40′ N", () => {
+	it("draws Western Sahara as its own country, and Morocco north of its border near 27°40′ N", () => {
 		expect(at([-13.0, 27.0])).toEqual(["EH"]); // near Laayoune
 		expect(at([-15.5, 23.8])).toEqual(["EH"]); // near Dakhla
 		expect(at([-9.5, 26.5])).toEqual(["EH"]); // east of the sand wall
@@ -173,7 +193,8 @@ describe("map geometry: border choices (ADR 0020)", () => {
 		expect(at([-6.5, 33.5])).toEqual(["MA"]); // near Rabat
 		const morocco = country("MA")?.geometry.coordinates.flat(2) ?? [];
 		const southernmost = Math.min(...morocco.map(([, lat]) => lat));
-		expect(southernmost).toBeCloseTo(27.667, 2);
+		// Natural Earth's line. It runs about 600 m south of the parallel itself.
+		expect(southernmost).toBeCloseTo(27.661, 2);
 		// The mainland is one shape: the sand wall that splits it in the source
 		// data is gone. (The rest are coastal islets.)
 		const mainland = country("EH")?.geometry.coordinates.filter((polygon) =>
@@ -184,6 +205,22 @@ describe("map geometry: border choices (ADR 0020)", () => {
 		expect(
 			ringContains((mainland?.[0]?.[0] ?? []) as Point[], [-9.5, 26.5]),
 		).toBe(true);
+	});
+
+	it("draws the Cook Islands and Niue as countries, where they are", () => {
+		expect(at([-159.78, -21.23])).toEqual(["CK"]); // Rarotonga
+		// Niue is at 169°52′ W, just west of the map's edge: longitude 190 here.
+		expect(at([190.13, -19.05])).toEqual(["NU"]);
+		// The Cook Islands are east of the edge, so on the far left of the map.
+		for (const [lng] of country("CK")?.geometry.coordinates.flat(2) ?? []) {
+			expect(lng).toBeLessThan(-155);
+		}
+	});
+
+	it("keeps countries that lie inside another: each is a hole in its neighbour", () => {
+		expect(at([28.2, -29.5])).toEqual(["LS"]); // Lesotho, in South Africa
+		expect(at([12.45, 43.94])).toEqual(["SM"]); // San Marino, in Italy
+		expect(at([12.434, 41.902])).toEqual(["VA"]); // the Vatican, in Italy
 	});
 
 	it("draws Åland as part of Finland", () => {
@@ -251,6 +288,9 @@ describe("map geometry: border choices (ADR 0020)", () => {
 		expect(at([35.3, 4.8])).toEqual(["KE"]); // Ilemi triangle
 		expect(at([28.6, 9.6])).toEqual(["SD"]); // Abyei
 		expect(at([147.9, 45.0])).toEqual(["RU"]); // Kuril Islands (Iturup)
+		// Entries of their own in Natural Earth 5, claimed by no one or by two.
+		expect(at([33.4, 21.9])).toEqual(["neutral"]); // Bir Tawil
+		expect(at([-73.37, -49.62])).toEqual(["neutral"]); // Southern Patagonian Ice Field
 	});
 
 	it("keeps Russia in one piece across the 180° line, labelled in European Russia", () => {

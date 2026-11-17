@@ -66,6 +66,8 @@ The tokens are the source of truth (`packages/tokens/tokens/`, ADR 0014). This i
 - On land that isn't written: text colour with a 3 px white outline, so borders don't cut through the letters.
 - On a written country: the same. White text on the teal would only reach 4.1:1, under the minimum.
 - On the selected country: white, 16 px, 700, inside the shape (6.5:1), with an outline in the selected colour for the letters that reach outside it.
+- **Which names show:** by Natural Earth's zooms and ranks, as on Google Earth: the prominent countries first, more as the viewer zooms in. Where two would overlap, the lower-ranked one gives way until there is room. A written country is named at every zoom and goes before every unwritten one; the selected country is always named.
+- **No marker dots.** A country too small to click is opened by its name.
 
 ## Never
 

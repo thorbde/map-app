@@ -1,4 +1,9 @@
 import { expect, type Page, test } from "@playwright/test";
+import {
+	equalEarth,
+	equalEarthProjection,
+} from "../../app/features/maps/equal-earth";
+import { cameraFor, WORLD_BOUNDS } from "../../app/features/maps/views";
 
 // The map component, on its temporary preview page (M1 PR 4). The page is driven
 // by its address: ?view=…&written=…&selected=…&owner=1.
@@ -102,14 +107,39 @@ test("a visitor can't open a country that isn't written", async ({ page }) => {
 	await expect(opened(page)).toHaveText("nothing yet");
 });
 
-test("a country too small to click can be opened by its marker dot", async ({
+test("a country too small to click can be opened by its name", async ({
 	page,
 }) => {
 	// The Vatican is under a kilometre across: far too small to click, even in
-	// a view of its own, so it has a marker dot there.
+	// a view of its own, so its name is what opens it.
 	await openPreview(page, "view=country:VA&owner=1");
 	await clickMiddle(page);
 	await expect(opened(page)).toHaveText("VA");
+});
+
+test("a written country too small to see is named in the world view, and opens by its name", async ({
+	page,
+}) => {
+	// Nauru is 5 km across: not even a pixel in the world view. A visitor may
+	// open it because it is written, and its name is the only thing to click.
+	const NAURU: [number, number] = [166.9326, -0.5203];
+	await openPreview(page, "view=world&written=NR");
+	const box = await map(page).boundingBox();
+	if (!box) throw new Error("The map has no size");
+
+	// Where Nauru's name is on the screen: the same sums the map makes.
+	const camera = cameraFor(WORLD_BOUNDS, box);
+	const pixelsPerMetre =
+		(512 * 2 ** camera.zoom) / equalEarthProjection.tileMatrixSet.extentAtZoom0;
+	const [x = 0, y = 0] = equalEarth.forward(NAURU);
+	const [centreX = 0, centreY = 0] = equalEarth.forward(camera.center);
+	const left = box.x + box.width / 2 + (x - centreX) * pixelsPerMetre;
+	const top = box.y + box.height / 2 - (y - centreY) * pixelsPerMetre;
+
+	await page.mouse.move(left - 60, top - 40);
+	await page.mouse.move(left, top, { steps: 5 });
+	await page.mouse.click(left, top);
+	await expect(opened(page)).toHaveText("NR");
 });
 
 test("the page says the map is loading until it is there", async ({ page }) => {

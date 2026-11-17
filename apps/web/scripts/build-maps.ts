@@ -1,596 +1,373 @@
 // Builds the map geometry (docs/specs/mvp.md §2, ADR 0020, ADR 0021):
-// Natural Earth (world-atlas) → country shapes per ISO code, as GeoJSON that
+// Natural Earth's own files → country shapes per ISO code, as GeoJSON that
 // MapLibre draws. Writes one detailed file of the whole world,
 // app/features/maps/geometry/world.json.
 //
-// One file, at one level of detail: MapLibre itself draws a suitably simplified
-// version at each zoom, so there is nothing to swap as the viewer zooms.
+// What comes from where:
+// - Shapes, codes, label points, label zooms and ranks: Natural Earth, as it is.
+// - Cutting, merging, simplifying and rounding: mapshaper.
+// - Ours: the border choices below, and which fields go in the file.
 //
 // Run with `pnpm build:maps`, and commit the result. `pnpm maps:check` fails
-// when the committed file differs from a fresh build.
+// when the committed file differs from a fresh build. The source files are
+// downloaded once (about 30 MB) into .cache/, which is not committed. Behind a
+// proxy, run it with NODE_USE_ENV_PROXY=1.
 //
 // EVERY BORDER CHOICE made here is recorded in ADR 0020, a high-risk decision.
 // Change the two together, and add a test for the choice in geometry.test.ts.
 
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { createRequire } from "node:module";
+import { createHash } from "node:crypto";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
-import { geoEquirectangular, geoPath } from "d3-geo";
-import { feature, mergeArcs } from "topojson-client";
-import {
-	presimplify,
-	simplify,
-	sphericalTriangleArea,
-} from "topojson-simplify";
+import mapshaper from "mapshaper";
 import { countries } from "../app/features/countries/countries.ts";
 import type {
 	MapCountryFeature,
 	MapFile,
 	MapNeutralFeature,
 } from "../app/features/maps/map-file.ts";
-import { isoNumeric } from "./iso-numeric.ts";
 
-// --- Settings -------------------------------------------------------------------
+// --- The source: Natural Earth, pinned --------------------------------------------
+
+const NATURAL_EARTH_VERSION = "5.1.2";
+
+/** Each file's SHA-256, so the source can't change under us. */
+const SOURCES = {
+	/** Every country, with overseas parts as pieces of their own. The shapes. */
+	units: {
+		file: "ne_10m_admin_0_map_units",
+		sha256: "57da82be755f4afccd8f3b14251bb2752f5df1395f47d2d86f817470c4a48862",
+	},
+	/** Disputed areas as shapes of their own: Crimea, Western Sahara and more. */
+	disputed: {
+		file: "ne_10m_admin_0_disputed_areas",
+		sha256: "9cafef8b7dfb6b164dc58f218f981f4ace9f716f6c03795d4c62d1ac9f3d50f5",
+	},
+	/** One entry per country: its code, label point, label zooms and rank. */
+	countries: {
+		file: "ne_10m_admin_0_countries",
+		sha256: "239eec57ac17f100a11e2536cffc56752c318b50ae765b0918ff7aab4ce8f255",
+	},
+	/** Coarser shapes. Only the Vatican's is used: see VATICAN below. */
+	coarse: {
+		file: "ne_50m_admin_0_countries",
+		sha256: "3e458fc036ad0a66411f2c1e6cac49c5d7bfb81cb1123bc513b22511a2b7fdeb",
+	},
+} as const;
+
+// --- Settings ---------------------------------------------------------------------
 
 /**
  * The longitude in the middle of the map. The map's edge is then 169° W, in the
- * Bering Strait, instead of 180°: Russia and Oceania stay in one piece. Shapes
- * are cut at that edge, and longitudes run from -169 to 191.
+ * Bering Strait, instead of 180°: Russia and most of Oceania stay in one piece.
+ * Shapes are cut at that edge, and longitudes run from -169 to 191.
  */
 const CENTRE_LONGITUDE = 11;
+const EDGE_LONGITUDE = CENTRE_LONGITUDE - 180;
 
 /** The map file must stay under this, gzipped (ADR 0020). */
 const BUDGET_BYTES = 2_500_000;
 
-/** Decimals kept in coordinates: 0.001° is about 100 m. */
-const DECIMALS = 3;
+/** Coordinates are rounded to this: 0.001° is about 100 m. */
+const PRECISION = 0.001;
 
 /**
- * How much detail is kept: points that change a shape by less than this area,
- * in square kilometres, are removed. The source is Natural Earth's finest
- * data (1:10 million).
+ * How much detail is kept, as mapshaper's simplification interval in metres.
+ * The source is Natural Earth's finest data (1:10 million).
  */
-const SIMPLIFY_KM2 = 0.3;
+const SIMPLIFY_METRES = 450;
 
-type LonLat = [lng: number, lat: number];
-type LonLatBox = [west: number, south: number, east: number, north: number];
-
-// --- Border choices (ADR 0020) --------------------------------------------------
-
-/** Crimea, which the source data draws as part of Russia. We draw it as Ukraine. */
-const CRIMEA: LonLatBox = [32, 44, 37, 46.5];
+// --- Border choices (ADR 0020) ----------------------------------------------------
 
 /**
- * Countries whose source shape includes overseas parts on another continent.
- * Only the pieces inside the box are the country; the rest is neutral land.
- * - France: French Guiana, Guadeloupe, Martinique, Réunion, Mayotte.
- * - The Netherlands: Bonaire, Sint Eustatius, Saba.
+ * Pieces of a country that we draw as neutral land, by Natural Earth's
+ * map-unit code: France's overseas departments and the Caribbean Netherlands.
  */
-const EUROPEAN_PART: Record<string, LonLatBox> = {
-	FR: [-10, 40, 15, 52],
-	NL: [0, 50, 10, 55],
+const NEUTRAL_UNITS: Record<string, string> = {
+	GUF: "French Guiana",
+	GLP: "Guadeloupe",
+	MTQ: "Martinique",
+	REU: "Réunion",
+	MYT: "Mayotte",
+	NLY: "Bonaire, Sint Eustatius and Saba",
 };
 
 /**
- * Features without a usable ISO code that we draw as part of a country.
- * - Kosovo is a country in our list (ADR 0019).
- * - Somaliland is drawn as Somalia (mvp.md §2).
- * - Åland is part of Finland; the source data has it as a separate shape.
- * - Baikonur is part of Kazakhstan, likewise.
+ * Territories that the source data files under their owner's country code,
+ * but as entries of their own. They are neutral land, as every other territory
+ * with an entry of its own is. By Natural Earth's country code (ADM0_A3).
  */
-const NAMED_FEATURES: Record<string, string> = {
-	Kosovo: "XK",
-	Somaliland: "SO",
-	Åland: "FI",
-	// Only in the finest data. The Baikonur cosmodrome is Kazakh territory,
-	// leased to Russia; the source data cuts it out of Kazakhstan.
-	Baikonur: "KZ",
+const NEUTRAL_TERRITORIES: Record<string, string> = {
+	CLP: "Clipperton Island (France)",
+	ATC: "Ashmore and Cartier Islands (Australia)",
+	CSI: "Coral Sea Islands (Australia)",
+	IOA: "Christmas Island and the Cocos Islands (Australia)",
+	BRI: "Brazilian Island, claimed by Brazil and Uruguay",
 };
 
 /**
- * Western Sahara, a country in our list (ADR 0019). The source data draws
- * everything west of the sand wall as Morocco, and only the strip east of it as
- * a separate shape. We draw the whole territory as Western Sahara: Morocco ends
- * at its border, the parallel 27°40′ N.
+ * Entries of their own in the source data that we draw as part of a country.
+ * By Natural Earth's country code (ADM0_A3).
  */
-const WESTERN_SAHARA = {
-	iso: "EH",
-	feature: "W. Sahara",
-	northernBorder: 27 + 40 / 60,
+const PART_OF: Record<string, string> = {
+	ALD: "FI", // Åland
+	SOL: "SO", // Somaliland (mvp.md §2)
+	KAB: "KZ", // Baikonur, the cosmodrome Kazakhstan leases to Russia
 };
 
 /**
- * Label points that can't be worked out from the shape.
- * - Kiribati's largest island, Kiritimati, is 3,000 km from the capital, Tarawa.
- * - Russia's middle is in Siberia. Russia belongs to Europe (M49), so its label
- *   sits in European Russia, east of Moscow.
+ * Disputed areas that we draw as part of another country than the source data
+ * does. Each is a shape in Natural Earth's disputed-areas layer.
  */
-const LABEL_OVERRIDES: Record<string, LonLat> = {
-	KI: [173, 1.4],
-	RU: [44, 57],
-};
-
-// --- Reading world-atlas --------------------------------------------------------
-
-// The topology types, taken from the functions that use them.
-type Atlas = Parameters<typeof mergeArcs>[0];
-type PolygonObject = Extract<
-	Parameters<typeof mergeArcs>[1],
-	unknown[]
->[number];
-type Geom = PolygonObject & { id?: string; properties?: { name?: string } };
-type PolygonArcs = number[][];
-
-const require = createRequire(import.meta.url);
-
-function readAtlas(resolution: "50m" | "10m"): Atlas {
-	const path = require.resolve(`world-atlas/countries-${resolution}.json`);
-	return JSON.parse(readFileSync(path, "utf8")) as Atlas;
-}
-
-function polygonsOf(geometry: Geom): PolygonArcs[] {
-	return geometry.type === "Polygon" ? [geometry.arcs] : geometry.arcs;
-}
-
-const isoByNumeric = new Map(
-	Object.entries(isoNumeric).map(([iso, numeric]) => [numeric, iso]),
-);
-
-/** Which country in our list a world-atlas feature is, or null for neutral land. */
-function isoOf(geometry: Geom): string | null {
-	const named = NAMED_FEATURES[geometry.properties?.name ?? ""];
-	if (named) return named;
-	// Anything else without an ISO code we know (Northern Cyprus, the Siachen
-	// Glacier, Greenland, Hong Kong and so on) is neutral land.
-	return geometry.id === undefined
-		? null
-		: (isoByNumeric.get(geometry.id) ?? null);
-}
-
-// --- Sorting the land into countries and neutral land ---------------------------
-
-type Land = {
-	topology: Atlas;
-	/** Each country's polygons, as lists of arcs. */
-	byIso: Map<string, PolygonArcs[]>;
-	neutral: PolygonArcs[];
-};
-
-/** The first point of a polygon's outer ring, in degrees. Enough to tell where it is. */
-function firstPoint(topology: Atlas, polygon: PolygonArcs): LonLat {
-	const arcIndex = polygon[0]?.[0];
-	if (arcIndex === undefined) throw new Error("A polygon without arcs");
-	const arc = topology.arcs[arcIndex < 0 ? ~arcIndex : arcIndex];
-	const transform = topology.transform;
-	if (!arc?.[0] || !transform) throw new Error("Unexpected topology");
-	// Arcs are delta-encoded. Walked backwards, an arc starts at its last point.
-	let [x, y] = arc[0] as [number, number];
-	if (arcIndex < 0) {
-		for (const [dx, dy] of arc.slice(1) as [number, number][]) {
-			x += dx;
-			y += dy;
-		}
-	}
-	return [
-		x * transform.scale[0] + transform.translate[0],
-		y * transform.scale[1] + transform.translate[1],
-	];
-}
-
-function inBox([lng, lat]: LonLat, box: LonLatBox): boolean {
-	return lng >= box[0] && lng <= box[2] && lat >= box[1] && lat <= box[3];
-}
-
-function sortLand(topology: Atlas): Land {
-	const byIso = new Map<string, PolygonArcs[]>();
-	const neutral: PolygonArcs[] = [];
-	const add = (iso: string, polygon: PolygonArcs) => {
-		const list = byIso.get(iso) ?? [];
-		list.push(polygon);
-		byIso.set(iso, list);
-	};
-
-	let crimeaMoved = false;
-	let westernSaharaFound = false;
-	const collection = topology.objects.countries as unknown as {
-		geometries: Geom[];
-	};
-	for (const geometry of collection.geometries) {
-		const name = geometry.properties?.name;
-		if (name === "Antarctica") continue;
-		if (name === WESTERN_SAHARA.feature) {
-			// Joined to Morocco here, so the sand wall between them disappears.
-			// countryPolygons() then cuts the whole territory off again.
-			for (const polygon of polygonsOf(geometry)) add("MA", polygon);
-			westernSaharaFound = true;
-			continue;
-		}
-		const iso = isoOf(geometry);
-		const europeanPart = iso === null ? undefined : EUROPEAN_PART[iso];
-		for (const polygon of polygonsOf(geometry)) {
-			const where = firstPoint(topology, polygon);
-			if (iso === null) {
-				neutral.push(polygon);
-			} else if (iso === "RU" && inBox(where, CRIMEA)) {
-				add("UA", polygon);
-				crimeaMoved = true;
-			} else if (europeanPart && !inBox(where, europeanPart)) {
-				neutral.push(polygon);
-			} else {
-				add(iso, polygon);
-			}
-		}
-	}
-	// If the source data changes how it draws these, stop instead of guessing.
-	if (!crimeaMoved) {
-		throw new Error("Crimea wasn't found as a separate piece of Russia");
-	}
-	if (!westernSaharaFound) {
-		throw new Error(
-			`No "${WESTERN_SAHARA.feature}" feature in the source data`,
-		);
-	}
-	return { topology, byIso, neutral };
-}
-
-function simplified(land: Land, km2: number): Land {
-	const EARTH_RADIUS_KM = 6371;
-	const topology = simplify(
-		presimplify(
-			land.topology as Parameters<typeof presimplify>[0],
-			sphericalTriangleArea,
-		),
-		km2 / EARTH_RADIUS_KM ** 2,
-	) as Atlas;
-	return { ...land, topology };
-}
-
-// --- From shapes on the globe to flat longitude and latitude --------------------
-
-type Ring = LonLat[];
-/** A polygon: its outer ring, then its holes. Rings are open (no repeated end point). */
-type FlatPolygon = Ring[];
-
-// world-atlas stores shapes for drawing on a sphere: a ring that crosses the
-// 180° line simply jumps from 180 to -180. Drawn flat, that jump becomes a line
-// across the whole map. This "projection" changes no coordinates; it only cuts
-// every shape at the map's edge, which d3-geo knows how to do properly.
-const cutAtEdge = geoEquirectangular()
-	.rotate([-CENTRE_LONGITUDE, 0])
-	.scale(180 / Math.PI)
-	.translate([0, 0])
-	.reflectY(true)
-	.precision(0);
-
-/** Twice the signed area of a ring, in square degrees. The sign gives its direction. */
-function signedArea(ring: Ring): number {
-	let sum = 0;
-	ring.forEach(([x0, y0], i) => {
-		const [x1, y1] = ring[(i + 1) % ring.length] as LonLat;
-		sum += x0 * y1 - x1 * y0;
-	});
-	return sum;
-}
-
-function ringContains(ring: Ring, [x, y]: LonLat): boolean {
-	let inside = false;
-	ring.forEach(([x0, y0], i) => {
-		const [x1, y1] = ring[(i + ring.length - 1) % ring.length] as LonLat;
-		if (y0 > y !== y1 > y && x < ((x1 - x0) * (y - y0)) / (y1 - y0) + x0) {
-			inside = !inside;
-		}
-	});
-	return inside;
-}
-
-/** Rounds a ring, and drops points that repeat the one before. */
-function rounded(ring: Ring, decimals: number): Ring {
-	const factor = 10 ** decimals;
-	const result: Ring = [];
-	for (const [x, y] of ring) {
-		const point: LonLat = [
-			Math.round(x * factor) / factor,
-			Math.round(y * factor) / factor,
-		];
-		const last = result[result.length - 1];
-		if (!last || last[0] !== point[0] || last[1] !== point[1]) {
-			result.push(point);
-		}
-	}
-	const first = result[0];
-	const last = result[result.length - 1];
-	if (first && last && result.length > 1) {
-		if (first[0] === last[0] && first[1] === last[1]) result.pop();
-	}
-	return result;
-}
-
-/**
- * Turns one polygon from the source data into flat polygons, cut at the map's
- * edge. A polygon that crosses the edge comes back as two.
- */
-function flatten(polygon: GeoJSON.Polygon, decimals: number): FlatPolygon[] {
-	const rings: Ring[] = [];
-	let ring: Ring = [];
-	const context = {
-		moveTo(x: number, y: number) {
-			ring = [[x + CENTRE_LONGITUDE, y]];
-			rings.push(ring);
-		},
-		lineTo(x: number, y: number) {
-			ring.push([x + CENTRE_LONGITUDE, y]);
-		},
-		closePath() {},
-		// geoPath only needs these to exist.
-		beginPath() {},
-		arc() {},
-	};
-	geoPath(cutAtEdge, context)(polygon);
-
-	const kept = rings
-		.map((points) => rounded(points, decimals))
-		.filter((points) => points.length >= 3 && signedArea(points) !== 0);
-	const largest = kept.reduce<Ring | undefined>(
-		(best, candidate) =>
-			!best || Math.abs(signedArea(candidate)) > Math.abs(signedArea(best))
-				? candidate
-				: best,
-		undefined,
-	);
-	if (!largest) return [];
-
-	// Outer rings all run the same way round, and holes the other way.
-	const outerSign = Math.sign(signedArea(largest));
-	const polygons: FlatPolygon[] = kept
-		.filter((candidate) => Math.sign(signedArea(candidate)) === outerSign)
-		.map((outer) => [outer]);
-	for (const hole of kept) {
-		if (Math.sign(signedArea(hole)) === outerSign) continue;
-		const owner = polygons.find(([outer]) =>
-			ringContains(outer as Ring, hole[0] as LonLat),
-		);
-		owner?.push(hole);
-	}
-	return polygons;
-}
-
-/** Joins polygons into one shape, removing the borders between them, and flattens it. */
-function mergedAndFlat(
-	topology: Atlas,
-	polygons: PolygonArcs[],
-	decimals: number,
-): FlatPolygon[] {
-	if (polygons.length === 0) return [];
-	const asGeometries = polygons.map(
-		(arcs): PolygonObject => ({ type: "Polygon", arcs }),
-	);
-	const shape = feature(topology, mergeArcs(topology, asGeometries)) as {
-		geometry: GeoJSON.Polygon | GeoJSON.MultiPolygon;
-	};
-	const parts: GeoJSON.Polygon[] =
-		shape.geometry.type === "Polygon"
-			? [shape.geometry]
-			: shape.geometry.coordinates.map((coordinates) => ({
-					type: "Polygon",
-					coordinates,
-				}));
-	return parts.flatMap((part) => flatten(part, decimals));
-}
-
-/** The part of a ring north (or south) of a parallel. */
-function clipRing(ring: Ring, latitude: number, keepNorth: boolean): Ring {
-	const isKept = ([, lat]: LonLat) =>
-		keepNorth ? lat >= latitude : lat <= latitude;
-	const result: Ring = [];
-	ring.forEach((point, i) => {
-		const previous = ring[(i + ring.length - 1) % ring.length] as LonLat;
-		if (isKept(point) !== isKept(previous)) {
-			const t = (latitude - previous[1]) / (point[1] - previous[1]);
-			result.push([previous[0] + t * (point[0] - previous[0]), latitude]);
-		}
-		if (isKept(point)) result.push(point);
-	});
-	return result;
-}
-
-function clipPolygons(
-	polygons: FlatPolygon[],
-	latitude: number,
-	keepNorth: boolean,
-	decimals: number,
-): FlatPolygon[] {
-	return polygons
-		.map((polygon) =>
-			polygon
-				.map((ring) => rounded(clipRing(ring, latitude, keepNorth), decimals))
-				.filter((ring) => ring.length >= 3 && signedArea(ring) !== 0),
-		)
-		.filter((polygon) => polygon.length > 0);
-}
-
-type Shapes = {
-	byIso: Map<string, FlatPolygon[]>;
-	neutral: FlatPolygon[];
-};
-
-/** Every country's flat polygons, and the neutral land, with all border choices applied. */
-function shapesOf(land: Land, decimals: number): Shapes {
-	const byIso = new Map<string, FlatPolygon[]>();
-	const neutral = mergedAndFlat(land.topology, land.neutral, decimals);
-	for (const [iso, arcs] of land.byIso) {
-		let polygons = mergedAndFlat(land.topology, arcs, decimals);
-		if (iso === "MA") {
-			// Morocco was joined with Western Sahara in sortLand(). Cut it at its
-			// border: the north is Morocco, the south is Western Sahara.
-			const border = WESTERN_SAHARA.northernBorder;
-			byIso.set(
-				WESTERN_SAHARA.iso,
-				clipPolygons(polygons, border, false, decimals),
-			);
-			polygons = clipPolygons(polygons, border, true, decimals);
-		}
-		byIso.set(iso, polygons);
-	}
-	return { byIso, neutral };
-}
-
-// --- Label points and sizes -----------------------------------------------------
-
-/** A ring's area in square kilometres. */
-function areaKm2(ring: Ring): number {
-	// With latitude replaced by its sine, areas on the flat map are true areas.
-	const EARTH_RADIUS_KM = 6371;
-	const radians = Math.PI / 180;
-	const equalArea = ring.map(
-		([lng, lat]): LonLat => [lng * radians, Math.sin(lat * radians)],
-	);
-	return (Math.abs(signedArea(equalArea)) / 2) * EARTH_RADIUS_KM ** 2;
-}
-
-/** A point inside a polygon to hang a label on: its middle, if that is inside it. */
-function labelPoint(polygon: FlatPolygon): LonLat {
-	const outer = polygon[0] as Ring;
-	const isInside = (point: LonLat) =>
-		polygon.every((ring, i) => ringContains(ring, point) === (i === 0));
-
-	const twiceArea = signedArea(outer);
-	let cx = 0;
-	let cy = 0;
-	outer.forEach(([x0, y0], i) => {
-		const [x1, y1] = outer[(i + 1) % outer.length] as LonLat;
-		const cross = x0 * y1 - x1 * y0;
-		cx += (x0 + x1) * cross;
-		cy += (y0 + y1) * cross;
-	});
-	const middle: LonLat = [cx / (3 * twiceArea), cy / (3 * twiceArea)];
-	if (isInside(middle)) return middle;
-
-	// A bent country (Croatia, Vietnam) has its middle outside itself. Take the
-	// middle of the widest stretch of the country along the same latitude.
-	const crossings: number[] = [];
-	for (const ring of polygon) {
-		ring.forEach(([x0, y0], i) => {
-			const [x1, y1] = ring[(i + 1) % ring.length] as LonLat;
-			if (y0 > middle[1] !== y1 > middle[1]) {
-				crossings.push(x0 + ((middle[1] - y0) / (y1 - y0)) * (x1 - x0));
-			}
-		});
-	}
-	crossings.sort((a, b) => a - b);
-	let best: LonLat = middle;
-	let widest = 0;
-	for (let i = 0; i + 1 < crossings.length; i += 2) {
-		const [from, to] = [crossings[i] as number, crossings[i + 1] as number];
-		if (to - from > widest) {
-			widest = to - from;
-			best = [(from + to) / 2, middle[1]];
-		}
-	}
-	return best;
-}
-
-type Label = { at: LonLat; largestKm2: number };
-
-/**
- * Each country's label point and the size of its largest piece of land, from the
- * first of the sources that has a shape for it.
- */
-function findLabels(sources: Shapes[]): Map<string, Label> {
-	const labels = new Map<string, Label>();
-	// Finer than the shapes' own coordinates, so a label stays on a small island.
-	const round = (value: number) => Math.round(value * 10_000) / 10_000;
-	for (const { iso } of countries) {
-		const polygons = sources
-			.map((source) => source.byIso.get(iso) ?? [])
-			.find((list) => list.length > 0);
-		if (!polygons) throw new Error(`No geometry at all for ${iso}`);
-		const largest = polygons.reduce((best, candidate) =>
-			areaKm2(candidate[0] as Ring) > areaKm2(best[0] as Ring)
-				? candidate
-				: best,
-		);
-		const [lng, lat] = LABEL_OVERRIDES[iso] ?? labelPoint(largest);
-		labels.set(iso, {
-			at: [round(lng), round(lat)],
-			largestKm2: areaKm2(largest[0] as Ring),
-		});
-	}
-	return labels;
-}
-
-// --- Building a file ------------------------------------------------------------
-
-/** GeoJSON wants each ring to end where it starts. */
-function closed(polygons: FlatPolygon[]): LonLat[][][] {
-	return polygons.map((polygon) =>
-		polygon.map((ring) => [...ring, ring[0] as LonLat]),
-	);
-}
-
-function buildFile(shapes: Shapes, labels: Map<string, Label>): MapFile {
-	const countryFeatures = countries
-		.map((country) => country.iso)
-		.sort()
-		.map((iso): MapCountryFeature => {
-			const label = labels.get(iso);
-			const polygons = shapes.byIso.get(iso) ?? [];
-			if (!label || polygons.length === 0) {
-				throw new Error(`No shape for ${iso}`);
-			}
-			return {
-				type: "Feature",
-				properties: {
-					iso,
-					label: label.at,
-					sizeKm: Math.round(Math.sqrt(label.largestKm2) * 10) / 10,
-				},
-				geometry: { type: "MultiPolygon", coordinates: closed(polygons) },
-			};
-		});
-
-	const neutral: MapNeutralFeature = {
-		type: "Feature",
-		properties: { neutral: true },
-		geometry: { type: "MultiPolygon", coordinates: closed(shapes.neutral) },
-	};
-	return { type: "FeatureCollection", features: [...countryFeatures, neutral] };
-}
-
-// --- Main -----------------------------------------------------------------------
-
-const outDir = resolve(
-	dirname(fileURLToPath(import.meta.url)),
-	"../app/features/maps/geometry",
-);
-mkdirSync(outDir, { recursive: true });
-
-const land = sortLand(readAtlas("10m"));
-// The 50m data is only a fallback, for the Vatican: see below.
-const fallbackLand = sortLand(readAtlas("50m"));
-
-const shapes = shapesOf(simplified(land, SIMPLIFY_KM2), DECIMALS);
-// The very smallest countries don't survive the simplifying and rounding, and
-// the finest source data has the Vatican squashed flat. Each country takes the
-// first of these that has a shape for it.
-const untouched = [
-	shapesOf(land, DECIMALS + 1),
-	shapesOf(fallbackLand, DECIMALS + 1),
+const MOVED_AREAS = [
+	// The source data draws Crimea as part of Russia.
+	{ name: "Crimea", from: "Russia", to: "UA" },
+	// The source data draws everything west of the sand wall as Morocco, and
+	// only the strip east of it as Western Sahara. This is the part west of it.
+	{ name: "Morocco", from: "Morocco", to: "EH" },
 ];
-for (const { iso } of countries) {
-	if ((shapes.byIso.get(iso) ?? []).length > 0) continue;
-	const shape = untouched
-		.map((source) => source.byIso.get(iso) ?? [])
-		.find((polygons) => polygons.length > 0);
-	if (shape) shapes.byIso.set(iso, shape);
+
+/**
+ * The finest data has the Vatican squashed to a sliver 100 m across. Its shape
+ * comes from the coarser file.
+ */
+const VATICAN = "VA";
+
+/**
+ * Label points that differ from Natural Earth's.
+ * - Kiribati's is on Kiritimati, 3,000 km east of the capital and on the far
+ *   side of the map's edge. Ours is on Tarawa, the capital.
+ */
+const LABEL_OVERRIDES: Record<string, [lng: number, lat: number]> = {
+	KI: [173, 1.4],
+};
+
+// --- Reading the source -----------------------------------------------------------
+
+type SourceFeature = {
+	type: "Feature";
+	properties: Record<string, unknown>;
+	geometry: { type: string; coordinates: unknown };
+};
+
+const here = dirname(fileURLToPath(import.meta.url));
+const cacheDir = resolve(
+	here,
+	`../.cache/natural-earth-${NATURAL_EARTH_VERSION}`,
+);
+
+async function read(source: keyof typeof SOURCES): Promise<SourceFeature[]> {
+	const { file, sha256 } = SOURCES[source];
+	const path = resolve(cacheDir, `${file}.geojson`);
+	const matches = (bytes: Buffer) =>
+		createHash("sha256").update(bytes).digest("hex") === sha256;
+
+	let bytes = existsSync(path) ? readFileSync(path) : undefined;
+	if (!bytes || !matches(bytes)) {
+		const url = `https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v${NATURAL_EARTH_VERSION}/geojson/${file}.geojson`;
+		const response = await fetch(url).catch((error: unknown) => {
+			throw new Error(
+				`Couldn't download ${url}. Behind a proxy, set NODE_USE_ENV_PROXY=1.`,
+				{ cause: error },
+			);
+		});
+		if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
+		bytes = Buffer.from(await response.arrayBuffer());
+		if (!matches(bytes)) {
+			throw new Error(`${file} isn't the file this script was written for`);
+		}
+		mkdirSync(cacheDir, { recursive: true });
+		writeFileSync(path, bytes);
+	}
+	return (JSON.parse(bytes.toString("utf8")) as { features: SourceFeature[] })
+		.features;
 }
 
-// Label points and sizes come from the shapes as they are in the file, so a
-// label is always on land that is actually drawn.
-const labels = findLabels([shapes]);
+function text(feature: SourceFeature, field: string): string {
+	const value = feature.properties[field];
+	if (typeof value !== "string") throw new Error(`No ${field} in the source`);
+	return value;
+}
 
-const file = buildFile(shapes, labels);
+function number(feature: SourceFeature, field: string): number {
+	const value = feature.properties[field];
+	if (typeof value !== "number") throw new Error(`No ${field} in the source`);
+	return value;
+}
+
+const sourceCountries = await read("countries");
+const ourCodes = new Set(countries.map((country) => country.iso));
+
+/**
+ * Which country in our list each of Natural Earth's countries is drawn as
+ * (by ADM0_A3). Anything not in here is neutral land.
+ */
+const isoByCountry = new Map<string, string>();
+/** Natural Earth's own entry for each country in our list: its label fields. */
+const entryByIso = new Map<string, SourceFeature>();
+
+for (const entry of sourceCountries) {
+	const adm0 = text(entry, "ADM0_A3");
+	if (adm0 in NEUTRAL_TERRITORIES) continue;
+	const partOf = PART_OF[adm0];
+	if (partOf) {
+		isoByCountry.set(adm0, partOf);
+		continue;
+	}
+	// Natural Earth's two-letter code. Unlike ISO_A2, it is filled in for
+	// France, Norway, Kosovo (XK) and Taiwan.
+	const iso = text(entry, "ISO_A2_EH");
+	if (!ourCodes.has(iso)) continue;
+	// If the source data ever files another territory under a country's code,
+	// stop: it must be added to one of the tables above, and to ADR 0020.
+	if (entryByIso.has(iso)) {
+		throw new Error(`Two entries in the source data have the code ${iso}`);
+	}
+	entryByIso.set(iso, entry);
+	isoByCountry.set(adm0, iso);
+}
+for (const table of [NEUTRAL_TERRITORIES, PART_OF]) {
+	for (const adm0 of Object.keys(table)) {
+		if (!sourceCountries.some((entry) => text(entry, "ADM0_A3") === adm0)) {
+			throw new Error(`No ${adm0} in the source data any more`);
+		}
+	}
+}
+
+// --- The shapes, sorted into countries and neutral land ---------------------------
+
+type Piece = {
+	type: "Feature";
+	/** The country's code, or "" for neutral land. */
+	properties: { iso: string };
+	geometry: SourceFeature["geometry"];
+};
+
+const foundUnits = new Set<string>();
+const units: Piece[] = (await read("units"))
+	.filter((unit) => text(unit, "ADM0_A3") !== "ATA") // Antarctica
+	.map((unit) => {
+		const code = text(unit, "GU_A3");
+		const isNeutral = code in NEUTRAL_UNITS;
+		if (isNeutral) foundUnits.add(code);
+		const iso = isNeutral ? undefined : isoByCountry.get(text(unit, "ADM0_A3"));
+		return { ...unit, properties: { iso: iso ?? "" } };
+	})
+	// The Vatican's shape comes from the coarser file, below.
+	.filter((unit) => unit.properties.iso !== VATICAN);
+if (foundUnits.size !== Object.keys(NEUTRAL_UNITS).length) {
+	throw new Error("An overseas part is no longer a piece of its own");
+}
+
+// Shapes that are cut out of whatever the source data has there, and drawn as
+// the country we say.
+const disputed = await read("disputed");
+const moved: Piece[] = MOVED_AREAS.map(({ name, from, to }) => {
+	const found = disputed.filter(
+		(area) => text(area, "NAME") === name && text(area, "ADMIN") === from,
+	);
+	// If the source data changes how it draws these, stop instead of guessing.
+	const [area] = found;
+	if (!area || found.length > 1) {
+		throw new Error(`Expected one disputed area "${name}" in ${from}`);
+	}
+	return { ...area, properties: { iso: to } };
+});
+const vatican = (await read("coarse")).find(
+	(entry) => text(entry, "ISO_A2_EH") === VATICAN,
+);
+if (!vatican) throw new Error("No Vatican in the coarser file");
+moved.push({ ...vatican, properties: { iso: VATICAN } });
+
+// --- mapshaper does the geometry --------------------------------------------------
+
+const collection = (features: Piece[]) =>
+	JSON.stringify({ type: "FeatureCollection", features });
+const output = await mapshaper.applyCommands(
+	[
+		"-i units.json moved.json combine-files",
+		// Cut the moved areas out of the countries they are drawn in, and add
+		// them as the countries we say. Then one shape per country: the borders
+		// between its pieces disappear.
+		"-erase target=units source=moved",
+		"-merge-layers target=units,moved force name=land",
+		"-dissolve iso",
+		// Turn the world so that the map's edge is where 180° was: mapshaper
+		// cuts shapes at the new edge and joins what was cut at the old one.
+		// (-rotate is in mapshaper but not in its documentation. The documented
+		// way, -clip and -affine on each side of the edge, loses the holes in
+		// countries, and with them Lesotho and San Marino. It must come before
+		// -simplify: after it, -rotate loses whole countries.)
+		`-rotate ${-CENTRE_LONGITUDE}`,
+		// keep-shapes: a country or an island is never simplified away.
+		`-simplify interval=${SIMPLIFY_METRES} keep-shapes`,
+		// Shift the longitudes back, so that they run from -169 to 191.
+		`-affine shift=${CENTRE_LONGITUDE},0`,
+		`-o world.json target=land format=geojson precision=${PRECISION}`,
+	].join(" "),
+	{ "units.json": collection(units), "moved.json": collection(moved) },
+);
+
+type Shape = {
+	properties: { iso: string };
+	geometry:
+		| { type: "Polygon"; coordinates: [number, number][][] }
+		| { type: "MultiPolygon"; coordinates: [number, number][][][] }
+		| null;
+};
+const shapes = new Map<string, [number, number][][][]>();
+const world = JSON.parse(String(output["world.json"])) as { features: Shape[] };
+for (const { properties, geometry } of world.features) {
+	if (!geometry) continue;
+	shapes.set(
+		properties.iso,
+		geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates,
+	);
+}
+
+// --- Building the file ------------------------------------------------------------
+
+function labelOf(iso: string, entry: SourceFeature): [number, number] {
+	const [lng, lat] = LABEL_OVERRIDES[iso] ?? [
+		number(entry, "LABEL_X"),
+		number(entry, "LABEL_Y"),
+	];
+	const round = (value: number) => Math.round(value * 10_000) / 10_000;
+	// West of the map's edge is on its far right, as for the shapes.
+	return [round(lng < EDGE_LONGITUDE ? lng + 360 : lng), round(lat)];
+}
+
+const countryFeatures = [...ourCodes].sort().map((iso): MapCountryFeature => {
+	const entry = entryByIso.get(iso);
+	const coordinates = shapes.get(iso);
+	if (!entry || !coordinates) throw new Error(`No shape for ${iso}`);
+	return {
+		type: "Feature",
+		properties: {
+			iso,
+			label: labelOf(iso, entry),
+			labelMinZoom: number(entry, "MIN_LABEL"),
+			labelMaxZoom: number(entry, "MAX_LABEL"),
+			labelRank: number(entry, "LABELRANK"),
+		},
+		geometry: { type: "MultiPolygon", coordinates },
+	};
+});
+
+const neutral: MapNeutralFeature = {
+	type: "Feature",
+	properties: { neutral: true },
+	geometry: { type: "MultiPolygon", coordinates: shapes.get("") ?? [] },
+};
+const file: MapFile = {
+	type: "FeatureCollection",
+	features: [...countryFeatures, neutral],
+};
+
+const outDir = resolve(here, "../app/features/maps/geometry");
+mkdirSync(outDir, { recursive: true });
 const json = `${JSON.stringify(file)}\n`;
 const size = gzipSync(json, { level: 9 }).length;
 writeFileSync(resolve(outDir, "world.json"), json);
@@ -598,7 +375,7 @@ writeFileSync(resolve(outDir, "world.json"), json);
 const megabytes = (bytes: number) => `${(bytes / 1_000_000).toFixed(2)} MB`;
 console.log(
 	`world.json: ${megabytes(size)} gzipped (budget ${megabytes(BUDGET_BYTES)}), ` +
-		`${megabytes(json.length)} on disk, ${file.features.length - 1} countries`,
+		`${megabytes(json.length)} on disk, ${countryFeatures.length} countries`,
 );
 if (size > BUDGET_BYTES) {
 	throw new Error("world.json is over its size budget");

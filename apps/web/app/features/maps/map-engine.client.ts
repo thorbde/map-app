@@ -14,6 +14,7 @@ import mapLibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&ur
 import { equalEarthProjection } from "./equal-earth";
 import equalEarthWorkerUrl from "./equal-earth.worker?worker&url";
 import worldUrl from "./geometry/world.json?url";
+import { placesOf } from "./labels";
 import type { MapCountryFeature, MapFile } from "./map-file";
 import {
 	type Bounds,
@@ -49,15 +50,6 @@ export type MapEngine = {
 /** How long the map may take to start before the page says it can't be shown. */
 const START_TIMEOUT_MS = 20_000;
 
-/**
- * A country gets a marker dot while its largest piece of land is fewer than
- * this many pixels across, at the zoom the viewer is at.
- */
-const MARKER_BELOW_PX = 6;
-
-/** How far from a marker dot a click still counts, in pixels. */
-const CLICK_REACH = 6;
-
 /** The closest the camera gets: close enough to look at a city. */
 const MAX_ZOOM = 12;
 
@@ -85,10 +77,6 @@ function readColours(element: HTMLElement) {
 		selected: tokenColour(element, "--color-map-selected"),
 		label: tokenColour(element, "--color-text-default"),
 		labelOnSelected: tokenColour(element, "--color-text-on-inverse"),
-		// The outline of an unwritten marker dot. It has to reach 3:1 against both
-		// the land and the ocean (DESIGN.md): this is 6.2:1 and 5.1:1. The map's
-		// border colour and the control border colour don't reach it on the ocean.
-		markerOutline: tokenColour(element, "--color-text-muted"),
 	};
 }
 
@@ -123,50 +111,6 @@ function isCountry(
 	return "iso" in feature.properties;
 }
 
-type Place = {
-	type: "Feature";
-	properties: {
-		iso: string;
-		name: string;
-		/** The country has a marker dot at zooms below this one. */
-		markerUntilZoom: number;
-		written: boolean;
-		/** Which labels win when two collide: lower numbers first. */
-		rank: number;
-	};
-	geometry: { type: "Point"; coordinates: [number, number] };
-};
-
-/** The zoom at which something this many kilometres across is this many pixels across. */
-function zoomWhereAcross(km: number, pixels: number): number {
-	// MapLibre draws the world square 512 px wide at zoom 0.
-	const kmAcrossWorld = equalEarthProjection.tileMatrixSet.extentAtZoom0 / 1000;
-	return Math.log2((pixels * kmAcrossWorld) / (512 * km));
-}
-
-/** A point per country, for its label and its marker dot. */
-function placesOf(
-	countries: MapCountryFeature[],
-	names: Readonly<Record<string, string>>,
-	state: MapState,
-): { type: "FeatureCollection"; features: Place[] } {
-	const written = new Set(state.written);
-	return {
-		type: "FeatureCollection",
-		features: countries.map(({ properties }) => ({
-			type: "Feature",
-			properties: {
-				iso: properties.iso,
-				name: names[properties.iso] ?? properties.iso,
-				markerUntilZoom: zoomWhereAcross(properties.sizeKm, MARKER_BELOW_PX),
-				written: written.has(properties.iso),
-				rank: written.has(properties.iso) ? 0 : 1,
-			},
-			geometry: { type: "Point", coordinates: properties.label },
-		})),
-	};
-}
-
 function boundsOf(view: MapView, countries: MapCountryFeature[]): Bounds {
 	if (view.kind === "continent") return CONTINENT_BOUNDS[view.continent];
 	if (view.kind === "country") {
@@ -178,56 +122,18 @@ function boundsOf(view: MapView, countries: MapCountryFeature[]): Bounds {
 
 // --- The map --------------------------------------------------------------------
 
-/** Is the country still a marker dot at the zoom the viewer is at? MapLibre re-checks as they zoom. */
-const isMarker: ExpressionSpecification = [
-	">",
-	["get", "markerUntilZoom"],
-	["zoom"],
-];
-
-/** The ordinary labels: every country but the selected one, with or without a marker dot. */
-function labelFilter(
-	marker: boolean,
-	selected: string | undefined,
-): ExpressionSpecification {
+/** The ordinary names: from the zoom each one shows at, and never the selected country's. */
+function labelFilter(selected: string | undefined): ExpressionSpecification {
 	return [
 		"all",
-		marker ? isMarker : ["!", isMarker],
+		[">=", ["zoom"], ["get", "showFrom"]],
 		["!=", ["get", "iso"], selected ?? ""],
 	];
 }
 
-/** The selected country's label: one layer for when it is a shape, one for when it is a dot. */
-function selectedFilter(
-	marker: boolean,
-	selected: string | undefined,
-): ExpressionSpecification {
-	return [
-		"all",
-		marker ? isMarker : ["!", isMarker],
-		["==", ["get", "iso"], selected ?? ""],
-	];
-}
-
-/** A marker dot as a picture, for MapLibre to place like a label. */
-function dotImage(fill: string, outline: string) {
-	const RADIUS = 4;
-	const OUTLINE = 1.5;
-	const pixelRatio = 2;
-	const size = Math.ceil((RADIUS + OUTLINE) * 2 + 2) * pixelRatio;
-	const canvas = document.createElement("canvas");
-	canvas.width = size;
-	canvas.height = size;
-	const context = canvas.getContext("2d");
-	if (!context) throw new Error("No canvas to draw the marker dots on");
-	context.beginPath();
-	context.arc(size / 2, size / 2, RADIUS * pixelRatio, 0, 2 * Math.PI);
-	context.fillStyle = fill;
-	context.fill();
-	context.lineWidth = OUTLINE * pixelRatio;
-	context.strokeStyle = outline;
-	context.stroke();
-	return { image: context.getImageData(0, 0, size, size), pixelRatio };
+/** The selected country's name, at every zoom. */
+function selectedFilter(selected: string | undefined): ExpressionSpecification {
+	return ["==", ["get", "iso"], selected ?? ""];
 }
 
 const isSelected: ExpressionSpecification = [
@@ -332,7 +238,7 @@ export async function createMapEngine(
 				},
 				places: {
 					type: "geojson",
-					data: placesOf(countries, names, state),
+					data: placesOf(countries, names, state.written),
 					promoteId: "iso",
 				},
 			},
@@ -360,8 +266,8 @@ export async function createMapEngine(
 					id: "labels",
 					type: "symbol",
 					source: "places",
-					filter: labelFilter(false, state.selected),
-					layout: { ...labelLayout, "text-anchor": "center" },
+					filter: labelFilter(state.selected),
+					layout: labelLayout,
 					paint: labelPaint,
 				},
 				{
@@ -369,7 +275,7 @@ export async function createMapEngine(
 					id: "label-selected",
 					type: "symbol",
 					source: "places",
-					filter: selectedFilter(false, state.selected),
+					filter: selectedFilter(state.selected),
 					layout: selectedLabelLayout,
 					paint: selectedLabelPaint,
 				},
@@ -393,19 +299,12 @@ export async function createMapEngine(
 
 	const canOpen = (iso: string) => state.owner || state.written.includes(iso);
 
-	/** The country under a point: a marker dot or a label first, then a shape. */
+	/** The country under a point: its name first, then its shape. */
 	function countryAt(point: MapMouseEvent["point"]): string | undefined {
-		const near = map.queryRenderedFeatures(
-			[
-				[point.x - CLICK_REACH, point.y - CLICK_REACH],
-				[point.x + CLICK_REACH, point.y + CLICK_REACH],
-			],
-			{ layers: ["marker-selected", "markers"] },
-		);
 		const under = map.queryRenderedFeatures(point, {
 			layers: ["label-selected", "labels", "land"],
 		});
-		const iso = [...near, ...under][0]?.properties.iso;
+		const iso = under[0]?.properties.iso;
 		return typeof iso === "string" ? iso : undefined;
 	}
 
@@ -427,13 +326,11 @@ export async function createMapEngine(
 		}
 		if (previous) {
 			(map.getSource("places") as GeoJSONSource).setData(
-				placesOf(countries, names, state),
+				placesOf(countries, names, state.written),
 			);
 		}
-		map.setFilter("labels", labelFilter(false, state.selected));
-		map.setFilter("markers", labelFilter(true, state.selected));
-		map.setFilter("label-selected", selectedFilter(false, state.selected));
-		map.setFilter("marker-selected", selectedFilter(true, state.selected));
+		map.setFilter("labels", labelFilter(state.selected));
+		map.setFilter("label-selected", selectedFilter(state.selected));
 	}
 
 	// If the map hasn't started after a while (its worker or its style failed),
@@ -456,58 +353,6 @@ export async function createMapEngine(
 		throw error;
 	}
 
-	// The marker dots. Each dot and its name are one symbol, which MapLibre
-	// places like any label: where dots would overlap, one gives way, and comes
-	// back when the viewer zooms in and there is room. Written countries go first.
-	const dots = {
-		dot: dotImage(colours.land, colours.markerOutline),
-		"dot-written": dotImage(colours.written, colours.written),
-		"dot-selected": dotImage(colours.selected, colours.selected),
-	};
-	for (const [name, { image, pixelRatio }] of Object.entries(dots)) {
-		map.addImage(name, image, { pixelRatio });
-	}
-	const beside = {
-		// A marker's name sits beside its dot, never on top of it.
-		"text-variable-anchor": ["top", "bottom", "left", "right"] as [
-			"top",
-			"bottom",
-			"left",
-			"right",
-		],
-		"text-radial-offset": 0.6,
-	};
-	map.addLayer(
-		{
-			id: "markers",
-			type: "symbol",
-			source: "places",
-			filter: labelFilter(true, state.selected),
-			layout: {
-				...labelLayout,
-				...beside,
-				"icon-image": ["case", ["get", "written"], "dot-written", "dot"],
-				// The dot is what makes a small country clickable, so it stays
-				// when only its name doesn't fit.
-				"text-optional": true,
-			},
-			paint: labelPaint,
-		},
-		"label-selected",
-	);
-	map.addLayer({
-		id: "marker-selected",
-		type: "symbol",
-		source: "places",
-		filter: selectedFilter(true, state.selected),
-		layout: {
-			...selectedLabelLayout,
-			...beside,
-			"icon-image": "dot-selected",
-			"icon-allow-overlap": true,
-		},
-		paint: selectedLabelPaint,
-	});
 	paint(undefined);
 
 	// Only now does the map listen to the mouse: before the style has loaded

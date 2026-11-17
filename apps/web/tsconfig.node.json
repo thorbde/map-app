@@ -9,7 +9,9 @@
 		"scripts/**/*.ts",
 		"scripts/fixtures/*.json",
 		"app/features/countries/*.ts",
-		"app/features/maps/map-file.ts"
+		"app/features/maps/map-file.ts",
+		"app/features/maps/equal-earth.ts",
+		"app/features/maps/views.ts"
 	],
 	"compilerOptions": {
 		"composite": true,
