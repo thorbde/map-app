@@ -274,6 +274,8 @@ const rows: readonly Omit<Country, "continent">[] = [
 	{ iso: "NR", name: "Nauru", region: "micronesia" },
 	{ iso: "PW", name: "Palau", region: "micronesia" },
 	// Polynesia
+	{ iso: "CK", name: "Cook Islands", region: "polynesia" },
+	{ iso: "NU", name: "Niue", region: "polynesia" },
 	{ iso: "WS", name: "Samoa", region: "polynesia" },
 	{ iso: "TO", name: "Tonga", region: "polynesia" },
 	{ iso: "TV", name: "Tuvalu", region: "polynesia" },
