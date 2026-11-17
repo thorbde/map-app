@@ -112,7 +112,7 @@ Not borders, but recorded, because they decide what a viewer reads first.
 - **No marker dots and no sizes** (Thor, 2026-11-17). The file used to carry each country's size for a marker-dot rule; rank replaces it.
 
 ### The Pacific edge
-- **The Cook Islands are on the far left of the map,** next to Hawaii, not with the rest of Oceania: they lie east of the map's edge (Thor, 2026-11-17: leave them where they truly are). So do Kiribati's eastern islands, which splits Kiribati across the two sides. Niue is just west of the edge, on the right. On the globe and on Mercator this doesn't arise.
+- **The Cook Islands are on the far left of the map,** next to Hawaii, not with the rest of Oceania: they lie east of the map's edge (Thor, 2026-11-17: leave them where they truly are). So do Kiribati's eastern islands, which splits Kiribati across the two sides. Niue is just west of the edge, on the right. On the globe and on Mercator this doesn't arise. **The Oceania view therefore runs from Australia to Niue and leaves the Cook Islands out:** they are reached by panning or from the country list, the one country outside its continent's view (Thor, 2026-11-17; `views.ts`, and a test that fails if a second one appears). To be looked at again when the projection is settled.
 
 ### Geometry
 - **One file, `app/features/maps/geometry/world.json`:** every country in the list and the neutral land, at one level of detail. It is GeoJSON that MapLibre draws as it is (ADR 0021): longitude and latitude, with no projection applied.
