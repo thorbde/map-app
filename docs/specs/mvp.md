@@ -38,7 +38,7 @@
 - **`scripts/build-maps.ts`:**
   - Natural Earth's own files (not the `world-atlas` package, which strips everything but the shapes) → country shapes per ISO code, as coordinates MapLibre can draw
   - what Natural Earth already provides is used as it is: label points, the zoom each label appears from, disputed areas, overseas parts as their own units
-  - one detailed file of the whole world. MapLibre draws a suitably simplified version at each zoom itself, so nothing is swapped as the viewer zooms (ADR 0020)
+  - one detailed file of the whole world. MapLibre draws a suitably simplified version at each zoom itself, so nothing is swapped as the viewer zooms (ADR 0020, which arrives with thorbde/map-app#24, M1 PR 3)
   - shapes that cross the map's edge are cut there
   - output as hashed static assets, **not in the Worker bundle**
   - a size budget for the file (ADR 0020)

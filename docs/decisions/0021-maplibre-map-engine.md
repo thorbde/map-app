@@ -19,14 +19,14 @@ A throwaway spike (2026-11-16) showed one MapLibre map drawing our own country s
 
 ## Decision
 - **MapLibre GL JS draws the map.** Version 6.18.0 today, pinned exactly.
-- **Our own country shapes only: no tile service, no MapTiler, no API key.** The shapes still come from `scripts/build-maps.ts` (Natural Earth; border choices in ADR 0020). Nothing about a visitor leaves the site, and the list of external services in `ARCHITECTURE.md` stays as it is. Tiles can be added later, as a decision of their own, when a feature needs them.
+- **Our own country shapes only: no tile service, no MapTiler, no API key.** The shapes still come from `scripts/build-maps.ts` (Natural Earth; border choices in ADR 0020, which arrives with thorbde/map-app#24, M1 PR 3). Nothing about a visitor leaves the site, and the list of external services in `ARCHITECTURE.md` stays as it is. Tiles can be added later, as a decision of their own, when a feature needs them.
 - **Projections:**
   - **Equal Earth is the default for now.** Thor hasn't decided between Equal Earth and Mercator as the final default.
   - Mercator and the globe are options. The user-facing setting arrives with accounts and settings, not in M1.
   - MapLibre has Mercator and the globe built in. **Equal Earth is registered as a custom projection** with MapLibre's `addProjection`, which is marked experimental.
 - **The size budget changes** (decided by Thor):
   - **MapLibre loads lazily, after the page, and is outside the first-load budget,** the way CodeMirror is. The 150 KB first-load budget stays for everything else: the panel, the essay text and navigation arrive first and work before the map engine does.
-  - **The map engine gets a limit of its own,** set from what is measured when it is added (M1 PR 4), so it can't grow unnoticed. Measured today: 296 KB gzipped, plus a 147 KB worker file that loads in the background and 10 KB of CSS.
+  - **The map engine gets a limit of its own: 500 KB gzipped,** so it can't grow unnoticed. The limit is proposed in M1 PR 4 (thorbde/map-app#26), from what was measured there: about 460 KB gzipped in all, of which MapLibre is about 296 KB, its worker file, which loads in the background, about 150 KB, and its CSS about 10 KB. See "What building it found" below.
 - **Before the map has loaded,** the page shows a plain ocean-coloured background and "Loading the map". Nothing is drawn on the server.
 - **The map may take a couple of seconds to appear** (Thor, 2026-11-17). It will be heavy on animation anyway, so the effort goes into making it good once it is loaded, not into shaving the load. The map data is one detailed file of about 1.9 MB gzipped (ADR 0020), on top of the engine.
 - **Phones are expected to use an app,** with the map files bundled in, more than the website (Thor, 2026-11-17). The website on a phone is not what the load time is tuned for.
@@ -50,7 +50,7 @@ A throwaway spike (2026-11-16) showed one MapLibre map drawing our own country s
 - **Keeping MapLibre inside the 150 KB budget:** impossible; it is twice the whole budget.
 
 ## Consequences
-- **The first visit downloads about 450 KB of map engine** after the page itself. On a slow phone connection the map can take a few seconds to appear, while the text is there at once. The file is fingerprinted and long-cached, changes only when we upgrade MapLibre, and the shell loads it once per visit.
+- **The first visit downloads about 460 KB of map engine** after the page itself. On a slow phone connection the map can take a few seconds to appear, while the text is there at once. The file is fingerprinted and long-cached, changes only when we upgrade MapLibre, and the shell loads it once per visit.
 - **The map is not in the server's HTML any more.** `mvp.md` §8's "the map's SVG is server-rendered" no longer holds; the panel's content still is.
 - **WebGL is required to see the map.** Without it, the panel and its country list still work.
 - **`addProjection` is experimental** and can change between MapLibre versions. Exact pinning means that only happens when we upgrade on purpose. If it is ever removed, the fallback is Mercator and the globe, or pre-projecting the shapes ourselves.
@@ -60,9 +60,11 @@ A throwaway spike (2026-11-16) showed one MapLibre map drawing our own country s
 - **Map colours still come from tokens,** but MapLibre needs colour values, not CSS classes: the map component reads the token values at run time.
 
 ## What building it found (M1 PR 4, thorbde/map-app#26)
+**These come from the draft PR #26, which is not merged yet.** This ADR merges first. The sizes were measured on that draft on 2026-11-17 and are approximate. Everything in this section is confirmed or corrected in #26 when it merges.
+
 - **MapLibre is used directly,** not through `react-map-gl`: there is one map, it never unmounts, and Equal Earth needs MapLibre's own API.
 - **Labels are drawn by MapLibre with the page's own Montserrat.** Without a `glyphs` address in the style, MapLibre 6 draws text with the fonts the page has loaded: no font conversion and nothing extra to host. Labels as ordinary page text were tried too; they collide without extra code.
-- **The map engine's limit is 500 KB gzipped** (459 KB measured: MapLibre 296 KB, its worker 148 KB, CSS 10 KB, our own code 4 KB). `pnpm size` checks it, and fails if the engine ever becomes part of a page's first load.
+- **The map engine's limit is 500 KB gzipped** (about 460 KB measured: MapLibre about 296 KB, its worker about 150 KB, CSS about 10 KB, our own code about 4 KB). The limit is proposed in #26. `pnpm size` checks it there, and fails if the engine ever becomes part of a page's first load.
 - **MapLibre is a file of its own,** so its name, and a returning visitor's cached copy, survive our own deploys. Tried.
 - **MapLibre's fit-to-bounds doesn't suit Equal Earth:** it looks only at a box's corners, and an Equal Earth box is widest nearest the equator. The camera is framed with our own maths.
 - **The build strips MapLibre's licence notice from the JavaScript,** so the full text is served at `/licenses/maplibre-gl.txt`.
