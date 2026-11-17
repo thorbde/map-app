@@ -29,6 +29,7 @@ Thor's instruction (2026-11-16): **contested borders, areas and data are to be t
 | **Crimea** | Part of Russia | Part of Ukraine, the UN General Assembly's position | Thor, 2026-11-16 |
 | **Western Sahara** | Everything west of the sand wall is part of Morocco; only the strip east of it is a separate shape | Its own country, `EH`, in one piece. Morocco ends at its border, the parallel 27°40′ N | Thor: separate from Morocco on 2026-11-16, a country in the list on 2026-11-17 (ADR 0019) |
 | **Åland** | A separate shape | Part of Finland | Thor, 2026-11-16 |
+| **Baikonur** | A separate shape cut out of Kazakhstan: the cosmodrome Russia leases | Part of Kazakhstan | The agent, 2026-11-17, under Thor's rule for undisputed territory: Kazakhstan's sovereignty over it isn't contested. For Thor to confirm |
 | **France's overseas departments** (French Guiana, Guadeloupe, Martinique, Réunion, Mayotte) | Part of France's shape | Neutral | Thor, 2026-11-16. The spec asks for French Guiana; the other four are the same kind of place |
 | **The Caribbean Netherlands** (Bonaire, Sint Eustatius, Saba) | Part of the Netherlands' shape | Neutral | Proposed by the agent by analogy with France's; confirmed by Thor, 2026-11-16 |
 
@@ -52,6 +53,8 @@ Each of these is a position too, and each is open to change. None was chosen by 
 | **Kuril Islands** | Russia |
 | **Greenland, the Faroe Islands, Puerto Rico, the Falkland Islands, New Caledonia** and every other territory with a shape of its own | Neutral (mvp.md §2) |
 | **Alaska, Hawaii, Svalbard, the Canary Islands, the Azores, Galápagos** and other distant parts that are fully part of their country | Part of the country |
+| **Guantanamo Bay** (the US base in Cuba), **the British bases on Cyprus** (Akrotiri, Dhekelia), **the UN buffer zone on Cyprus** | Neutral: separate shapes in the source data that aren't in our list. Seen close up, Cuba and Cyprus have small neutral patches there |
+| **The Spratly Islands, Scarborough Reef,** and other uninhabited reefs and islets | Neutral |
 
 ### Open questions for Thor
 
@@ -66,23 +69,22 @@ Not borders, but hand-set, so recorded: a country's label point is the middle of
 - **Kiribati:** on Tarawa, the capital. Its largest island, Kiritimati, is 3,000 km away.
 
 ### Geometry
-- **The files are GeoJSON that MapLibre draws as it is** (ADR 0021): longitude and latitude, with no projection applied. The projection (Equal Earth for now) belongs to the map component.
-- **Seven files,** generated and **committed** in `app/features/maps/geometry/`:
-  - `world.json`: every country in the list, coarse (from the 110m data, coordinates to 0.1°). Every visit loads it.
-  - one file per continent: only that continent's countries (M49), detailed (from the 50m data, simplified, coordinates to 0.01°). Loaded when zooming in.
-- **Every country is in exactly one continent file.** All detailed files are cut from one set of shapes simplified once, so a border is identical in the files on both sides of it. Russia is whole in the Europe file.
-- **`pnpm maps:check`,** part of `pnpm check`, fails when the committed files differ from a fresh build. A change to a border therefore always shows up as a diff in a PR.
-- **The map's edge is 169° W,** in the Bering Strait, not 180°. Shapes are cut there, and longitudes run from -169 to 191. Russia and Oceania stay in one piece, in every projection. The cost: two Alaskan islands (St. Lawrence and Umnak) are cut in two.
-- **Each country carries** its ISO code, its label point (the same in every file), and a `marker` flag.
-- **Markers** follow a plain rule: a country gets one when it has no shape in the file, or when its largest piece of land is under 5,000 km² (15,000 km² in the world file).
-- **Neutral land** is one feature per continent, in the world file too, so the map can swap a continent's coarse land for its detailed land in one go. A piece of neutral land belongs to the continent of the nearest country.
-- **Budgets,** gzipped: 60 KB for the world file and 100 KB for each continent file (Thor, 2026-11-16). The build fails over them. Today: world 40 KB; continents 18 to 83 KB.
+- **One file, `app/features/maps/geometry/world.json`:** every country in the list and the neutral land, at one level of detail. It is GeoJSON that MapLibre draws as it is (ADR 0021): longitude and latitude, with no projection applied.
+- **MapLibre does the simplifying.** Given detailed shapes, it draws a suitably simplified version at each zoom level by itself. So there is one set of shapes, and nothing to swap as the viewer zooms: coastlines, borders and fills always match, and neighbours always line up.
+  - **Thor's decision, 2026-11-17,** after trying a version with three levels of detail that loaded as the viewer zoomed in. Its swaps showed: for a moment the finer coastline and the coarser land didn't match. His rule: accept that the map takes a couple of seconds to load, lean on what the libraries already do, and make it good once it is loaded.
+- **The source is Natural Earth's finest data** (1:10 million), lightly simplified, with coordinates to 0.001° (about 100 m). Denmark has about 1,600 points. Good for looking at a country; not for looking at a city (ADR 0021).
+- **The file is generated and committed.** `pnpm maps:check`, part of `pnpm check`, fails when it differs from a fresh build. A change to a border therefore always shows up as a diff in a PR.
+- **The map's edge is 169° W,** in the Bering Strait, not 180°. Shapes are cut there, and longitudes run from -169 to 191. Russia and Oceania stay in one piece, in every projection. The cost: a few Alaskan islands (St. Lawrence and Umnak among them) are cut in two.
+- **Each country carries** its ISO code, its label point, and its size (the side of a square as large as its largest piece of land, in kilometres). The map shows a marker dot for a country while that size is too few pixels to click, at whatever zoom the viewer is at.
+- **The very smallest countries keep the source's shape as it is,** because simplifying removes them. The Vatican's shape comes from the 50m data: the 10m file has it squashed flat.
+- **Budget:** 2.5 MB gzipped (the agent's number, for Thor to confirm). The build fails over it. Today: 1.91 MB gzipped, 6.6 MB on disk.
 
 ## Alternatives considered
 - **Building the files in CI instead of committing them:** a cleaner repo, but a border could change with no visible diff (when the data package is updated, for example), and every build would have one more step that can fail.
 - **Drawing every disputed area as neutral:** looks even-handed, but a grey Crimea or a grey Kashmir is a position too, and it leaves holes in countries people write about.
 - **Natural Earth's own files,** with their point-of-view variants: newer and more flexible, but needs a shapefile parser and a topology builder. The likely route when borders are revisited.
-- **Neighbouring countries repeated in each continent's file:** the first version of this PR did that, because each file was simplified differently. With one simplification for all, it isn't needed.
+- **Three levels of detail, loaded as the viewer zooms in** (a coarse world, a file per continent, a file per country): built and tried first. The first load was tiny (40 KB of map data), but every swap was a moment where coastline and land could mismatch, and it was a lot of code doing by hand what MapLibre does itself.
+- **Map tiles of our own shapes:** what tiles are for, loading only what is in view, but it needs a tile-building step, and MapLibre doesn't reproject tiles into Equal Earth (ADR 0021).
 - **A compact format of our own instead of GeoJSON:** about half the size, but needs decoding code in the browser. Not worth it at today's sizes.
 - **A Greenwich-centred map, cut at 180°:** the familiar convention, but it splits Russia's far east.
 
@@ -90,7 +92,9 @@ Not borders, but hand-set, so recorded: a country's label point is the middle of
 - **Every map takes positions that some readers will object to,** and some countries regulate how their borders may be shown (India and China among them). This is the same exposure as ADR 0019, and it grows when sign-up opens.
 - **A change in the source data can't move a border unnoticed.** The tests pin every row of the tables above to a place on the ground, and the build stops if Crimea or Western Sahara is no longer where the script expects it.
 - **Western Sahara's border is our own cut,** not the source data's. It follows the parallel exactly, which the real border also does.
-- **The world file has no shape for about 30 small states** (the 110m data lacks them). They are markers there, and shapes in their continent's file. Only the Vatican and Tuvalu have no shape anywhere.
+- **Every visit downloads about 1.9 MB of map data,** once (it is cached), on top of the map engine. The map takes a couple of seconds to appear on a normal connection, and longer on a slow one. Phones are expected to use an app with the map files bundled in (Thor, 2026-11-17).
+- **The repo carries a 6.6 MB generated file,** which a change to the build script rewrites.
+- **City-level zoom needs more than this.** Streets and city detail need map tiles, which is a separate decision (ADR 0021).
 - **Longitudes above 180** are unusual. MapLibre handles them (tried in Equal Earth, Mercator and the globe); any other tool reading these files must expect them.
 
 ## Likely later directions (not built)

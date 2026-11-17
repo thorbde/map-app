@@ -73,22 +73,25 @@ function ringContains(
 /**
  * The box around the piece of land a country's label is on: the mainland, or the
  * main island. Framing every piece would zoom far out for France or the United
- * States. A country without a shape gets a small box around its label point.
+ * States. A very small country gets a box a few degrees across around it.
  */
 export function countryBounds(country: MapCountryFeature): Bounds {
 	const label = country.properties.label;
-	const outerRings = (country.geometry?.coordinates ?? []).flatMap(([outer]) =>
+	const outerRings = country.geometry.coordinates.flatMap(([outer]) =>
 		outer ? [outer] : [],
 	);
 	const ring = outerRings.find((outer) => ringContains(outer, label));
 
-	const lngs = ring ? ring.map(([lng]) => lng) : [label[0]];
-	const lats = ring ? ring.map(([, lat]) => lat) : [label[1]];
-	// Always include the label point itself: two are hand-set (ADR 0020).
-	const west = Math.min(...lngs, label[0]);
-	const east = Math.max(...lngs, label[0]);
-	const south = Math.min(...lats, label[1]);
-	const north = Math.max(...lats, label[1]);
+	// Starts from the label point itself: two are hand-set (ADR 0020). A loop,
+	// because a large country's coast has more points than Math.min can take.
+	let [west, south] = label;
+	let [east, north] = label;
+	for (const [lng, lat] of ring ?? []) {
+		west = Math.min(west, lng);
+		east = Math.max(east, lng);
+		south = Math.min(south, lat);
+		north = Math.max(north, lat);
+	}
 
 	const padLng = Math.max(0, SMALLEST_VIEW - (east - west)) / 2;
 	const padLat = Math.max(0, SMALLEST_VIEW - (north - south)) / 2;

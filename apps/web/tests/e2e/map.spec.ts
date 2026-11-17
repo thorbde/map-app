@@ -102,13 +102,22 @@ test("a visitor can't open a country that isn't written", async ({ page }) => {
 	await expect(opened(page)).toHaveText("nothing yet");
 });
 
-test("a country too small for a shape can be opened by its marker dot", async ({
+test("a country too small to click can be opened by its marker dot", async ({
 	page,
 }) => {
-	// Malta has no shape in the world file: it is a dot.
-	await openPreview(page, "view=country:MT&owner=1");
+	// The Vatican is under a kilometre across: far too small to click, even in
+	// a view of its own, so it has a marker dot there.
+	await openPreview(page, "view=country:VA&owner=1");
 	await clickMiddle(page);
-	await expect(opened(page)).toHaveText("MT");
+	await expect(opened(page)).toHaveText("VA");
+});
+
+test("the page says the map is loading until it is there", async ({ page }) => {
+	const response = await page.request.get("/preview/map");
+	expect(await response.text()).toContain("Loading the map");
+
+	await openPreview(page, "view=world");
+	await expect(page.getByText("Loading the map")).toHaveCount(0);
 });
 
 test("the selected country can be opened too", async ({ page }) => {

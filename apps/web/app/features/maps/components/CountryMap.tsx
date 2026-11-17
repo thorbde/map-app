@@ -91,6 +91,7 @@ export function CountryMap({
 	return (
 		<section className={styles.map} aria-label="World map" data-status={status}>
 			<div ref={container} className={styles.canvas} />
+			{status === "loading" && <p className={styles.note}>Loading the map</p>}
 			{status === "unavailable" && (
 				<p className={styles.note}>The map can’t be shown in this browser.</p>
 			)}

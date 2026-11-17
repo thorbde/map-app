@@ -49,6 +49,12 @@ export type MapEngine = {
 /** How long the map may take to start before the page says it can't be shown. */
 const START_TIMEOUT_MS = 20_000;
 
+/**
+ * A country gets a marker dot while its largest piece of land is fewer than
+ * this many pixels across, at the zoom the viewer is at.
+ */
+const MARKER_BELOW_PX = 14;
+
 /** How far from a marker dot a click still counts, in pixels. */
 const CLICK_REACH = 6;
 
@@ -122,13 +128,21 @@ type Place = {
 	properties: {
 		iso: string;
 		name: string;
-		marker: boolean;
+		/** The country has a marker dot at zooms below this one. */
+		markerUntilZoom: number;
 		written: boolean;
 		/** Which labels win when two collide: lower numbers first. */
 		rank: number;
 	};
 	geometry: { type: "Point"; coordinates: [number, number] };
 };
+
+/** The zoom at which something this many kilometres across is this many pixels across. */
+function zoomWhereAcross(km: number, pixels: number): number {
+	// MapLibre draws the world square 512 px wide at zoom 0.
+	const kmAcrossWorld = equalEarthProjection.tileMatrixSet.extentAtZoom0 / 1000;
+	return Math.log2((pixels * kmAcrossWorld) / (512 * km));
+}
 
 /** A point per country, for its label and its marker dot. */
 function placesOf(
@@ -144,7 +158,7 @@ function placesOf(
 			properties: {
 				iso: properties.iso,
 				name: names[properties.iso] ?? properties.iso,
-				marker: properties.marker === true,
+				markerUntilZoom: zoomWhereAcross(properties.sizeKm, MARKER_BELOW_PX),
 				written: written.has(properties.iso),
 				rank: written.has(properties.iso) ? 0 : 1,
 			},
@@ -164,6 +178,13 @@ function boundsOf(view: MapView, countries: MapCountryFeature[]): Bounds {
 
 // --- The map --------------------------------------------------------------------
 
+/** Is the country still a marker dot at the zoom the viewer is at? MapLibre re-checks as they zoom. */
+const isMarker: ExpressionSpecification = [
+	">",
+	["get", "markerUntilZoom"],
+	["zoom"],
+];
+
 /** The ordinary labels: every country but the selected one, with or without a marker dot. */
 function labelFilter(
 	marker: boolean,
@@ -171,7 +192,7 @@ function labelFilter(
 ): ExpressionSpecification {
 	return [
 		"all",
-		["==", ["get", "marker"], marker],
+		marker ? isMarker : ["!", isMarker],
 		["!=", ["get", "iso"], selected ?? ""],
 	];
 }
@@ -287,7 +308,7 @@ export async function createMapEngine(
 					id: "markers",
 					type: "circle",
 					source: "places",
-					filter: ["get", "marker"],
+					filter: isMarker,
 					paint: {
 						"circle-radius": 4,
 						"circle-color": stateColour(colours.land),

@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { countries } from "../countries";
 import { equalEarth, equalEarthProjection } from "./equal-earth";
-import world from "./geometry/world.json";
+// As text: see geometry.test.ts.
+import worldText from "./geometry/world.json?raw";
 import type { MapCountryFeature, MapFile } from "./map-file";
 import {
 	type Bounds,
@@ -11,7 +12,7 @@ import {
 	WORLD_BOUNDS,
 } from "./views";
 
-const features = (world as unknown as MapFile).features.filter(
+const features = (JSON.parse(worldText) as MapFile).features.filter(
 	(feature): feature is MapCountryFeature => "iso" in feature.properties,
 );
 const byIso = new Map(
@@ -58,15 +59,14 @@ describe("map views", () => {
 		expect(east).toBeLessThan(-60);
 	});
 
-	it("gives a country without a shape a view around its label point", () => {
+	it("gives a very small country a view a few degrees across, around it", () => {
 		const malta = country("MT");
-		expect(malta.geometry).toBeNull();
 		const [[west, south], [east, north]] = countryBounds(malta);
 		expect(east - west).toBeCloseTo(4, 5);
 		expect(north - south).toBeCloseTo(4, 5);
 		const [lng, lat] = malta.properties.label;
-		expect((west + east) / 2).toBeCloseTo(lng, 5);
-		expect((south + north) / 2).toBeCloseTo(lat, 5);
+		expect(Math.abs((west + east) / 2 - lng)).toBeLessThan(0.2);
+		expect(Math.abs((south + north) / 2 - lat)).toBeLessThan(0.2);
 	});
 
 	it("always contains the label point", () => {
