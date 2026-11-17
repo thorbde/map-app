@@ -42,3 +42,6 @@ Thumbs.db
 # Python virtualenv for the icon drawing tool (packages/icons/tools)
 .venv/
 __pycache__/
+
+# Downloaded source data for the map (scripts/build-maps.ts)
+.cache/

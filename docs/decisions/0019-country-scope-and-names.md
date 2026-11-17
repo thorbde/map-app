@@ -22,7 +22,7 @@ Questions of recognition, contested territory and international relations must n
   - It has an official ISO code (`EH`), and CLDR's name for it is "Western Sahara".
   - Its region is North Africa. The African Union, whose regions we use for Africa, counts it (as the Sahrawi Arab Democratic Republic) among its members.
   - Its facts come from Wikidata's entry for the Sahrawi Arab Democratic Republic, pinned in the overrides file and **waiting for Thor's review**: two capitals (Laayoune, which the republic claims and Morocco controls, and Tifariti, its temporary capital), Arabic and Spanish, "republic". Its borders with Morocco, Algeria and Mauritania are added by hand on both sides.
-  - On the map it is its own shape, cut from Morocco's along the parallel 27°40′ N (ADR 0020).
+  - On the map it is its own shape, in one piece: the part Morocco holds is moved from Morocco to it, along Natural Earth's line near the parallel 27°40′ N (ADR 0020).
 - **The Cook Islands (CK) and Niue (NU) are in the list too:** 200 countries. Added by the agent on 2026-11-17 under the standing rule above. Both are self-governing states in free association with New Zealand: not UN members, not disputed, with ISO codes, CLDR names and diplomatic relations of their own. Their region is Polynesia, as in UN M49. Wikidata has no form of government for either; "constitutional monarchy" is filled in by hand.
 - **Kosovo and Taiwan get regions by convention,** because UN M49 lists neither: Kosovo in Southern Europe, Taiwan in Eastern Asia.
 - **Names are Unicode CLDR's English names,** copied as they are, including "Türkiye", "Congo - Kinshasa", "Congo - Brazzaville" and "&" in names like "Bosnia & Herzegovina". CLDR is the list browsers and operating systems use. Where the spec and CLDR differ and the spec gives no reason, CLDR wins.
@@ -39,7 +39,7 @@ Questions of recognition, contested territory and international relations must n
 - **Western Sahara is disputed too.** Morocco controls most of it and regards it as Moroccan; listing it as a country, and drawing it apart from Morocco, can draw complaints and can get an app restricted in Morocco.
 - **Kosovo and Taiwan are disputed, which is why the risk is high.** China regards Taiwan as part of China, and Serbia and about half the UN's members don't recognise Kosovo. Listing them as countries can draw complaints, and showing Taiwan as a country can get an app restricted in some markets.
 - **Other data sources don't treat them as ordinary countries:**
-  - `XK` is a user-assigned code, not an official ISO 3166 code. Natural Earth and `world-atlas` have Kosovo's shape without an ISO code, so the map script (M1 PR 3) must match it by name.
+  - `XK` is a user-assigned code, not an official ISO 3166 code. Natural Earth has Kosovo's shape, and gives it `XK` in a field of its own (`ISO_A2_EH`), which the map script uses (ADR 0020).
   - Wikidata's facts for both (independence date, capital, neighbours) are contested, so they are likely to need entries in the overrides file (M1 PR 2).
   - Map borders: Kosovo is drawn as its own shape, separate from Serbia.
 - **The totals change everywhere:** 200 in total, 55 in Africa, 45 in Europe, 49 in Asia, 16 in Oceania. Progress reads "12 / 200".

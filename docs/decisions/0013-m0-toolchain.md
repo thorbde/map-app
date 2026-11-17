@@ -139,18 +139,21 @@ In `packages/ui`, as dependencies:
 
 ### Added in M1 PR 3 (map geometry)
 
-In `apps/web`, as devDependencies. They run only in `scripts/build-maps.ts`; nothing from them reaches the Worker or the browser (the boundary rule against devDependencies in shipped code checks that). The generated map file is 1.9 MB gzipped (ADR 0020).
+In `apps/web`, as a devDependency. It runs only in `scripts/build-maps.ts`; nothing from it reaches the Worker or the browser (the boundary rule against devDependencies in shipped code checks that). The generated map file is 2.0 MB gzipped (ADR 0020).
 
 | Package | Version | Why | Unpacked size |
 |---|---|---|---|
-| `world-atlas` | 2.0.2 | Natural Earth's country shapes as TopoJSON. We use its finest level | 8.2 MB |
-| `topojson-client` | 3.1.0 | Reads those files, and merges shapes (Somaliland into Somalia, Crimea into Ukraine, Åland into Finland) | 68 KB |
-| `topojson-simplify` | 3.0.3 | Removes detail while keeping shared borders identical | 51 KB |
-| `d3-geo` | 3.1.2 | Cuts shapes correctly at the map's edge (the source data is drawn for a sphere) | 255 KB, plus `d3-array` (115 KB) |
-| `@types/d3-geo`, `@types/topojson-client`, `@types/topojson-simplify` | 3.1.1, 3.1.5, 3.0.3 | Type definitions | 77 KB together |
+| `mapshaper` | 0.8.4 | The standard tool for preparing map data. Cuts one shape out of another, merges shapes, cuts them at the map's edge, simplifies while keeping shared borders identical, and rounds coordinates | 18 MB, and 171 MB installed with the 33 packages it depends on. MPL-2.0 |
 
-- **Alternatives:** Natural Earth's shapefiles directly (newer data, but needs a shapefile parser and a topology builder), and `mapshaper` (does everything, but far larger). `world-atlas` with these three libraries made the M0 mockups, so it was known to work.
-- **`world-atlas` is listed in knip's `ignoreDependencies`:** the script reads its JSON files by path, which knip can't see.
+- **The map data is not a package.** The script downloads Natural Earth 5.1.2's own files from its GitHub repository, pinned by version and by each file's SHA-256, into `apps/web/.cache/` (not committed). ADR 0020 says which files, what they provide and what they leave out.
+- **What mapshaper provides:** every geometry step the script needs, as about ten commands.
+- **What it leaves out:**
+  - **Type definitions.** `scripts/mapshaper.d.ts` declares the one function we call.
+  - **A documented way to move the map's edge that works.** Its documented commands lose the holes in countries when used for this. The script uses `-rotate`, which is in mapshaper but not in its documentation, and only works before simplifying. The tests would catch a change: every country present, Lesotho and San Marino still holes, no ring jumping across the map.
+- **It replaced** `world-atlas` 2.0.2 (Natural Earth 4.1.0, from 2018, with everything but the names and numeric codes stripped out), `topojson-client`, `topojson-simplify`, `d3-geo` and their type packages, and about 450 lines of our own geometry code. Thor's decision of 2026-11-17: use Natural Earth's own files, and what the standard tools already do.
+- **Alternatives:**
+  - **Keep `topojson` and `d3-geo`, and only swap the data:** small packages, but they can't cut one shape out of another, which is what moving Crimea and Western Sahara needs. That part would stay our own code.
+  - **Commit the source files instead of downloading them:** no network needed for `pnpm check`, but 30 MB in the repo.
 
 ### Planned, not yet installed
 Recorded here so the sizes are known before code depends on them (ADR 0006):
