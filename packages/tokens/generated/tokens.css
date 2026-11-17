@@ -30,8 +30,8 @@
   --color-map-border: var(--color-sky-300);
   --color-map-land: var(--color-neutral-0);
   --color-map-ocean: var(--color-sky-100);
-  /* Must reach 3:1 against written. */
-  --color-map-selected: var(--color-teal-950);
+  /* Told apart from written by its label (white, bold, larger), not by 3:1 contrast: Thor found the darker teal that reached it too dark (DESIGN.md). Reaches 3:1 against land and ocean. */
+  --color-map-selected: var(--color-teal-800);
   /* Must reach 3:1 against land (WCAG 1.4.11). */
   --color-map-written: var(--color-teal-600);
   --color-neutral-0: rgb(100% 100% 100%);
