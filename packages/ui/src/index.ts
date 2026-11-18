@@ -25,6 +25,11 @@ export {
 	type PanelSectionProps,
 } from "./components/Panel/Panel";
 export {
+	type ShapeTile,
+	ShapeTiles,
+	type ShapeTilesProps,
+} from "./components/ShapeTiles/ShapeTiles";
+export {
 	Tag,
 	TagLink,
 	type TagLinkProps,

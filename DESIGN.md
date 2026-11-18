@@ -71,7 +71,7 @@ The tokens are the source of truth (`packages/tokens/tokens/`, ADR 0014). This i
 - **Tags that can't be pressed** (several values of one fact): 20 px tall and always one line, square corners, 12 px, 400, `color.bg.tag` (one step darker than the fact box), in the fact box only. More than three are held back behind a button that reads as a link: "9 more", then "Show fewer".
 - **Text in a panel is 14 px** (`font.size.sm`): fact values, links, and the `h2`s (700). Labels and tags are 12 px. Only the title in the header block is larger. Essay text keeps its own size.
 - **The fact box:** each label (12 px, `color.text.muted`) sits above its value (14 px), so a value has the box's full width.
-- **The world and continent panels show countries as their own outlines,** with the name under each, not as a list of links.
+- **The world and continent panels show countries as their own outlines,** with the name under each, not as a list of links. The world's six continents: three to a row, outline 48 px, name 12 px 700 with its count under it. A continent's countries: four to a row, outline 32 px. An outline is `color.icon.fill`, or `color.map.written` once the country is written. No box and no shadow around a tile: it is not a card.
 
 **Labels on the map.** 12 px, sentence case.
 - On land that isn't written: text colour with a 3 px white outline, so borders don't cut through the letters.
