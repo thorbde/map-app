@@ -23,6 +23,10 @@ export function IconButton({
 }: IconButtonProps) {
 	return (
 		<BaseButton
+			// A button that stops being pressable while it has focus (zoom out, at
+			// the furthest zoom) keeps the focus, so a keyboard user isn't sent
+			// back to the top of the page.
+			focusableWhenDisabled
 			{...props}
 			aria-label={label}
 			title={label}

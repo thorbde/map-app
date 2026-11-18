@@ -362,6 +362,30 @@ test("the map can be moved and zoomed with the keyboard alone", async ({
 	await expectZoom(page, start.zoom);
 });
 
+test("a zoom button that reaches its limit keeps the keyboard's focus", async ({
+	page,
+}) => {
+	await openPreview(page, "view=world");
+	await moveMouseOverMap(page);
+	const start = await camera(page);
+
+	await zoomIn(page).focus();
+	await page.keyboard.press("Enter");
+	await expectZoom(page, start.zoom + 1);
+	await page.keyboard.press("Tab");
+	await expect(zoomOut(page)).toBeFocused();
+	await page.keyboard.press("Enter");
+	await expectZoom(page, start.zoom);
+
+	// As far out as it goes: the button can't be pressed, and focus stays on it.
+	await expect(zoomOut(page)).toBeDisabled();
+	await expect(zoomOut(page)).toBeFocused();
+	await page.keyboard.press("Enter");
+	await expectZoom(page, start.zoom);
+	await page.keyboard.press("Shift+Tab");
+	await expect(zoomIn(page)).toBeFocused();
+});
+
 test("the camera travels to a new view, and arrives where the view is", async ({
 	page,
 }) => {

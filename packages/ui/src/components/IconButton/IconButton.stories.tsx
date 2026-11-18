@@ -75,9 +75,13 @@ export const AtTheLimit: Story = {
 		</div>
 	),
 	play: async ({ canvasElement }) => {
-		await expect(
-			within(canvasElement).getByRole("button", { name: "Zoom out" }),
-		).toBeDisabled();
+		const zoomOut = within(canvasElement).getByRole("button", {
+			name: "Zoom out",
+		});
+		await expect(zoomOut).toHaveAttribute("aria-disabled", "true");
+		// It can still be reached with the keyboard, so focus is never lost on it.
+		zoomOut.focus();
+		await expect(zoomOut).toHaveFocus();
 	},
 };
 
