@@ -3,8 +3,8 @@ import type { CSSProperties } from "react";
 import { expect, within } from "storybook/test";
 import { africa, senegal } from "../../proposals/content";
 import { CountryBody } from "../../proposals/panels";
-import { ShapeTiles } from "../../proposals/pieces";
 import { africaShapes } from "../../proposals/shapes";
+import { ShapeTiles } from "../ShapeTiles/ShapeTiles";
 import { Panel, PanelSection } from "./Panel";
 
 const onOcean: CSSProperties = {
@@ -18,7 +18,11 @@ const countryBody = <CountryBody country={senegal} />;
 const shape = (name: string) => africaShapes[name]?.d ?? "";
 const africaBody = africa.map(({ region, countries }) => (
 	<PanelSection key={region} title={region}>
-		<ShapeTiles items={countries.map((name) => ({ name, d: shape(name) }))} />
+		<ShapeTiles
+			dense
+			columns={4}
+			items={countries.map((name) => ({ name, href: "#", d: shape(name) }))}
+		/>
 	</PanelSection>
 ));
 

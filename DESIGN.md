@@ -66,11 +66,12 @@ The tokens are the source of truth (`packages/tokens/tokens/`, ADR 0014). This i
 **The panel, chips and tags** (Thor, 2026-11-18).
 - **The panel:** white, `radius.lg`, `shadow.raised`, 24 rem wide (`size.panel`). Its header block is `color.bg.inverse` with the title at 25 px, 700, and an optional line under it at 14 px in `color.text.on-inverse-muted`. No hairline edge: the shadow alone.
 - **Continent chips:** links. 32 px tall (40 px on touch), pill, 14 px, 700, white with `shadow.raised` because they float over the map. The current one is `color.bg.inverse` with white text. No hairline edge.
+- **The continent chips collapse into the current one** (Thor, 2026-11-18), to leave the map free. The rest slide out beside it in 200 ms (at once with reduced motion) when the pointer is over it, when the keyboard focus arrives, or when it is pressed; the current chip doesn't move.
 - **Tags that are links** (a country's neighbours): 24 px tall (32 px on touch), pill, 12 px, 700, `color.bg.subtle`, no shadow. Clearly smaller than a chip.
 - **Tags that can't be pressed** (several values of one fact): 20 px tall and always one line, square corners, 12 px, 400, `color.bg.tag` (one step darker than the fact box), in the fact box only. More than three are held back behind a button that reads as a link: "9 more", then "Show fewer".
 - **Text in a panel is 14 px** (`font.size.sm`): fact values, links, and the `h2`s (700). Labels and tags are 12 px. Only the title in the header block is larger. Essay text keeps its own size.
 - **The fact box:** each label (12 px, `color.text.muted`) sits above its value (14 px), so a value has the box's full width.
-- **The world and continent panels show countries as their own outlines,** with the name under each, not as a list of links.
+- **The world and continent panels show countries as their own outlines,** with the name under each, not as a list of links. The world's six continents: three to a row, outline 48 px, name 12 px 700 with its count under it. A continent's countries: four to a row, outline 32 px. An outline is `color.icon.fill`, or `color.map.written` once the country is written. No box and no shadow around a tile: it is not a card.
 
 **Labels on the map.** 12 px, sentence case.
 - On land that isn't written: text colour with a 3 px white outline, so borders don't cut through the letters.

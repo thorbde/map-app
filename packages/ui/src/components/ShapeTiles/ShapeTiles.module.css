@@ -1,8 +1,5 @@
-/* PROPOSAL ONLY: the shape tiles Thor chose for the world and continent panels
-   (2026-11-18). They become a real component when the outlines have a build
-   step of their own. Not exported from @thorbde/ui. */
-
-/* The country's own outline, and its name under it. */
+/* A shape and its name under it. No box and no shadow: a tile is not a card
+   (DESIGN.md); it shows itself as a link by its hover colour and focus ring. */
 .tiles {
 	display: grid;
 	grid-template-columns: repeat(var(--columns, 3), minmax(0, 1fr));
@@ -24,6 +21,8 @@
 	line-height: var(--font-line-height-tight);
 	text-align: center;
 	text-decoration: none;
+	/* A name too long for its tile breaks with a hyphen, as in print. */
+	hyphens: auto;
 	overflow-wrap: anywhere;
 	transition: background-color var(--duration-fast) var(--easing-standard);
 }
@@ -32,17 +31,17 @@
 	background: var(--color-bg-subtle);
 }
 
-.tileShape {
-	width: var(--space-12);
-	height: var(--space-12);
+.shape {
+	width: var(--shape, var(--space-12));
+	height: var(--shape, var(--space-12));
 	fill: var(--color-icon-fill);
 }
 
-.tile[data-written] .tileShape {
+.tile[data-written] .shape {
 	fill: var(--color-map-written);
 }
 
-.tileDetail {
+.detail {
 	display: block;
 	color: var(--color-text-muted);
 	font-weight: var(--font-weight-regular);
@@ -51,4 +50,18 @@
 .tile:focus-visible {
 	outline: 2px solid var(--color-focus);
 	outline-offset: 2px;
+}
+
+/* Smaller and denser, for a continent's many countries (Thor, 2026-11-18). */
+.dense {
+	--shape: var(--space-8);
+
+	/* No gap between columns: the names need the width. */
+	gap: var(--space-1) 0;
+}
+
+.dense .tile {
+	gap: var(--space-1);
+	padding: var(--space-2) 0;
+	border-radius: var(--radius-sm);
 }
