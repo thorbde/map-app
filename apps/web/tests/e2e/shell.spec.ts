@@ -363,6 +363,29 @@ test("the panel comes before the chips and the map in the page", async ({
 	expect(order).toEqual([true, true]);
 });
 
+test("every tile on the world and continent panels has an outline of its own", async ({
+	page,
+}) => {
+	const addresses = [
+		"/preview",
+		...Object.keys(CONTINENTS).map((id) => `/preview/${id}`),
+	];
+	for (const address of addresses) {
+		await page.goto(address);
+		const shapes = await panel(page)
+			.locator("a svg path")
+			.evaluateAll((paths) =>
+				paths.map((path) => path.getAttribute("d") ?? ""),
+			);
+		expect(shapes.length, address).toBe(
+			await panel(page).getByRole("link").count(),
+		);
+		for (const d of shapes) expect(d.length, address).toBeGreaterThan(10);
+		// No two places share a shape: nothing is a placeholder.
+		expect(new Set(shapes).size, address).toBe(shapes.length);
+	}
+});
+
 test("unknown addresses are 404", async ({ page }) => {
 	for (const address of [
 		"/preview/atlantis",

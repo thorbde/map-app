@@ -11,32 +11,28 @@ export type PlaceListItem = {
 };
 
 /**
- * TEMPORARY: every place gets this same round shape. The real outlines come
- * from the map data, in a PR of their own (docs/specs/m1.md, row 5b); they are
- * looked up here by `id`, and nothing else changes.
- */
-const PLACEHOLDER_SHAPE = "M50 10a40 40 0 1 0 0 80a40 40 0 1 0 0-80z";
-
-/**
  * The places a world or continent panel lists: each a link, drawn as a shape
  * with its name under it (DESIGN.md). `many` is for a continent's countries:
  * smaller tiles, four to a row.
  */
 export function PlaceList({
 	items,
+	outlines,
 	many = false,
 }: {
 	items: readonly PlaceListItem[];
+	/** Each place's outline by its `id`: path data in a 100 × 100 box (ADR 0020). */
+	outlines: Readonly<Record<string, string>>;
 	many?: boolean;
 }) {
 	return (
 		<ShapeTiles
 			dense={many}
 			columns={many ? 4 : 3}
-			items={items.map(({ name, detail, to }) => ({
+			items={items.map(({ id, name, detail, to }) => ({
 				name,
 				detail,
-				d: PLACEHOLDER_SHAPE,
+				d: outlines[id] ?? "",
 				render: <RouterLink to={to} />,
 			}))}
 		/>

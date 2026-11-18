@@ -5,9 +5,12 @@ import { PlaceList } from "./PlaceList";
 /** A continent: every one of its countries, grouped by region. */
 export function ContinentPanel({
 	panel,
+	outlines,
 	paths,
 }: {
 	panel: ContinentPanelData;
+	/** Each of the continent's countries' outlines, by ISO code. */
+	outlines: Readonly<Record<string, string>>;
 	paths: PanelPaths;
 }) {
 	const lists = panel.regions.map((region) => ({
@@ -15,6 +18,7 @@ export function ContinentPanel({
 		list: (
 			<PlaceList
 				many
+				outlines={outlines}
 				items={region.countries.map(({ iso, name }) => ({
 					id: iso,
 					name,

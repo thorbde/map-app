@@ -94,7 +94,7 @@ app/
       format.ts           how facts read in the fact box
       schema.ts           what an address may name (zod)
       components/         WorldPanel, ContinentPanel, CountryPanel; PlaceList is the one place that turns
-                          a list of places into shape tiles (one placeholder shape until the outlines exist)
+                          a list of places into shape tiles; the routes' loaders hand it the outlines from features/maps
   server/
     access.server.ts      canViewProfile / canViewEssay, see ADR 0003
     db/
