@@ -24,6 +24,6 @@ export type ContinentOutlines = Record<Continent, Outline>;
 
 /**
  * Each outline file must stay under this, gzipped. The largest (Europe, 45
- * countries) is about 15 KB. Checked by the build, a test and `pnpm size`.
+ * countries) is about 17 KB. Checked by the build, a test and `pnpm size`.
  */
 export const OUTLINE_FILE_BUDGET_BYTES = 18_000;

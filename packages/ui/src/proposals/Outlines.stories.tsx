@@ -88,49 +88,30 @@ export const NorthAmerica: Story = continent("north-america");
 export const SouthAmerica: Story = continent("south-america");
 export const Oceania: Story = continent("oceania");
 
-const hardCases = (
-	title: string,
-	pick: (each: (typeof data.hardCases)[number]) => string,
-	as: "main" | "section" = "section",
-) => (
-	<Panel
-		as={as}
-		title={title}
-		description="At the size a continent panel shows them"
-	>
-		<ShapeTiles
-			dense
-			columns={4}
-			items={data.hardCases.map((each) => ({
-				name: each.name,
-				d: pick(each),
-				href: "#",
-			}))}
-		/>
-	</Panel>
-);
-
 /**
- * The hard cases three ways, side by side, at the size a continent panel shows
- * them (32 px). Left, as built: the land the name is on, which is what the
- * map's country view frames. Middle, a possible middle way: that land, plus
- * all land within 150 km of land already shown, and so on outward. Right: all
- * of the country's land.
+ * The hard cases, at the size a continent panel shows them (32 px). Each is
+ * the country's main body with its nearby islands: the land its name is on,
+ * plus land within 150 km of land already shown, and so on outward.
+ *
+ * That is what the two established sets of country outlines we checked draw
+ * (mapsicon and GeoIcons, both drawn by hand): Indonesia, Denmark, Italy and
+ * Japan whole; the United States without Alaska and Hawaii, Norway without
+ * Svalbard, Spain without the Canaries, Portugal without the Azores. For
+ * island states they zoom in further than we do: both draw Kiribati as one
+ * atoll filling the tile, where ours is eight faint ones. mapsicon leaves
+ * Tuvalu, Micronesia and the Marshall Islands out as too small to draw.
  */
 export const HardCases: Story = {
 	name: "Hard cases",
 	render: () => (
-		<div
-			style={{
-				display: "flex",
-				alignItems: "flex-start",
-				gap: "var(--space-4)",
-				padding: "var(--space-4)",
-			}}
-		>
-			{hardCases("As built: the named land", (each) => each.d, "main")}
-			{hardCases("Middle: land within reach", (each) => each.inReach)}
-			{hardCases("All the land", (each) => each.allLand)}
-		</div>
+		<Shell current="World">
+			<Panel title="Hard cases" description="Small, scattered and very large">
+				<ShapeTiles
+					dense
+					columns={4}
+					items={data.hardCases.map(({ name, d }) => ({ name, d, href: "#" }))}
+				/>
+			</Panel>
+		</Shell>
 	),
 };

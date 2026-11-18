@@ -77,7 +77,7 @@ app/
       map-file.ts         the format of that file
       geometry/outlines/  the generated outlines on the panels' tiles: one small file per continent, and one of the six continents (committed; same check)
       outline-file.ts     the format of those files, and their size budget
-      outline-land.ts     which land an outline shows: the map's own views, readable by the build script too
+      outline-land.ts     which land an outline shows: a country's main body with its nearby islands, starting from the map's own views
       outlines.server.ts  reads the outlines on the server, for a panel's loader: they arrive in the HTML, never as JavaScript
       map-engine.client.ts  everything that touches MapLibre; loaded lazily by the map component, never on the server (ADR 0021)
       equal-earth.ts      the Equal Earth projection, registered with MapLibre (and with its workers: equal-earth.worker.ts)

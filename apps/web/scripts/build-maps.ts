@@ -42,7 +42,7 @@ import {
 } from "../app/features/maps/outline-file.ts";
 import {
 	CONTINENT_FRAMES,
-	landNearName,
+	landInReach,
 } from "../app/features/maps/outline-land.ts";
 
 // --- The source: Natural Earth, pinned --------------------------------------------
@@ -402,7 +402,7 @@ if (size > BUDGET_BYTES) {
 // The same shapes, with every border choice above already made, drawn small:
 // each country, and each continent, as an SVG path fitted to a box 100 × 100.
 // mapshaper projects, simplifies, fits and writes the path. Which land is
-// shown is the map's own views (outline-land.ts).
+// shown is in outline-land.ts: a country's main body with its nearby islands.
 
 /**
  * How much detail an outline keeps: mapshaper simplifies for a drawing this
@@ -478,7 +478,7 @@ for (const feature of countryFeatures) {
 	countryOutlines.set(
 		feature.properties.iso,
 		await outlineOf(
-			{ type: "MultiPolygon", coordinates: landNearName(feature) },
+			{ type: "MultiPolygon", coordinates: landInReach(feature) },
 			{ keepShapes: true },
 		),
 	);
@@ -534,7 +534,7 @@ for (const [name, outlines] of Object.entries(outlineFiles)) {
 // show the outlines to Thor get a copy with the names beside them. It goes
 // when the tile is a real component that the app feeds.
 
-/** Shown three ways in the "hard cases" story, for Thor to choose between. */
+/** The countries in the "hard cases" story: small, scattered and very large. */
 const HARD_CASES = [
 	...[
 		"SC",
@@ -552,48 +552,8 @@ const HARD_CASES = [
 		"KM",
 	],
 	...["DK", "IT", "GB", "JP", "PH", "GR", "FR", "US", "NO", "PT", "ES", "NZ"],
+	...["MH", "FM", "TO", "PW"],
 ];
-
-/**
- * A possible middle way, in the story only: the land the name is on, and all
- * land within 150 km of land already in, and so on outward. Islands that
- * belong together stay together; land far off on its own is left out.
- */
-function landInReach(feature: MapCountryFeature) {
-	const KM_PER_DEGREE = 111.2;
-	const REACH_KM = 150;
-	// A few hundred points of each coast are enough to measure a gap with.
-	const sample = (ring: [number, number][]) =>
-		ring.filter((_, i) => i % Math.ceil(ring.length / 300) === 0);
-	const pieces = feature.geometry.coordinates.map((polygon) => ({
-		polygon,
-		points: sample(polygon[0] ?? []),
-	}));
-	const near = (a: [number, number][], b: [number, number][]) =>
-		a.some(([lngA, latA]) =>
-			b.some(
-				([lngB, latB]) =>
-					Math.hypot(
-						(lngA - lngB) * Math.cos((((latA + latB) / 2) * Math.PI) / 180),
-						latA - latB,
-					) *
-						KM_PER_DEGREE <
-					REACH_KM,
-			),
-		);
-	const named = new Set(landNearName(feature));
-	let reached = pieces.filter((piece) => named.has(piece.polygon));
-	let rest = pieces.filter((piece) => !named.has(piece.polygon));
-	for (let edge = reached; edge.length > 0; ) {
-		const next = rest.filter((piece) =>
-			edge.some((from) => near(piece.points, from.points)),
-		);
-		rest = rest.filter((piece) => !next.includes(piece));
-		reached = [...reached, ...next];
-		edge = next;
-	}
-	return reached.map((piece) => piece.polygon);
-}
 
 const storyData = {
 	continents: continentIds.map((continent) => ({
@@ -608,24 +568,11 @@ const storyData = {
 				d: countryOutlines.get(iso) ?? "",
 			})),
 	})),
-	hardCases: await Promise.all(
-		HARD_CASES.map(async (iso) => {
-			const feature = countryFeatures.find(
-				(each) => each.properties.iso === iso,
-			);
-			if (!feature) throw new Error(`No ${iso}`);
-			return {
-				iso,
-				name: countries.find((country) => country.iso === iso)?.name ?? iso,
-				d: countryOutlines.get(iso) ?? "",
-				inReach: await outlineOf(
-					{ type: "MultiPolygon", coordinates: landInReach(feature) },
-					{ keepShapes: true },
-				),
-				allLand: await outlineOf(feature.geometry, { keepShapes: true }),
-			};
-		}),
-	),
+	hardCases: HARD_CASES.map((iso) => ({
+		iso,
+		name: countries.find((country) => country.iso === iso)?.name ?? iso,
+		d: countryOutlines.get(iso) ?? "",
+	})),
 };
 writeFileSync(
 	resolve(here, "../../../packages/ui/src/proposals/outlines.generated.json"),
