@@ -5,8 +5,9 @@ export interface PanelProps extends Omit<ComponentProps<"main">, "title"> {
 	/** The panel's heading, in its dark header block. It is the page's `h1`. */
 	title: string;
 	/**
-	 * One short line under the title, such as "West Africa, Africa". It may hold
-	 * `Link`s: on the dark header they are white, with a white focus ring.
+	 * One short line under the title: text, such as "55 countries", or `Link`s
+	 * written one after the other with nothing between, such as the region and
+	 * the continent. The header spaces them and makes them white.
 	 */
 	description?: ReactNode;
 	/**

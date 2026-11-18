@@ -14,7 +14,10 @@
 
 .header {
 	display: grid;
-	gap: var(--space-1);
+	/* Room for a focus ring around the title or a link under it. */
+	gap: var(--space-3);
+	/* The title's focus ring hugs the title, not the header's whole width. */
+	justify-items: start;
 	padding: var(--space-5) var(--space-6);
 	background: var(--color-bg-inverse);
 	color: var(--color-text-on-inverse);
@@ -27,7 +30,12 @@
 	line-height: var(--font-line-height-tight);
 }
 
+/* Links in it stand apart, each with room for its focus ring: they are written
+   one after the other, with no comma between. */
 .description {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-1) var(--space-3);
 	margin: 0;
 	color: var(--color-text-on-inverse-muted);
 	font-size: var(--font-size-sm);
@@ -44,7 +52,9 @@
 }
 
 .header :focus-visible {
-	outline-color: var(--color-text-on-inverse);
+	outline: 2px solid var(--color-text-on-inverse);
+	outline-offset: 2px;
+	border-radius: var(--radius-sm);
 }
 
 .body {
