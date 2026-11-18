@@ -2,6 +2,8 @@
 
 Rough order. Each item gets its own spec in `docs/specs/` before it's built.
 
+**First (Thor, 2026-11-18): product before polish.** Before anything below, and before the MVP is polished, the thin slice in `slice.md` gets the loop working: sign in → write one essay → publish → the country fills in on the map.
+
 ## Iteration 2: social and richer essays
 - **Followers.** Follow and unfollow, remove a follower, block.
 - **Friends visibility.** A third option, "Friends", for people you follow who also follow you back. This extends ADR 0003.
