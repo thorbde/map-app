@@ -17,12 +17,16 @@ export interface TagProps extends ComponentProps<"span"> {}
  * Small and square-cornered, so it is never taken for a chip (DESIGN.md).
  * It is white: made for the pale fact box.
  */
-export function Tag({ className, ...props }: TagProps) {
+export function Tag({ className, children, ...props }: TagProps) {
 	return (
 		<span
+			// A tag is one line; should a very long value be cut, this is its full text.
+			title={typeof children === "string" ? children : undefined}
 			{...props}
 			className={[styles.tag, className].filter(Boolean).join(" ")}
-		/>
+		>
+			{children}
+		</span>
 	);
 }
 
@@ -52,16 +56,19 @@ export interface TagListProps extends Omit<ComponentProps<"ul">, "children"> {
 	 * then "Show fewer"). Leave it out to always show them all.
 	 */
 	limit?: number;
+	/** With `limit`: start with all of them showing. */
+	defaultOpen?: boolean;
 }
 
 /** A wrapping list of tags, which can hold back all but the first few. */
 export function TagList({
 	children,
 	limit,
+	defaultOpen = false,
 	className,
 	...props
 }: TagListProps) {
-	const [open, setOpen] = useState(false);
+	const [open, setOpen] = useState(defaultOpen);
 	const listId = useId();
 	const tags = Children.toArray(children);
 	const hidden = limit === undefined ? 0 : tags.length - limit;

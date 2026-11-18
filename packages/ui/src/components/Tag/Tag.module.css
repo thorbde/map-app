@@ -2,7 +2,7 @@
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: var(--space-1) var(--space-2);
+	gap: var(--space-1);
 	margin: 0;
 	padding: 0;
 	list-style: none;
@@ -10,8 +10,15 @@
 	line-height: var(--space-5);
 }
 
+/* Tags that are links are taller and rounder, and get more room between them. */
+.list:has(.tagLink) {
+	gap: var(--space-2);
+}
+
 .item {
 	display: flex;
+	max-width: 100%;
+	min-width: 0;
 }
 
 /* Can't be pressed, so not a pill: square corners, regular weight, no shadow. */
@@ -23,6 +30,13 @@
 	color: var(--color-text-default);
 	font-size: var(--font-size-xs);
 	line-height: var(--space-5);
+	/* Always one line, 20 px tall. A value longer than the row is cut with an
+	   ellipsis; its full text is the tag's title. */
+	max-width: 100%;
+	box-sizing: border-box;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 /* Can be pressed, so a pill (DESIGN.md), and bold as the chips and buttons are.
@@ -39,6 +53,7 @@
 	font-weight: var(--font-weight-bold);
 	line-height: var(--font-line-height-tight);
 	text-decoration: none;
+	white-space: nowrap;
 	transition: background-color var(--duration-fast) var(--easing-standard);
 }
 

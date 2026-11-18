@@ -9,11 +9,17 @@
 }
 
 /* The label beside its value; long values wrap under themselves, not under the label. */
-.fact {
+.beside .fact {
 	display: grid;
-	grid-template-columns: 6rem 1fr;
+	grid-template-columns: 6rem minmax(0, 1fr);
 	gap: var(--space-3);
 	align-items: baseline;
+}
+
+/* The label above its value: the value gets the box's full width. */
+.above .fact {
+	display: grid;
+	gap: var(--space-1);
 }
 
 .label {
@@ -22,6 +28,7 @@
 }
 
 .value {
+	min-width: 0;
 	margin: 0;
 	overflow-wrap: anywhere;
 }
