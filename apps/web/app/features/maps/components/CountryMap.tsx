@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { MinusIcon, PlusIcon } from "@thorbde/icons";
+import { IconButton } from "@thorbde/ui";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { countries } from "../../countries";
-import type { MapEngine, MapState } from "../map-engine.client";
-import type { MapView } from "../views";
+import type { MapEngine, MapState, ZoomRoom } from "../map-engine.client";
+import type { MapPadding, MapView } from "../views";
 import styles from "./CountryMap.module.css";
 
 type CountryMapProps = {
@@ -15,6 +17,12 @@ type CountryMapProps = {
 	owner: boolean;
 	/** Called when the viewer clicks a country they may open. */
 	onOpenCountry: (iso: string) => void;
+	/**
+	 * How much of the map something else covers at each edge, in CSS pixels: the
+	 * panel on the left, for example. Views are framed in what is left, and the
+	 * zoom buttons keep clear of it.
+	 */
+	padding?: MapPadding;
 };
 
 const names = Object.fromEntries(
@@ -32,16 +40,21 @@ export function CountryMap({
 	selected,
 	owner,
 	onOpenCountry,
+	padding,
 }: CountryMapProps) {
 	const container = useRef<HTMLDivElement>(null);
 	const engine = useRef<MapEngine | null>(null);
 	const [status, setStatus] = useState<"loading" | "ready" | "unavailable">(
 		"loading",
 	);
+	const [room, setRoom] = useState<ZoomRoom>({
+		canZoomIn: true,
+		canZoomOut: true,
+	});
 
 	// The latest props, for the engine to read when it has loaded and when the
 	// viewer clicks, without setting the map up again.
-	const state: MapState = { view, written, selected, owner };
+	const state: MapState = { view, written, selected, owner, padding };
 	const latest = useRef({ state, onOpenCountry });
 	latest.current = { state, onOpenCountry };
 
@@ -57,6 +70,9 @@ export function CountryMap({
 					names,
 					state: latest.current.state,
 					onOpenCountry: (iso) => latest.current.onOpenCountry(iso),
+					onZoomRoom: (next) => {
+						if (!cancelled) setRoom(next);
+					},
 				}),
 			)
 			.then((created) => {
@@ -83,14 +99,39 @@ export function CountryMap({
 
 	const viewKey = JSON.stringify(view);
 	const writtenKey = written.join(",");
-	// biome-ignore lint/correctness/useExhaustiveDependencies: the keys stand in for `view` and `written`, which are new objects on every render.
+	const paddingKey = JSON.stringify(padding);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: the keys stand in for `view`, `written` and `padding`, which are new objects on every render.
 	useEffect(() => {
 		engine.current?.update(latest.current.state);
-	}, [viewKey, writtenKey, selected, owner]);
+	}, [viewKey, writtenKey, paddingKey, selected, owner]);
+
+	// The zoom buttons sit in the bottom right corner of what isn't covered.
+	const clear = {
+		"--covered-bottom": `${padding?.bottom ?? 0}px`,
+		"--covered-right": `${padding?.right ?? 0}px`,
+	} as CSSProperties;
 
 	return (
 		<section className={styles.map} aria-label="World map" data-status={status}>
 			<div ref={container} className={styles.canvas} />
+			{status === "ready" && (
+				<div className={styles.zoom} style={clear}>
+					<IconButton
+						label="Zoom in"
+						disabled={!room.canZoomIn}
+						onClick={() => engine.current?.zoomIn()}
+					>
+						<PlusIcon />
+					</IconButton>
+					<IconButton
+						label="Zoom out"
+						disabled={!room.canZoomOut}
+						onClick={() => engine.current?.zoomOut()}
+					>
+						<MinusIcon />
+					</IconButton>
+				</div>
+			)}
 			{status === "loading" && <p className={styles.note}>Loading the map</p>}
 			{status === "unavailable" && (
 				<p className={styles.note}>The map can’t be shown in this browser.</p>

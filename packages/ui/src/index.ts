@@ -6,4 +6,8 @@ export {
 	type DialogProps,
 } from "./components/Dialog/Dialog";
 export { Field, type FieldProps } from "./components/Field/Field";
+export {
+	IconButton,
+	type IconButtonProps,
+} from "./components/IconButton/IconButton";
 export { Link, type LinkProps } from "./components/Link/Link";

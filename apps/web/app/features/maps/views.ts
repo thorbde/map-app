@@ -126,12 +126,40 @@ export function countryBounds(country: MapCountryFeature): Bounds {
 	];
 }
 
+/** The box a view shows. A country that isn't in the map file gets the world. */
+export function viewBounds(
+	view: MapView,
+	countries: readonly MapCountryFeature[],
+): Bounds {
+	if (view.kind === "continent") return CONTINENT_BOUNDS[view.continent];
+	if (view.kind === "country") {
+		const country = countries.find((each) => each.properties.iso === view.iso);
+		if (country) return countryBounds(country);
+	}
+	return WORLD_BOUNDS;
+}
+
 /** MapLibre draws the whole world square 512 px wide at zoom 0. */
 const WORLD_SQUARE_PX = 512;
 
 /**
+ * How much of the map something else covers at each edge, in CSS pixels: the
+ * panel on the left, for example. The camera frames a view in what is left.
+ */
+export type MapPadding = {
+	top?: number;
+	right?: number;
+	bottom?: number;
+	left?: number;
+};
+
+/**
  * Where the camera goes to show a box of longitude and latitude in Equal Earth:
- * the centre, and the zoom at which the box just fits the viewport.
+ * the centre, and the zoom at which the box just fits the viewport, inside a
+ * margin and clear of whatever covers the map (`covered`).
+ *
+ * The centre is the middle of the box. Putting it in the middle of the part of
+ * the map that isn't covered is MapLibre's job: give it the same padding.
  *
  * MapLibre's own fitBounds only looks at the box's corners. In Equal Earth a box
  * is widest at the latitude nearest the equator, not at its corners, so the
@@ -140,7 +168,8 @@ const WORLD_SQUARE_PX = 512;
 export function cameraFor(
 	[[west, south], [east, north]]: Bounds,
 	viewport: { width: number; height: number },
-	padding = 24,
+	margin = 24,
+	covered: MapPadding = {},
 ): { center: [lng: number, lat: number]; zoom: number } {
 	let [minX, minY, maxX, maxY] = [Infinity, Infinity, -Infinity, -Infinity];
 	const STEPS = 16;
@@ -163,12 +192,13 @@ export function cameraFor(
 
 	const metresPerSquare = equalEarthProjection.tileMatrixSet.extentAtZoom0;
 	const scaleToFit = (pixels: number, metres: number) =>
-		(Math.max(1, pixels - 2 * padding) * metresPerSquare) /
+		(Math.max(1, pixels - 2 * margin) * metresPerSquare) /
 		(WORLD_SQUARE_PX * metres);
+	const { top = 0, right = 0, bottom = 0, left = 0 } = covered;
 	const zoom = Math.log2(
 		Math.min(
-			scaleToFit(viewport.width, maxX - minX),
-			scaleToFit(viewport.height, maxY - minY),
+			scaleToFit(viewport.width - left - right, maxX - minX),
+			scaleToFit(viewport.height - top - bottom, maxY - minY),
 		),
 	);
 

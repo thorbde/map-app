@@ -17,13 +17,13 @@ import worldUrl from "./geometry/world.json?url";
 import { placesOf } from "./labels";
 import type { MapCountryFeature, MapFile } from "./map-file";
 import {
-	type Bounds,
-	CONTINENT_BOUNDS,
 	cameraFor,
-	countryBounds,
+	type MapPadding,
 	type MapView,
+	viewBounds,
 	WORLD_BOUNDS,
 } from "./views";
+import { orAfter } from "./wait";
 
 export type MapState = {
 	view: MapView;
@@ -32,7 +32,12 @@ export type MapState = {
 	selected?: string;
 	/** The owner can open every country; a visitor only the written ones. */
 	owner: boolean;
+	/** How much of the map is covered at each edge, in CSS pixels. */
+	padding?: MapPadding;
 };
+
+/** Whether the map can zoom further in each direction. */
+export type ZoomRoom = { canZoomIn: boolean; canZoomOut: boolean };
 
 export type MapEngineOptions = {
 	container: HTMLElement;
@@ -40,15 +45,34 @@ export type MapEngineOptions = {
 	names: Readonly<Record<string, string>>;
 	state: MapState;
 	onOpenCountry: (iso: string) => void;
+	/** Called when the map reaches or leaves the end of its zoom range. */
+	onZoomRoom: (room: ZoomRoom) => void;
 };
 
 export type MapEngine = {
 	update: (state: MapState) => void;
+	zoomIn: () => void;
+	zoomOut: () => void;
 	destroy: () => void;
 };
 
 /** How long the map may take to start before the page says it can't be shown. */
 const START_TIMEOUT_MS = 20_000;
+
+/**
+ * How long the started map may take to finish its first drawing before it is
+ * shown as it is. It has started, so it works; it is only not at rest yet.
+ */
+const FIRST_DRAWING_TIMEOUT_MS = 5_000;
+
+/**
+ * How long the camera takes to fly from one view to the next (DESIGN.md,
+ * "Controls on the map"). A fixed time, because MapLibre's `maxDuration`
+ * doesn't cap a flight: it turns a longer one into a jump (ADR 0021).
+ * MapLibre makes the move instant by itself when the visitor prefers reduced
+ * motion.
+ */
+const FLY_MS = 1_200;
 
 /** The closest the camera gets: close enough to look at a city. */
 const MAX_ZOOM = 12;
@@ -111,15 +135,6 @@ function isCountry(
 	return "iso" in feature.properties;
 }
 
-function boundsOf(view: MapView, countries: MapCountryFeature[]): Bounds {
-	if (view.kind === "continent") return CONTINENT_BOUNDS[view.continent];
-	if (view.kind === "country") {
-		const country = countries.find((each) => each.properties.iso === view.iso);
-		if (country) return countryBounds(country);
-	}
-	return WORLD_BOUNDS;
-}
-
 // --- The map --------------------------------------------------------------------
 
 /** The ordinary names: from the zoom each one shows at, and never the selected country's. */
@@ -150,7 +165,7 @@ const isWritten: ExpressionSpecification = [
 export async function createMapEngine(
 	options: MapEngineOptions,
 ): Promise<MapEngine> {
-	const { container, names, onOpenCountry } = options;
+	const { container, names, onOpenCountry, onZoomRoom } = options;
 	let state = options.state;
 
 	const [world, mapLibre] = await Promise.all([
@@ -217,10 +232,6 @@ export async function createMapEngine(
 		pitchWithRotate: false,
 		touchPitch: false,
 		maxZoom: MAX_ZOOM,
-		...cameraFor(boundsOf(state.view, countries), {
-			width: container.clientWidth,
-			height: container.clientHeight,
-		}),
 		// The canvas can take keyboard focus, so its name says what the keys do.
 		// The region around it is named "World map" by the component.
 		locale: {
@@ -285,17 +296,79 @@ export async function createMapEngine(
 	map.touchZoomRotate.disableRotation();
 	map.keyboard.disableRotation();
 
-	/** The furthest zoom out shows the whole world with a small margin, and no more. */
+	const viewport = () => ({
+		width: container.clientWidth,
+		height: container.clientHeight,
+	});
+
+	/**
+	 * The furthest zoom out shows the whole world with a small margin, in the
+	 * part of the map that isn't covered, and no more.
+	 */
 	function limitZoomOut() {
 		const whole = cameraFor(
 			WORLD_BOUNDS,
-			{ width: container.clientWidth, height: container.clientHeight },
+			viewport(),
 			WORLD_MARGIN,
+			state.padding,
 		);
 		map.setMinZoom(whole.zoom);
 	}
+
+	/**
+	 * Where the camera goes for the current view. MapLibre is given the padding
+	 * too: it keeps the view's centre in the middle of what isn't covered, and
+	 * goes on doing so when the viewer zooms.
+	 */
+	function camera() {
+		const { top = 0, right = 0, bottom = 0, left = 0 } = state.padding ?? {};
+		return {
+			...cameraFor(
+				viewBounds(state.view, countries),
+				viewport(),
+				undefined,
+				state.padding,
+			),
+			padding: { top, right, bottom, left },
+		};
+	}
+
 	limitZoomOut();
+	map.jumpTo(camera());
 	map.on("resize", limitZoomOut);
+
+	let room: ZoomRoom | undefined;
+	/** Tells the page when the zoom reaches, or leaves, either end of its range. */
+	function reportZoomRoom() {
+		// A hair's breadth, because a zoom that has arrived is rarely exact.
+		const next = {
+			canZoomIn: map.getZoom() < map.getMaxZoom() - 1e-6,
+			canZoomOut: map.getZoom() > map.getMinZoom() + 1e-6,
+		};
+		if (
+			next.canZoomIn === room?.canZoomIn &&
+			next.canZoomOut === room?.canZoomOut
+		) {
+			return;
+		}
+		room = next;
+		onZoomRoom(next);
+	}
+	map.on("zoom", reportZoomRoom);
+	map.on("resize", reportZoomRoom);
+
+	// Where the camera is, written on the map's element when it starts and
+	// stops moving: a map on a canvas has nothing else for a test, or a person
+	// with the inspector open, to read it from.
+	function noteCamera(moving: boolean) {
+		const { lng, lat } = map.getCenter();
+		container.dataset.moving = String(moving);
+		container.dataset.zoom = map.getZoom().toFixed(3);
+		container.dataset.center = `${lng.toFixed(3)},${lat.toFixed(3)}`;
+	}
+	map.on("movestart", () => noteCamera(true));
+	map.on("moveend", () => noteCamera(false));
+	noteCamera(false);
 
 	const canOpen = (iso: string) => state.owner || state.written.includes(iso);
 
@@ -366,23 +439,34 @@ export async function createMapEngine(
 		map.getCanvas().style.cursor = iso && canOpen(iso) ? "pointer" : "";
 	});
 
-	await map.once("idle");
+	// Wait for the first complete drawing, so the map appears whole. But not for
+	// ever: if it never comes to rest, the map is shown as it is.
+	await orAfter(map.once("idle"), FIRST_DRAWING_TIMEOUT_MS);
+	reportZoomRoom();
 
 	return {
 		update(next) {
 			const previous = state;
 			state = next;
 			paint(previous);
-			if (JSON.stringify(next.view) !== JSON.stringify(previous.view)) {
-				// Jumps for now. Moving with animation, or instantly with reduced
-				// motion, is M1 PR 6.
-				map.jumpTo(
-					cameraFor(boundsOf(next.view, countries), {
-						width: container.clientWidth,
-						height: container.clientHeight,
-					}),
-				);
+			const same = (a: unknown, b: unknown) =>
+				JSON.stringify(a) === JSON.stringify(b);
+			if (
+				same(next.view, previous.view) &&
+				same(next.padding, previous.padding)
+			) {
+				return;
 			}
+			limitZoomOut();
+			// The camera pulls back and comes in again on the way.
+			map.flyTo({ ...camera(), duration: FLY_MS });
+			reportZoomRoom();
+		},
+		zoomIn() {
+			map.zoomIn();
+		},
+		zoomOut() {
+			map.zoomOut();
 		},
 		destroy() {
 			map.remove();
