@@ -52,6 +52,7 @@ After two days the app had a map and components but no sign-in, writing or publi
    - **Strict:** accounts, privacy, access control, the database and migrations, and anything under `packages/`. Plan first and wait for approval, open as a draft, the automated review, and Thor merges.
    - **Fast:** everything else (UI in `apps/web`, docs). No waiting for plan approval on small slices. The lead session may merge once CI is green and the automated review has no open findings.
    - **All hard rules below stay as they are,** on both tracks.
+   - **"Before you build" applies on both tracks.** A fast-track plan still starts with "What already exists". If it would build our own version of something that exists, it needs the ADR that rule 2 asks for, and the PR moves to the strict track: Thor approves the plan before code.
 4. **Workers are short-lived:** one per PR, at medium effort, one message to the lead when done or blocked, archived at merge.
 
 ### Steps
