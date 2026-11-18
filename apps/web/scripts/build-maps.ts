@@ -43,6 +43,7 @@ import {
 import {
 	CONTINENT_FRAMES,
 	landInReach,
+	outlineCentre,
 } from "../app/features/maps/outline-land.ts";
 
 // --- The source: Natural Earth, pinned --------------------------------------------
@@ -154,10 +155,12 @@ const VATICAN = "VA";
 /**
  * Label points that differ from Natural Earth's.
  * - Kiribati's is on Kiritimati, 3,000 km east of the capital and on the far
- *   side of the map's edge. Ours is on Tarawa, the capital.
+ *   side of the map's edge. Ours is on South Tarawa, the capital: on its land,
+ *   not in the lagoon, so that the country view and the outline frame Tarawa
+ *   and not the eight atolls within 150 km of the lagoon (ADR 0020).
  */
 const LABEL_OVERRIDES: Record<string, [lng: number, lat: number]> = {
-	KI: [173, 1.4],
+	KI: [173.1, 1.365],
 };
 
 // --- Reading the source -----------------------------------------------------------
@@ -406,15 +409,24 @@ if (size > BUDGET_BYTES) {
 
 /**
  * How much detail an outline keeps: mapshaper simplifies for a drawing this
- * many pixels across. The tiles are 32 to 48 px.
+ * many pixels across. The tiles are 32 to 48 px. (96, not 100: drawn in
+ * their own projections, Europe's outlines are fuller and its file would
+ * be over its budget.)
  */
-const OUTLINE_RESOLUTION = 100;
+const OUTLINE_RESOLUTION = 96;
 
-/** One outline: these shapes in Equal Earth, as the map draws them. */
+/** One outline: these shapes, projected around their own centre. */
 async function outlineOf(
 	geometry: MapCountryFeature["geometry"],
 	{ clip, keepShapes }: { clip?: readonly number[]; keepShapes: boolean },
 ): Promise<string> {
+	// A continent is centred on its view's box, a country on its land.
+	const [lng, lat] = clip
+		? [
+				((clip[0] ?? 0) + (clip[2] ?? 0)) / 2,
+				((clip[1] ?? 0) + (clip[3] ?? 0)) / 2,
+			]
+		: outlineCentre(geometry.coordinates);
 	const simplified = await mapshaper.applyCommands(
 		[
 			"-i land.json",
@@ -422,10 +434,14 @@ async function outlineOf(
 			// stay pieces of their own, so that keep-shapes protects each one.
 			keepShapes ? "-explode" : "-dissolve",
 			clip ? `-clip bbox=${clip.join(",")}` : "",
-			// Equal Earth with the map's centre in the middle: longitudes are
-			// shifted so that the centre is 0, and then run from -180 to 180.
-			`-affine shift=${-CENTRE_LONGITUDE},0`,
-			"-proj +proj=eqearth",
+			// Each outline in a projection of its own, centred on its land: a
+			// world projection shears land far from its centre (Australia, in
+			// Equal Earth centred on Europe). Lambert azimuthal equal-area keeps
+			// areas, and shapes near the centre, as atlases draw one country.
+			// The land is first shifted so that its centre is at 0°: mapshaper
+			// reads longitudes past 180° (Fiji, Tonga) as not longitudes at all.
+			`-affine shift=${-lng},0`,
+			`-proj +proj=laea +lon_0=0 +lat_0=${lat}`,
 			// keep-shapes: no piece of land is simplified away, however small it
 			// is in its box (Kiribati's atolls).
 			`-simplify resolution=${OUTLINE_RESOLUTION}${keepShapes ? " keep-shapes" : ""}`,

@@ -88,12 +88,36 @@ function withinReach(a: Measured, b: Measured): boolean {
 }
 
 /**
+ * States of small islands scattered over a wide sea. Drawn whole, each island is
+ * a dot too small to see on a tile, so their outlines show only the land the
+ * country view frames: the main island or group, where the capital is, as
+ * established sets of country outlines frame them (ADR 0020). Mahé
+ * (Seychelles), Malé (Maldives), South Tarawa (Kiribati), Funafuti (Tuvalu),
+ * Majuro (Marshall Islands), Tongatapu (Tonga), Santiago (Cape Verde) and
+ * Babeldaob (Palau). Archipelagos whose named island is not the capital's
+ * (the Bahamas, the Solomon Islands, Vanuatu) are drawn whole.
+ */
+const FRAMED_ON_MAIN_LAND = new Set([
+	"SC",
+	"MV",
+	"KI",
+	"TV",
+	"MH",
+	"TO",
+	"CV",
+	"PW",
+]);
+
+/**
  * The land a country's outline shows: the land near its name, and all land
  * within 150 km of land already in, and so on outward. Islands that belong
  * together stay together (Indonesia, Denmark, Japan); land far off on its own
  * is left out (Alaska, Hawaii, Svalbard, the Azores, the Canaries).
  */
 export function landInReach(country: MapCountryFeature): Polygon[] {
+	if (FRAMED_ON_MAIN_LAND.has(country.properties.iso)) {
+		return landNearName(country);
+	}
 	const named = new Set(landNearName(country));
 	const pieces = country.geometry.coordinates.map(measured);
 	let reached = pieces.filter((piece) => named.has(piece.polygon));
@@ -107,6 +131,22 @@ export function landInReach(country: MapCountryFeature): Polygon[] {
 		edge = next;
 	}
 	return reached.map((piece) => piece.polygon);
+}
+
+/**
+ * The point an outline's projection is centred on: the middle of the box
+ * around its land, as longitude and latitude. Each outline is drawn in a
+ * Lambert azimuthal equal-area projection centred here, so that no country is
+ * sheared by being far from the world map's centre (ADR 0020).
+ */
+export function outlineCentre(polygons: Polygon[]): Point {
+	const points = polygons.flatMap(([outer]) => outer ?? []);
+	const lngs = points.map(([lng]) => lng);
+	const lats = points.map(([, lat]) => lat);
+	return [
+		(Math.min(...lngs) + Math.max(...lngs)) / 2,
+		(Math.min(...lats) + Math.max(...lats)) / 2,
+	];
 }
 
 /**

@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { type Continent, countries } from "../countries";
-import { equalEarth } from "./equal-earth";
 import africaText from "./geometry/outlines/africa.json?raw";
 import asiaText from "./geometry/outlines/asia.json?raw";
 import continentsText from "./geometry/outlines/continents.json?raw";
@@ -12,7 +11,12 @@ import southAmericaText from "./geometry/outlines/south-america.json?raw";
 import worldText from "./geometry/world.json?raw";
 import type { MapCountryFeature, MapFile } from "./map-file";
 import { OUTLINE_BOX, OUTLINE_FILE_BUDGET_BYTES } from "./outline-file";
-import { CONTINENT_FRAMES, landInReach, landNearName } from "./outline-land";
+import {
+	CONTINENT_FRAMES,
+	landInReach,
+	landNearName,
+	outlineCentre,
+} from "./outline-land";
 import { continentOutlines, countryOutlines } from "./outlines.server";
 import { CONTINENT_BOUNDS, countryBounds } from "./views";
 
@@ -194,11 +198,37 @@ describe("outlines: which land is shown", () => {
 		}
 	});
 
-	/** Width over height of the land an outline shows, as the map draws it, in Equal Earth. */
+	/**
+	 * A place in the Lambert azimuthal equal-area projection centred on
+	 * [lng0, lat0], on a sphere: how the build draws each outline (ADR 0020).
+	 * y grows northward here, so only proportions are compared.
+	 */
+	function lambert(
+		[lng, lat]: [number, number],
+		[lng0, lat0]: [number, number],
+	): [number, number] {
+		const rad = Math.PI / 180;
+		const [l, p, p0] = [(lng - lng0) * rad, lat * rad, lat0 * rad];
+		const k = Math.sqrt(
+			2 /
+				(1 +
+					Math.sin(p0) * Math.sin(p) +
+					Math.cos(p0) * Math.cos(p) * Math.cos(l)),
+		);
+		return [
+			k * Math.cos(p) * Math.sin(l),
+			k *
+				(Math.cos(p0) * Math.sin(p) - Math.sin(p0) * Math.cos(p) * Math.cos(l)),
+		];
+	}
+
+	/** Width over height of the land an outline shows, in the outline's own projection. */
 	function shapeOf(feature: MapCountryFeature): number {
-		const points = landInReach(feature)
+		const land = landInReach(feature);
+		const centre = outlineCentre(land);
+		const points = land
 			.flatMap(([outer]) => outer ?? [])
-			.map((point) => equalEarth.forward(point) as [number, number]);
+			.map((point) => lambert(point, centre));
 		const { width, height } = box(points);
 		return width / height;
 	}
