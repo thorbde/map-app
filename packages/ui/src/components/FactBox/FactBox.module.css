@@ -1,0 +1,27 @@
+.box {
+	display: grid;
+	gap: var(--space-3);
+	margin: 0;
+	padding: var(--space-4);
+	border-radius: var(--radius-md);
+	background: var(--color-bg-subtle);
+	color: var(--color-text-default);
+}
+
+/* The label beside its value; long values wrap under themselves, not under the label. */
+.fact {
+	display: grid;
+	grid-template-columns: 6rem 1fr;
+	gap: var(--space-3);
+	align-items: baseline;
+}
+
+.label {
+	color: var(--color-text-muted);
+	font-size: var(--font-size-sm);
+}
+
+.value {
+	margin: 0;
+	overflow-wrap: anywhere;
+}

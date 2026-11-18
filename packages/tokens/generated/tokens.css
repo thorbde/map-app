@@ -111,6 +111,8 @@
   --size-icon-md: 1.25rem;
   /* Icons in small text and inside controls. */
   --size-icon-sm: 1rem;
+  /* The width of the floating panel over the map (ADR 0010). The map's camera keeps this much of its left side clear. */
+  --size-panel: 24rem;
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;

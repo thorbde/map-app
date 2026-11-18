@@ -129,6 +129,13 @@
 				"unit": "rem"
 			}
 		},
+		"panel": {
+			"$description": "The width of the floating panel over the map (ADR 0010). The map's camera keeps this much of its left side clear.",
+			"$value": {
+				"value": 24,
+				"unit": "rem"
+			}
+		},
 		"icon-sm": {
 			"$description": "Icons in small text and inside controls.",
 			"$value": {

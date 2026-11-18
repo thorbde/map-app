@@ -1,0 +1,46 @@
+.list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-2);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.item {
+	display: flex;
+}
+
+/* A pill, because it can be pressed (DESIGN.md). It floats over the map, so it
+   has the one shadow. */
+.chip {
+	display: inline-flex;
+	align-items: center;
+	min-height: var(--size-control);
+	padding: 0 var(--space-4);
+	border-radius: var(--radius-full);
+	background: var(--color-bg-surface);
+	color: var(--color-text-default);
+	box-shadow: var(--shadow-raised);
+	font-family: var(--font-ui);
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-bold);
+	line-height: var(--font-line-height-tight);
+	text-decoration: none;
+	white-space: nowrap;
+	transition: background-color var(--duration-fast) var(--easing-standard);
+}
+
+.chip:hover {
+	background: var(--color-bg-subtle);
+}
+
+.chip[aria-current="page"] {
+	background: var(--color-bg-inverse);
+	color: var(--color-text-on-inverse);
+}
+
+.chip:focus-visible {
+	outline: 2px solid var(--color-focus);
+	outline-offset: 2px;
+}
