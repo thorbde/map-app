@@ -40,6 +40,12 @@ D1 has **no interactive transactions** (no `BEGIN … COMMIT`). Its atomic unit 
 4. **No SQLite-specific features** (no `json_extract` in queries, no `PRAGMA`, no SQLite-only functions). JSON columns are stored as text and validated with zod when read.
 5. **Timestamps are stored as integers** (Unix milliseconds, `integer({ mode: "timestamp_ms" })`) and booleans as Drizzle booleans, so they map cleanly to Postgres types later.
 
+**Named exception (M2 PR 1, Thor, 2026-11-18):** Better Auth's tables are kept exactly as its CLI generates them, and their `created_at` / `updated_at` columns default to SQLite's clock, `cast(unixepoch('subsecond') * 1000 as integer)`. That is a SQLite-only function in the schema. It's allowed only there: Better Auth sets these times itself, so the default rarely runs, and a move to Postgres regenerates these tables with Better Auth's Postgres schema anyway. Our own tables set times in the app.
+
+### How it's wired (M2 PR 1)
+- **Local and tests:** the binding `DB` (database `memogra-local`) is in the `local` environment of `wrangler.jsonc`, not at the top level, so a deploy has no database until previews get their own (M2 PR 2). `pnpm dev` (`CLOUDFLARE_ENV=local`), the tests and `pnpm db:migrate` (`wrangler d1 migrations apply DB --local --env local`, the flags fixed in the script) select it.
+- **Settings are checked when the database is first asked for** (`getDatabase()` in `server/platform/index.server.ts`), not on every request, so a deploy without a database still serves the pages that don't need one.
+
 ## Alternatives considered
 - **Neon Postgres (ADR 0001):** stronger long-term (a richer SQL dialect, real transactions, database branching) and portable to any host. More moving parts today for no current need.
 - **Local Postgres in Docker for tests, Neon for deploys:** removes the CI secret, but two database setups to maintain.
