@@ -35,14 +35,10 @@ async function open(page: Page, address: string) {
 	await mapReady(page);
 }
 
-/** The continent control: closed, it is one button that reads the current view. */
-const currentChip = (page: Page) => chips(page).getByRole("button");
-
-/** Opens the continent control with the mouse, as a visitor does, and picks a chip. */
+/** Follows a continent chip, and checks that it is then the one marked as current. */
 async function chooseChip(page: Page, name: string) {
-	await currentChip(page).hover();
 	await chips(page).getByRole("link", { name, exact: true }).click();
-	await expect(currentChip(page)).toHaveText(name);
+	await expect(chips(page).locator("[aria-current]")).toHaveText([name]);
 }
 
 /**
@@ -136,7 +132,7 @@ test("the map is created once and its file fetched once, from the world to a cou
 	expect(errors).toEqual([]);
 });
 
-test("each address shows its panel, tells the map its view, and names it on the continent control", async ({
+test("each address shows its panel, tells the map its view, and marks its chip", async ({
 	page,
 }) => {
 	const pages = [
@@ -159,14 +155,12 @@ test("each address shows its panel, tells the map its view, and names it on the 
 		await expect(heading(page)).toHaveText(title);
 		await expect(panel(page)).toHaveAccessibleName(title);
 		await expect(map(page)).toHaveAttribute("data-view", view);
-		// The control reads the current view, and offers the six others.
-		await expect(currentChip(page)).toHaveText(chip);
-		await expect(currentChip(page)).toHaveAttribute("aria-expanded", "false");
-		await currentChip(page).hover();
-		await expect(chips(page).getByRole("link")).toHaveText(
-			["World", ...Object.values(CONTINENTS)].filter((name) => name !== chip),
-		);
-		await page.mouse.move(900, 600, { steps: 5 });
+		// Exactly one chip is the current one.
+		await expect(chips(page).locator("[aria-current]")).toHaveText([chip]);
+		await expect(chips(page).getByRole("link")).toHaveText([
+			"World",
+			...Object.values(CONTINENTS),
+		]);
 	}
 });
 
@@ -394,8 +388,6 @@ test.describe("with JavaScript off", () => {
 	test("the panels can be read and their links followed", async ({ page }) => {
 		await page.goto("/preview");
 		await expect(heading(page)).toHaveText("The world");
-		// The continent control needs JavaScript to open; the panel's links don't.
-		await expect(currentChip(page)).toHaveText("World");
 		await panel(page)
 			.getByRole("link", { name: /^Oceania/ })
 			.click();
@@ -413,7 +405,7 @@ test.describe("with JavaScript off", () => {
 		await expect(panel(page).getByText("Suva")).toBeVisible();
 		await expect(panel(page).getByText(/\(\d{4}\)/)).toBeVisible();
 
-		await panel(page).getByRole("link", { name: "All of Oceania" }).click();
-		await expect(heading(page)).toHaveText("Oceania");
+		await chips(page).getByRole("link", { name: "World" }).click();
+		await expect(heading(page)).toHaveText("The world");
 	});
 });

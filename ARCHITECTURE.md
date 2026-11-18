@@ -68,7 +68,7 @@ app/
   routes.ts               the route table
   entry.server.tsx        server rendering (streams HTML)
   routes/                 React Router route modules (thin)
-    preview.tsx           the map shell's layout route: the map and the continent control, mounted once (ADR 0010)
+    preview.tsx           the map shell's layout route: the map and the continent chips, mounted once (ADR 0010)
     preview.world.tsx, preview.continent.tsx, preview.country.tsx   its child routes: each a loader and a panel
     preview.paths.ts      the shell's temporary addresses, in one place
     preview.map.tsx       the map component's own test page

@@ -1,4 +1,4 @@
-import { Chip, CollapsingChips } from "@thorbde/ui";
+import { Chip, Chips } from "@thorbde/ui";
 import { useEffect, useRef } from "react";
 import {
 	Outlet,
@@ -21,8 +21,6 @@ const continentIds = Object.keys(continents) as Continent[];
 const continentOf = new Map(
 	countries.map((country) => [country.iso, country.continent]),
 );
-
-const WORLD = "World";
 
 export default function PreviewShell() {
 	const navigate = useNavigate();
@@ -60,27 +58,23 @@ export default function PreviewShell() {
 			<div ref={panel} className={styles.panel}>
 				<Outlet />
 			</div>
-			{/* The continent control collapses into the current view's chip
-			    (DESIGN.md); the others are links that slide out beside it. */}
-			<CollapsingChips
-				label="Continents"
-				className={styles.chips}
-				current={continent ? continents[continent].name : WORLD}
-			>
-				{continent && (
-					<Chip render={<RouterLink to={previewPaths.world} />}>{WORLD}</Chip>
-				)}
-				{continentIds
-					.filter((id) => id !== continent)
-					.map((id) => (
-						<Chip
-							key={id}
-							render={<RouterLink to={previewPaths.continent(id)} />}
-						>
-							{continents[id].name}
-						</Chip>
-					))}
-			</CollapsingChips>
+			<Chips label="Continents" className={styles.chips}>
+				<Chip
+					render={<RouterLink to={previewPaths.world} />}
+					current={view.kind === "world"}
+				>
+					World
+				</Chip>
+				{continentIds.map((id) => (
+					<Chip
+						key={id}
+						render={<RouterLink to={previewPaths.continent(id)} />}
+						current={id === continent}
+					>
+						{continents[id].name}
+					</Chip>
+				))}
+			</Chips>
 			<div ref={map}>
 				<CountryMap
 					view={view}
