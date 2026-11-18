@@ -14,6 +14,7 @@ export function ContinentPanel({
 		...region,
 		list: (
 			<PlaceList
+				many
 				items={region.countries.map(({ iso, name }) => ({
 					id: iso,
 					name,

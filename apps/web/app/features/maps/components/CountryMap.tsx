@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { countries } from "../../countries";
-import type { MapClear, MapEngine, MapState } from "../map-engine.client";
+import type { MapEngine, MapState } from "../map-engine.client";
 import type { MapView } from "../views";
 import styles from "./CountryMap.module.css";
 
@@ -15,12 +15,6 @@ type CountryMapProps = {
 	owner: boolean;
 	/** Called when the viewer clicks a country they may open. */
 	onOpenCountry: (iso: string) => void;
-	/**
-	 * What floats over the map's left and top, as CSS lengths:
-	 * `{ left: "var(--size-panel)" }`.
-	 * The camera keeps what it shows clear of it. Read when the camera moves.
-	 */
-	clear?: MapClear;
 };
 
 /** A view as one word, for the engine's change check and for `data-view`. */
@@ -45,7 +39,6 @@ export function CountryMap({
 	selected,
 	owner,
 	onOpenCountry,
-	clear,
 }: CountryMapProps) {
 	const container = useRef<HTMLDivElement>(null);
 	const engine = useRef<MapEngine | null>(null);
@@ -57,7 +50,7 @@ export function CountryMap({
 
 	// The latest props, for the engine to read when it has loaded and when the
 	// viewer clicks, without setting the map up again.
-	const state: MapState = { view, written, selected, owner, clear };
+	const state: MapState = { view, written, selected, owner };
 	const latest = useRef({ state, onOpenCountry });
 	latest.current = { state, onOpenCountry };
 

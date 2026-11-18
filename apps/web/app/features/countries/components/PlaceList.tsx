@@ -1,33 +1,44 @@
-import { Link } from "@thorbde/ui";
+import { ShapeTiles } from "@thorbde/ui";
 import { Link as RouterLink } from "react-router";
-import styles from "./PlaceList.module.css";
 
 export type PlaceListItem = {
-	/** A continent's id or a country's ISO code: what its outline will be found by. */
+	/** A continent's id or a country's ISO code: what its outline is found by. */
 	id: string;
 	name: string;
-	/** A short line with the name, such as "55 countries". */
+	/** A second line under the name, such as "55 countries". */
 	detail?: string;
 	to: string;
 };
 
 /**
- * The places a world or continent panel lists, each a link.
- *
- * TEMPORARY: plain links. Thor chose shape tiles here, each place as its own
- * outline with its name under it (DESIGN.md). They replace the inside of this
- * component when the outlines have a build step and the tile is a component in
- * @thorbde/ui; the panels that use this don't change.
+ * TEMPORARY: every place gets this same round shape. The real outlines come
+ * from the map data, in a PR of their own (docs/specs/m1.md, row 5b); they are
+ * looked up here by `id`, and nothing else changes.
  */
-export function PlaceList({ items }: { items: readonly PlaceListItem[] }) {
+const PLACEHOLDER_SHAPE = "M50 10a40 40 0 1 0 0 80a40 40 0 1 0 0-80z";
+
+/**
+ * The places a world or continent panel lists: each a link, drawn as a shape
+ * with its name under it (DESIGN.md). `many` is for a continent's countries:
+ * smaller tiles, four to a row.
+ */
+export function PlaceList({
+	items,
+	many = false,
+}: {
+	items: readonly PlaceListItem[];
+	many?: boolean;
+}) {
 	return (
-		<ul className={styles.list}>
-			{items.map(({ id, name, detail, to }) => (
-				<li key={id}>
-					<Link render={<RouterLink to={to} />}>{name}</Link>
-					{detail && <span className={styles.detail}> {detail}</span>}
-				</li>
-			))}
-		</ul>
+		<ShapeTiles
+			dense={many}
+			columns={many ? 4 : 3}
+			items={items.map(({ name, detail, to }) => ({
+				name,
+				detail,
+				d: PLACEHOLDER_SHAPE,
+				render: <RouterLink to={to} />,
+			}))}
+		/>
 	);
 }

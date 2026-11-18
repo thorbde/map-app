@@ -32,14 +32,7 @@ export type MapState = {
 	selected?: string;
 	/** The owner can open every country; a visitor only the written ones. */
 	owner: boolean;
-	clear?: MapClear;
 };
-
-/**
- * The parts of the map that something floats over, as CSS lengths (tokens).
- * The camera keeps what it shows clear of them.
- */
-export type MapClear = { left?: string; top?: string };
 
 export type MapEngineOptions = {
 	container: HTMLElement;
@@ -110,17 +103,6 @@ function loadMapLibre(): Promise<MapLibre> {
 	return mapLibreReady;
 }
 
-/** A CSS length, such as one made of tokens, in pixels as the page stands now. */
-function pixels(container: HTMLElement, length: string | undefined): number {
-	if (!length) return 0;
-	const probe = document.createElement("div");
-	probe.style.cssText = `position:absolute;visibility:hidden;width:${length}`;
-	container.appendChild(probe);
-	const width = probe.offsetWidth;
-	probe.remove();
-	return width;
-}
-
 // --- The data -------------------------------------------------------------------
 
 function isCountry(
@@ -184,27 +166,6 @@ export async function createMapEngine(
 	const countries = world.features.filter(isCountry);
 	const colours = readColours(container);
 
-	/**
-	 * Where the camera goes for some bounds. What floats over the map (the
-	 * panel) is handed to MapLibre as its `padding`, which keeps the centre in
-	 * the middle of what is left; the bounds are fitted to what is left too.
-	 */
-	function cameraTo(bounds: Bounds, margin?: number) {
-		const left = pixels(container, state.clear?.left);
-		const top = pixels(container, state.clear?.top);
-		return {
-			...cameraFor(
-				bounds,
-				{
-					width: container.clientWidth - left,
-					height: container.clientHeight - top,
-				},
-				margin,
-			),
-			padding: { top, right: 0, bottom: 0, left },
-		};
-	}
-
 	const stateColour = (otherwise: string): ExpressionSpecification => [
 		"case",
 		isSelected,
@@ -256,6 +217,10 @@ export async function createMapEngine(
 		pitchWithRotate: false,
 		touchPitch: false,
 		maxZoom: MAX_ZOOM,
+		...cameraFor(boundsOf(state.view, countries), {
+			width: container.clientWidth,
+			height: container.clientHeight,
+		}),
 		// The canvas can take keyboard focus, so its name says what the keys do.
 		// The region around it is named "World map" by the component.
 		locale: {
@@ -322,11 +287,15 @@ export async function createMapEngine(
 
 	/** The furthest zoom out shows the whole world with a small margin, and no more. */
 	function limitZoomOut() {
-		map.setMinZoom(cameraTo(WORLD_BOUNDS, WORLD_MARGIN).zoom);
+		const whole = cameraFor(
+			WORLD_BOUNDS,
+			{ width: container.clientWidth, height: container.clientHeight },
+			WORLD_MARGIN,
+		);
+		map.setMinZoom(whole.zoom);
 	}
 	limitZoomOut();
 	map.on("resize", limitZoomOut);
-	map.jumpTo(cameraTo(boundsOf(state.view, countries)));
 
 	const canOpen = (iso: string) => state.owner || state.written.includes(iso);
 
@@ -407,7 +376,12 @@ export async function createMapEngine(
 			if (JSON.stringify(next.view) !== JSON.stringify(previous.view)) {
 				// Jumps for now. Moving with animation, or instantly with reduced
 				// motion, is M1 PR 6.
-				map.jumpTo(cameraTo(boundsOf(next.view, countries)));
+				map.jumpTo(
+					cameraFor(boundsOf(next.view, countries), {
+						width: container.clientWidth,
+						height: container.clientHeight,
+					}),
+				);
 			}
 		},
 		destroy() {

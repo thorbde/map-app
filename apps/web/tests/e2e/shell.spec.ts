@@ -35,22 +35,26 @@ async function open(page: Page, address: string) {
 	await mapReady(page);
 }
 
-/** The middle of the part of the map that nothing floats over. */
-async function clearMiddle(page: Page): Promise<{ x: number; y: number }> {
-	const whole = await map(page).boundingBox();
-	const side = await panel(page).boundingBox();
-	const top = await chips(page).boundingBox();
-	if (!whole || !side || !top) throw new Error("The shell has no size");
-	const left = side.x + side.width + side.x;
-	const above = top.y + top.height + top.y;
-	return {
-		x: left + (whole.width - left) / 2,
-		y: above + (whole.height - above) / 2,
-	};
+/** The continent control: closed, it is one button that reads the current view. */
+const currentChip = (page: Page) => chips(page).getByRole("button");
+
+/** Opens the continent control with the mouse, as a visitor does, and picks a chip. */
+async function chooseChip(page: Page, name: string) {
+	await currentChip(page).hover();
+	await chips(page).getByRole("link", { name, exact: true }).click();
+	await expect(currentChip(page)).toHaveText(name);
 }
 
-async function clickClearMiddle(page: Page) {
-	const { x, y } = await clearMiddle(page);
+/**
+ * Clicks the middle of the map. Until the camera keeps clear of the panel
+ * (M1 PR 6), a view is centred in the whole window, and the panel doesn't
+ * reach its middle.
+ */
+async function clickMiddle(page: Page) {
+	const box = await map(page).boundingBox();
+	if (!box) throw new Error("The map has no size");
+	const x = box.x + box.width / 2;
+	const y = box.y + box.height / 2;
 	await page.mouse.move(x - 80, y - 60);
 	await page.mouse.move(x, y, { steps: 5 });
 	await page.mouse.click(x, y);
@@ -97,7 +101,7 @@ test("the map is created once and its file fetched once, from the world to a cou
 		);
 
 	// A chip.
-	await chips(page).getByRole("link", { name: "Africa" }).click();
+	await chooseChip(page, "Africa");
 	await expect(heading(page)).toHaveText("Africa");
 	await expect(page).toHaveURL("/preview/africa");
 	await expect(map(page)).toHaveAttribute("data-view", "continent:africa");
@@ -132,7 +136,7 @@ test("the map is created once and its file fetched once, from the world to a cou
 	expect(errors).toEqual([]);
 });
 
-test("each address shows its panel, tells the map its view, and marks its chip", async ({
+test("each address shows its panel, tells the map its view, and names it on the continent control", async ({
 	page,
 }) => {
 	const pages = [
@@ -155,12 +159,14 @@ test("each address shows its panel, tells the map its view, and marks its chip",
 		await expect(heading(page)).toHaveText(title);
 		await expect(panel(page)).toHaveAccessibleName(title);
 		await expect(map(page)).toHaveAttribute("data-view", view);
-		// Exactly one chip is the current one.
-		await expect(chips(page).locator("[aria-current]")).toHaveText([chip]);
-		await expect(chips(page).getByRole("link")).toHaveText([
-			"World",
-			...Object.values(CONTINENTS),
-		]);
+		// The control reads the current view, and offers the six others.
+		await expect(currentChip(page)).toHaveText(chip);
+		await expect(currentChip(page)).toHaveAttribute("aria-expanded", "false");
+		await currentChip(page).hover();
+		await expect(chips(page).getByRole("link")).toHaveText(
+			["World", ...Object.values(CONTINENTS)].filter((name) => name !== chip),
+		);
+		await page.mouse.move(900, 600, { steps: 5 });
 	}
 });
 
@@ -170,12 +176,12 @@ test("the world panel lists the six continents with their numbers of countries",
 	await page.goto("/preview");
 	const items = panel(page).getByRole("listitem");
 	await expect(items).toHaveText([
-		"Africa 55 countries",
-		"Europe 45 countries",
-		"Asia 49 countries",
-		"North America 23 countries",
-		"South America 12 countries",
-		"Oceania 16 countries",
+		/^Africa\s*55 countries$/,
+		/^Europe\s*45 countries$/,
+		/^Asia\s*49 countries$/,
+		/^North America\s*23 countries$/,
+		/^South America\s*12 countries$/,
+		/^Oceania\s*16 countries$/,
 	]);
 });
 
@@ -231,7 +237,7 @@ test("a country's panel has its facts, its neighbours and the ways back", async 
 test("clicking a country on the map opens its panel", async ({ page }) => {
 	// Everyone counts as the owner in the preview: every country opens.
 	await open(page, "/preview/africa");
-	await clickClearMiddle(page);
+	await clickMiddle(page);
 	await expect(page).toHaveURL(/\/preview\/country\/[A-Z]{2}$/);
 	const iso = page.url().slice(-2);
 	const country = countries.find((each) => each.iso === iso);
@@ -239,28 +245,6 @@ test("clicking a country on the map opens its panel", async ({ page }) => {
 	expect(country?.continent).toBe("africa");
 	await expect(heading(page)).toHaveText(country?.name ?? "");
 	await expect(map(page)).toHaveAttribute("data-view", `country:${iso}`);
-});
-
-test("a country's view is centred in the part of the map the panel leaves clear", async ({
-	page,
-}) => {
-	// Kenya: the middle of its view is on its own land. If the camera ignored
-	// the panel, the middle of the clear part would be in Somalia.
-	await open(page, "/preview/country/KE");
-	await clickClearMiddle(page);
-	// Give a wrong click the time to show up.
-	await page.waitForTimeout(500);
-	await expect(page).toHaveURL("/preview/country/KE");
-	await expect(heading(page)).toHaveText("Kenya");
-
-	// And the world view leaves the panel clear: nothing but ocean is under it.
-	await page.goto("/preview");
-	await mapReady(page);
-	const side = await panel(page).boundingBox();
-	if (!side) throw new Error("The panel has no size");
-	await page.mouse.click(side.x + side.width / 2, side.y + side.height + 150);
-	await page.waitForTimeout(500);
-	await expect(page).toHaveURL("/preview");
 });
 
 test("by keyboard alone, a country in every continent is reached from the world", async ({
@@ -277,7 +261,11 @@ test("by keyboard alone, a country in every continent is reached from the world"
 
 		// The panel comes first in the focus order: its six links are the
 		// first six stops, before the chips and the map.
-		await tabTo(page, panel(page).getByRole("link", { name, exact: true }), 6);
+		await tabTo(
+			page,
+			panel(page).getByRole("link", { name: new RegExp(`^${name}`) }),
+			6,
+		);
 		await page.keyboard.press("Enter");
 		await expect(heading(page)).toHaveText(name);
 		// Focus has moved to the new panel's heading, so Tab carries on from it.
@@ -331,7 +319,7 @@ test("focus moves to the new panel's heading after a link, and stays on the map 
 	// On arrival nothing is focused: the browser starts at the top as usual.
 	await expect(heading(page)).not.toBeFocused();
 
-	await chips(page).getByRole("link", { name: "Europe" }).click();
+	await chooseChip(page, "Europe");
 	await expect(heading(page)).toHaveText("Europe");
 	await expect(heading(page)).toBeFocused();
 
@@ -349,9 +337,9 @@ test("focus moves to the new panel's heading after a link, and stays on the map 
 	await expect(heading(page)).toBeFocused();
 
 	// A country opened from the map: focus stays on the map.
-	await chips(page).getByRole("link", { name: "Africa" }).click();
+	await chooseChip(page, "Africa");
 	await expect(map(page)).toHaveAttribute("data-view", "continent:africa");
-	await clickClearMiddle(page);
+	await clickMiddle(page);
 	await expect(page).toHaveURL(/\/preview\/country\//);
 	await expect(heading(page)).not.toBeFocused();
 	expect(
@@ -406,7 +394,11 @@ test.describe("with JavaScript off", () => {
 	test("the panels can be read and their links followed", async ({ page }) => {
 		await page.goto("/preview");
 		await expect(heading(page)).toHaveText("The world");
-		await panel(page).getByRole("link", { name: "Oceania" }).click();
+		// The continent control needs JavaScript to open; the panel's links don't.
+		await expect(currentChip(page)).toHaveText("World");
+		await panel(page)
+			.getByRole("link", { name: /^Oceania/ })
+			.click();
 
 		await expect(heading(page)).toHaveText("Oceania");
 		await expect(
@@ -421,7 +413,7 @@ test.describe("with JavaScript off", () => {
 		await expect(panel(page).getByText("Suva")).toBeVisible();
 		await expect(panel(page).getByText(/\(\d{4}\)/)).toBeVisible();
 
-		await chips(page).getByRole("link", { name: "World" }).click();
-		await expect(heading(page)).toHaveText("The world");
+		await panel(page).getByRole("link", { name: "All of Oceania" }).click();
+		await expect(heading(page)).toHaveText("Oceania");
 	});
 });
