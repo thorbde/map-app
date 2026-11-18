@@ -1,8 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { Panel, PanelSection } from "../components/Panel/Panel";
+import { ShapeTiles } from "../components/ShapeTiles/ShapeTiles";
 import data from "./outlines.generated.json";
-import { ShapeTiles, Shell } from "./pieces";
+import { Shell } from "./pieces";
 
 // The real outlines (M1 PR 5b) in the proposal's tiles, for Thor to judge:
 // every continent's countries, and the countries that are hardest to draw
@@ -37,16 +38,17 @@ export const World: Story = {
 						name: names[id] ?? id,
 						detail: `${countries.length} countries`,
 						d,
+						href: "#",
 					}))}
 				/>
 			</Panel>
 		</Shell>
 	),
 	play: async ({ canvasElement }) => {
-		await expect(within(canvasElement).getAllByRole("link")).toHaveLength(
-			// Six tiles, and the seven chips of the stand-in shell.
-			6 + 7,
-		);
+		const panel = within(canvasElement).getByRole("main", {
+			name: "The world",
+		});
+		await expect(within(panel).getAllByRole("link")).toHaveLength(6);
 	},
 };
 
@@ -67,7 +69,9 @@ const continent = (id: string): Story => {
 							<ShapeTiles
 								dense
 								columns={4}
-								items={countries.filter((country) => country.region === region)}
+								items={countries
+									.filter((country) => country.region === region)
+									.map(({ name, d }) => ({ name, d, href: "#" }))}
 							/>
 						</PanelSection>
 					))}
@@ -84,30 +88,49 @@ export const NorthAmerica: Story = continent("north-america");
 export const SouthAmerica: Story = continent("south-america");
 export const Oceania: Story = continent("oceania");
 
+const hardCases = (
+	title: string,
+	pick: (each: (typeof data.hardCases)[number]) => string,
+	as: "main" | "section" = "section",
+) => (
+	<Panel
+		as={as}
+		title={title}
+		description="At the size a continent panel shows them"
+	>
+		<ShapeTiles
+			dense
+			columns={4}
+			items={data.hardCases.map((each) => ({
+				name: each.name,
+				d: pick(each),
+				href: "#",
+			}))}
+		/>
+	</Panel>
+);
+
 /**
- * The hard cases, at the size a continent panel shows them. First as built:
- * each country is the land its name is on, the same land the map's country
- * view frames. Then the same countries with all their land, for comparison.
+ * The hard cases three ways, side by side, at the size a continent panel shows
+ * them (32 px). Left, as built: the land the name is on, which is what the
+ * map's country view frames. Middle, a possible middle way: that land, plus
+ * all land within 150 km of land already shown, and so on outward. Right: all
+ * of the country's land.
  */
 export const HardCases: Story = {
 	name: "Hard cases",
 	render: () => (
-		<Shell current="World">
-			<Panel title="Hard cases" description="Small, scattered and very large">
-				<PanelSection title="As built: the land the name is on">
-					<ShapeTiles dense columns={4} items={data.hardCases} />
-				</PanelSection>
-				<PanelSection title="For comparison: all of the country's land">
-					<ShapeTiles
-						dense
-						columns={4}
-						items={data.hardCases.map(({ name, allLand }) => ({
-							name,
-							d: allLand,
-						}))}
-					/>
-				</PanelSection>
-			</Panel>
-		</Shell>
+		<div
+			style={{
+				display: "flex",
+				alignItems: "flex-start",
+				gap: "var(--space-4)",
+				padding: "var(--space-4)",
+			}}
+		>
+			{hardCases("As built: the named land", (each) => each.d, "main")}
+			{hardCases("Middle: land within reach", (each) => each.inReach)}
+			{hardCases("All the land", (each) => each.allLand)}
+		</div>
 	),
 };

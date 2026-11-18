@@ -508,7 +508,7 @@ for (const [name, outlines] of Object.entries(outlineFiles)) {
 // show the outlines to Thor get a copy with the names beside them. It goes
 // when the tile is a real component that the app feeds.
 
-/** Shown both ways in the "hard cases" story: the land near the name, and all of it. */
+/** Shown three ways in the "hard cases" story, for Thor to choose between. */
 const HARD_CASES = [
 	...[
 		"SC",
@@ -525,9 +525,49 @@ const HARD_CASES = [
 		"ST",
 		"KM",
 	],
-	// Not asked for, but where showing only the land near the name costs most.
-	...["DK", "IT", "GB", "JP", "PH", "US", "PT", "NO", "NZ"],
+	...["DK", "IT", "GB", "JP", "PH", "GR", "FR", "US", "NO", "PT", "ES", "NZ"],
 ];
+
+/**
+ * A possible middle way, in the story only: the land the name is on, and all
+ * land within 150 km of land already in, and so on outward. Islands that
+ * belong together stay together; land far off on its own is left out.
+ */
+function landInReach(feature: MapCountryFeature) {
+	const KM_PER_DEGREE = 111.2;
+	const REACH_KM = 150;
+	// A few hundred points of each coast are enough to measure a gap with.
+	const sample = (ring: [number, number][]) =>
+		ring.filter((_, i) => i % Math.ceil(ring.length / 300) === 0);
+	const pieces = feature.geometry.coordinates.map((polygon) => ({
+		polygon,
+		points: sample(polygon[0] ?? []),
+	}));
+	const near = (a: [number, number][], b: [number, number][]) =>
+		a.some(([lngA, latA]) =>
+			b.some(
+				([lngB, latB]) =>
+					Math.hypot(
+						(lngA - lngB) * Math.cos((((latA + latB) / 2) * Math.PI) / 180),
+						latA - latB,
+					) *
+						KM_PER_DEGREE <
+					REACH_KM,
+			),
+		);
+	const named = new Set(landNearName(feature));
+	let reached = pieces.filter((piece) => named.has(piece.polygon));
+	let rest = pieces.filter((piece) => !named.has(piece.polygon));
+	for (let edge = reached; edge.length > 0; ) {
+		const next = rest.filter((piece) =>
+			edge.some((from) => near(piece.points, from.points)),
+		);
+		rest = rest.filter((piece) => !next.includes(piece));
+		reached = [...reached, ...next];
+		edge = next;
+	}
+	return reached.map((piece) => piece.polygon);
+}
 
 const storyData = {
 	continents: continentIds.map((continent) => ({
@@ -552,6 +592,10 @@ const storyData = {
 				iso,
 				name: countries.find((country) => country.iso === iso)?.name ?? iso,
 				d: countryOutlines.get(iso) ?? "",
+				inReach: await outlineOf(
+					{ type: "MultiPolygon", coordinates: landInReach(feature) },
+					{ keepShapes: true },
+				),
 				allLand: await outlineOf(feature.geometry, { keepShapes: true }),
 			};
 		}),
