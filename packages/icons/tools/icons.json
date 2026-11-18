@@ -8,6 +8,7 @@
 		{ "kind": "open", "d": "M13 6l6 6-6 6" }
 	],
 	"check": [{ "kind": "open", "d": "M4.5 12.5l5 5L19.5 7" }],
+	"chevron-right": [{ "kind": "open", "d": "M9 6l6 6-6 6" }],
 	"close": [
 		{ "kind": "open", "d": "M6 6l12 12" },
 		{ "kind": "open", "d": "M18 6L6 18" }

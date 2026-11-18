@@ -1,8 +1,5 @@
-/* PROPOSAL ONLY: the shape tiles Thor chose for the world and continent panels
-   (2026-11-18). They become a real component when the outlines have a build
-   step of their own. Not exported from @thorbde/ui. */
-
-/* The country's own outline, and its name under it. */
+/* A shape and its name under it. No box and no shadow: a tile is not a card
+   (DESIGN.md); it shows itself as a link by its hover colour and focus ring. */
 .tiles {
 	display: grid;
 	grid-template-columns: repeat(var(--columns, 3), minmax(0, 1fr));
@@ -34,17 +31,17 @@
 	background: var(--color-bg-subtle);
 }
 
-.tileShape {
+.shape {
 	width: var(--shape, var(--space-12));
 	height: var(--shape, var(--space-12));
 	fill: var(--color-icon-fill);
 }
 
-.tile[data-written] .tileShape {
+.tile[data-written] .shape {
 	fill: var(--color-map-written);
 }
 
-.tileDetail {
+.detail {
 	display: block;
 	color: var(--color-text-muted);
 	font-weight: var(--font-weight-regular);
@@ -67,39 +64,4 @@
 	gap: var(--space-1);
 	padding: var(--space-2) 0;
 	border-radius: var(--radius-sm);
-}
-
-/* --- A SKETCH: the continent chips collapsed to the current one. The rest
-   slide out while the pointer is over the group or the keyboard focus is in
-   it. The current chip is shown first. --- */
-.collapsing ul {
-	gap: 0;
-}
-
-.collapsing li {
-	max-width: 12rem;
-	margin-inline-end: var(--space-2);
-	transition:
-		max-width var(--duration-normal) var(--easing-standard),
-		margin var(--duration-normal) var(--easing-standard),
-		opacity var(--duration-normal) var(--easing-standard),
-		visibility 0s;
-}
-
-.collapsing li:has([aria-current="page"]) {
-	order: -1;
-}
-
-.collapsing:not(:hover, :focus-within) li:not(:has([aria-current="page"])) {
-	max-width: 0;
-	margin-inline-end: 0;
-	opacity: 0;
-	visibility: hidden;
-	transition-delay: 0s, 0s, 0s, var(--duration-normal);
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.collapsing li {
-		transition: none;
-	}
 }

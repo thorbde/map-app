@@ -4,7 +4,10 @@ import styles from "./Panel.module.css";
 export interface PanelProps extends Omit<ComponentProps<"main">, "title"> {
 	/** The panel's heading, in its dark header block. It is the page's `h1`. */
 	title: string;
-	/** One short line under the title, such as "West Africa, Africa". */
+	/**
+	 * One short line under the title, such as "West Africa, Africa". It may hold
+	 * `Link`s: on the dark header they are white, with a white focus ring.
+	 */
 	description?: ReactNode;
 	/**
 	 * The panel is the page's `<main>` (ADR 0010). Use `section` for a second

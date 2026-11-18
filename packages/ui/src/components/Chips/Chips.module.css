@@ -44,3 +44,54 @@
 	outline: 2px solid var(--color-focus);
 	outline-offset: 2px;
 }
+
+/* --- CollapsingChips: the current chip is a button; the rest slide out beside it. --- */
+.collapsing {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	gap: var(--space-2);
+}
+
+.trigger {
+	composes: chip;
+	gap: var(--space-1);
+	border: 0;
+	background: var(--color-bg-inverse);
+	color: var(--color-text-on-inverse);
+	cursor: pointer;
+}
+
+.trigger:hover {
+	background: var(--color-bg-inverse);
+}
+
+.panel {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-2);
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	transition:
+		opacity var(--duration-normal) var(--easing-standard),
+		transform var(--duration-normal) var(--easing-standard);
+}
+
+.panel[hidden] {
+	display: none;
+}
+
+/* Where the slide starts from, and ends when closing: just behind the current chip. */
+.panel[data-starting-style],
+.panel[data-ending-style] {
+	opacity: 0;
+	transform: translateX(calc(-1 * var(--space-4)));
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.panel {
+		transition: none;
+	}
+}

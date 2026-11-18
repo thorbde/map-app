@@ -7,6 +7,10 @@ export {
 	type ChipsProps,
 } from "./components/Chips/Chips";
 export {
+	CollapsingChips,
+	type CollapsingChipsProps,
+} from "./components/Chips/CollapsingChips";
+export {
 	Dialog,
 	DialogClose,
 	type DialogProps,
@@ -20,6 +24,11 @@ export {
 	PanelSection,
 	type PanelSectionProps,
 } from "./components/Panel/Panel";
+export {
+	type ShapeTile,
+	ShapeTiles,
+	type ShapeTilesProps,
+} from "./components/ShapeTiles/ShapeTiles";
 export {
 	Tag,
 	TagLink,

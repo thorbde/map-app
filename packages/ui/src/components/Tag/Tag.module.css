@@ -21,6 +21,22 @@
 	min-width: 0;
 }
 
+/* The tags past the limit, while the list is closed. */
+.extra {
+	display: none;
+}
+
+/* With JavaScript off the button can't work: show every tag, and no button. */
+@media (scripting: none) {
+	.extra {
+		display: flex;
+	}
+
+	.more {
+		display: none;
+	}
+}
+
 /* Can't be pressed, so not a pill: square corners, regular weight, no shadow. */
 .tag {
 	display: inline-block;

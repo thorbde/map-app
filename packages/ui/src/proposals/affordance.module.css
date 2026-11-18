@@ -1,0 +1,73 @@
+/* PROPOSALS ONLY: ways for the closed continent control to say that it opens. */
+
+/* A: a chevron after the name. It turns to point back when the row is open. */
+.chevron {
+	margin-inline-end: calc(-1 * var(--space-1));
+	transition: transform var(--duration-normal) var(--easing-standard);
+}
+
+[data-panel-open] > .chevron {
+	transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.chevron {
+		transition: none;
+	}
+}
+
+/* C: a count after the name. */
+.count {
+	color: var(--color-text-on-inverse-muted);
+	font-weight: var(--font-weight-regular);
+}
+
+[data-panel-open] > .count {
+	display: none;
+}
+
+/* B: a peek. The edges of two more chips show behind the current one, as a
+   stack; they go when the row is open. */
+.peek {
+	isolation: isolate;
+}
+
+.peek > button {
+	position: relative;
+	margin-inline-end: var(--space-3);
+}
+
+.peek > button::before,
+.peek > button::after {
+	content: "";
+	position: absolute;
+	inset-block: var(--space-1);
+	inset-inline: 0 calc(-1 * var(--space-2));
+	z-index: -1;
+	border-radius: var(--radius-full);
+	background: var(--color-bg-surface);
+	box-shadow: var(--shadow-raised);
+	transition: inset var(--duration-normal) var(--easing-standard);
+}
+
+.peek > button::after {
+	inset-block: var(--space-2);
+	inset-inline-end: calc(-1 * var(--space-3) - var(--space-1));
+	z-index: -2;
+}
+
+.peek > button[data-panel-open] {
+	margin-inline-end: 0;
+}
+
+.peek > button[data-panel-open]::before,
+.peek > button[data-panel-open]::after {
+	inset-inline-end: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.peek > button::before,
+	.peek > button::after {
+		transition: none;
+	}
+}
