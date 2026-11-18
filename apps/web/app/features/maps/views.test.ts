@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { countries } from "../countries";
+import { type Continent, countries } from "../countries";
 import { equalEarth, equalEarthProjection } from "./equal-earth";
 // As text: see geometry.test.ts.
 import worldText from "./geometry/world.json?raw";
@@ -9,6 +9,7 @@ import {
 	CONTINENT_BOUNDS,
 	cameraFor,
 	countryBounds,
+	viewBounds,
 	WORLD_BOUNDS,
 } from "./views";
 
@@ -109,6 +110,32 @@ describe("map views", () => {
 	});
 });
 
+describe("which box a view shows", () => {
+	it("shows the whole world for the world view", () => {
+		expect(viewBounds({ kind: "world" }, features)).toBe(WORLD_BOUNDS);
+	});
+
+	it("shows each continent's own box", () => {
+		for (const continent of Object.keys(CONTINENT_BOUNDS) as Continent[]) {
+			expect(viewBounds({ kind: "continent", continent }, features)).toBe(
+				CONTINENT_BOUNDS[continent],
+			);
+		}
+	});
+
+	it("shows a country's own box", () => {
+		expect(viewBounds({ kind: "country", iso: "KE" }, features)).toEqual(
+			countryBounds(country("KE")),
+		);
+	});
+
+	it("shows the world for a country that isn't on the map", () => {
+		expect(viewBounds({ kind: "country", iso: "XX" }, features)).toBe(
+			WORLD_BOUNDS,
+		);
+	});
+});
+
 describe("the camera", () => {
 	const viewport = { width: 1200, height: 700 };
 
@@ -186,6 +213,65 @@ describe("the camera", () => {
 			const fillsHeight = Math.abs(height - viewport.height) < 1;
 			expect(fillsWidth || fillsHeight).toBe(true);
 		}
+	});
+
+	describe("when a panel covers part of the map", () => {
+		const PANEL = 416; // the shell's panel and the gaps beside it
+		const covered = { left: PANEL, top: 56 };
+
+		it("fits every view in the part that isn't covered", () => {
+			// MapLibre puts the camera's centre in the middle of the uncovered
+			// part, so that is where the box must fit.
+			const free = {
+				width: viewport.width - PANEL,
+				height: viewport.height - 56,
+			};
+			for (const [name, bounds] of Object.entries({
+				world: WORLD_BOUNDS,
+				...CONTINENT_BOUNDS,
+				kenya: countryBounds(country("KE")),
+			})) {
+				const camera = cameraFor(bounds, viewport, 24, covered);
+				const [[west, south], [east, north]] = bounds;
+				for (const lng of [west, (west + east) / 2, east]) {
+					for (const lat of [south, (south + north) / 2, north]) {
+						const [x, y] = onScreen(camera, [lng, lat]);
+						// onScreen measures from the middle of the whole viewport.
+						const fromMiddleX = Math.abs(x - viewport.width / 2);
+						const fromMiddleY = Math.abs(y - viewport.height / 2);
+						expect(fromMiddleX, `${name}: ${lng}, ${lat}`).toBeLessThanOrEqual(
+							free.width / 2,
+						);
+						expect(fromMiddleY, `${name}: ${lng}, ${lat}`).toBeLessThanOrEqual(
+							free.height / 2,
+						);
+					}
+				}
+			}
+		});
+
+		it("is the same as a viewport that much smaller", () => {
+			const padded = cameraFor(CONTINENT_BOUNDS.africa, viewport, 24, covered);
+			const smaller = cameraFor(CONTINENT_BOUNDS.africa, {
+				width: viewport.width - PANEL,
+				height: viewport.height - 56,
+			});
+			expect(padded.zoom).toBeCloseTo(smaller.zoom, 10);
+			expect(padded.center).toEqual(smaller.center);
+		});
+
+		it("zooms out, and keeps the same centre, compared with nothing covered", () => {
+			const padded = cameraFor(CONTINENT_BOUNDS.europe, viewport, 24, covered);
+			const open = cameraFor(CONTINENT_BOUNDS.europe, viewport);
+			expect(padded.zoom).toBeLessThan(open.zoom);
+			expect(padded.center).toEqual(open.center);
+		});
+
+		it("covers nothing unless told to", () => {
+			expect(cameraFor(WORLD_BOUNDS, viewport, 24, {})).toEqual(
+				cameraFor(WORLD_BOUNDS, viewport),
+			);
+		});
 	});
 
 	it("zooms in further for a smaller viewport's worth of land", () => {

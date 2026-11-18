@@ -10,6 +10,7 @@ export { EyeOffIcon } from "./EyeOffIcon";
 export { GlobeIcon } from "./GlobeIcon";
 export { MapIcon } from "./MapIcon";
 export { MapPinIcon } from "./MapPinIcon";
+export { MinusIcon } from "./MinusIcon";
 export { PlusIcon } from "./PlusIcon";
 export { SettingsIcon } from "./SettingsIcon";
 export { TrashIcon } from "./TrashIcon";

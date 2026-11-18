@@ -12,6 +12,25 @@
 	height: 100%;
 }
 
+/* MapLibre's canvas takes keyboard focus (arrow keys move the map, plus and
+   minus zoom). The ring is drawn inside it: the map fills its place, so a ring
+   around it would be cut off. */
+.canvas :global(.maplibregl-canvas):focus-visible {
+	outline: 2px solid var(--color-focus);
+	outline-offset: -2px;
+}
+
+/* Zoom in over zoom out, in the bottom right corner: clear of the panel on the
+   left and the continent chips at the top. */
+.zoom {
+	position: absolute;
+	inset-block-end: calc(var(--space-4) + var(--covered-bottom, 0px));
+	inset-inline-end: calc(var(--space-4) + var(--covered-right, 0px));
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+}
+
 .note {
 	position: absolute;
 	inset-block-end: var(--space-4);
