@@ -144,16 +144,34 @@ In `apps/web`, as a devDependency. It runs only in `scripts/build-maps.ts`; noth
 | Package | Version | Why | Unpacked size |
 |---|---|---|---|
 | `mapshaper` | 0.8.4 | The standard tool for preparing map data. Cuts one shape out of another, merges shapes, cuts them at the map's edge, simplifies while keeping shared borders identical, and rounds coordinates | 18 MB, and 171 MB installed with the 33 packages it depends on. MPL-2.0 |
+| `d3-geo`, `@types/d3-geo` | 3.1.2, 3.1.1 | Tests only: the reference our Equal Earth maths is checked against (`equal-earth.test.ts`). Not in any bundle, and no longer used to build the map | 255 KB, plus `d3-array` (115 KB) and 30 KB of types |
 
 - **The map data is not a package.** The script downloads Natural Earth 5.1.2's own files from its GitHub repository, pinned by version and by each file's SHA-256, into `apps/web/.cache/` (not committed). ADR 0020 says which files, what they provide and what they leave out.
 - **What mapshaper provides:** every geometry step the script needs, as about ten commands.
 - **What it leaves out:**
   - **Type definitions.** `scripts/mapshaper.d.ts` declares the one function we call.
   - **A documented way to move the map's edge that works.** Its documented commands lose the holes in countries when used for this. The script uses `-rotate`, which is in mapshaper but not in its documentation, and only works before simplifying. The tests would catch a change: every country present, Lesotho and San Marino still holes, no ring jumping across the map. **A known soft spot, which Thor accepted on 2026-11-17.** The fallback, if a mapshaper upgrade breaks it: bring back `d3-geo` (255 KB) for that one step, as the first version did.
-- **It replaced** `world-atlas` 2.0.2 (Natural Earth 4.1.0, from 2018, with everything but the names and numeric codes stripped out), `topojson-client`, `topojson-simplify`, `d3-geo` and their type packages, and about 400 lines of our own geometry code. Thor's decision of 2026-11-17: use Natural Earth's own files, and what the standard tools already do.
+- **It replaced** `world-atlas` 2.0.2 (Natural Earth 4.1.0, from 2018, with everything but the names and numeric codes stripped out), `topojson-client`, `topojson-simplify` and their type packages, `d3-geo` in the build script (it stays as a test reference, above), and about 400 lines of our own geometry code. Thor's decision of 2026-11-17: use Natural Earth's own files, and what the standard tools already do.
 - **Alternatives:**
   - **Keep `topojson` and `d3-geo`, and only swap the data:** small packages, but they can't cut one shape out of another, which is what moving Crimea and Western Sahara needs. That part would stay our own code.
   - **Commit the source files instead of downloading them:** no network needed for `pnpm check`, but 30 MB in the repo.
+
+### Added in M1 PR 4 (the map component)
+
+In `apps/web`, as a dependency. It is the first package that is shipped to the browser but is not part of any page's first load.
+
+| Package | Version | Why | Size |
+|---|---|---|---|
+| `maplibre-gl` | 6.18.0 | Draws the map (ADR 0021): Equal Earth as a custom projection, pan and zoom, labels, and later the globe | 296 KB gzipped, plus its 148 KB worker file and 10 KB of CSS. Measured from the production build |
+
+- **It loads lazily,** after the page, and only in the browser: the file that uses it ends in `.client.ts`, so it is not in the Worker bundle either. The preview page's first load is 118 KB.
+- **It has a size limit of its own:** 500 KB gzipped for MapLibre, its worker, its CSS and our own map code together (459 KB today, plus about 10%). `pnpm size` checks it, and also fails if the map engine ever becomes part of a page's first load.
+- **MapLibre is a file of its own,** separate from our map code, and so is its worker. Their names only change when MapLibre is upgraded, so a returning visitor doesn't download them again after one of our deploys. Tried: a change to our map code changed our 3 KB file's name and left both of MapLibre's alone.
+- **Used directly, not through `react-map-gl`:** there is one map, it never unmounts, and Equal Earth needs MapLibre's own API. One dependency fewer.
+- **Labels are drawn by MapLibre with the page's own Montserrat.** Without a `glyphs` address in the style, MapLibre 6 draws text with the fonts the page has loaded. No font conversion, no glyph files, nothing extra to host.
+- **MapLibre's licence** (BSD 3-clause) asks that its notice stays with the code. The build strips it from the JavaScript, so the full text is served at `/licenses/maplibre-gl.txt`; `pnpm size` checks that it is there and matches the installed version.
+- **Vite has to be told to bundle MapLibre's worker file** (`?worker&url`, then `setWorkerUrl`). Without that it isn't served, and the map never starts.
+- **e2e tests need WebGL.** Headless Chromium has no graphics card, so `playwright.config.ts` tells it to draw in software.
 
 ### Planned, not yet installed
 Recorded here so the sizes are known before code depends on them (ADR 0006):

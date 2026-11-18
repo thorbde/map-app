@@ -24,7 +24,16 @@ export default defineConfig({
 			name: "chromium",
 			use: {
 				...devices["Desktop Chrome"],
-				...(executablePath && { launchOptions: { executablePath } }),
+				launchOptions: {
+					// The map is drawn with WebGL (ADR 0021). Headless Chromium has no
+					// graphics card, so it is told to draw in software.
+					args: [
+						"--use-angle=swiftshader",
+						"--enable-unsafe-swiftshader",
+						"--ignore-gpu-blocklist",
+					],
+					...(executablePath && { executablePath }),
+				},
 			},
 		},
 	],

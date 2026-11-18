@@ -45,7 +45,7 @@ Run these from the repository root.
 | `pnpm test:e2e` | Playwright end-to-end tests against the production build, served locally |
 | `pnpm storybook` | Opens Storybook: the design-system playgrounds and components (`packages/ui`) |
 | `pnpm build:storybook` | Builds Storybook as static files |
-| `pnpm size` | Checks each page's first-load JavaScript against the 150 KB budget (after `pnpm build`) |
+| `pnpm size` | Checks each page's first-load JavaScript against the 150 KB budget, and the lazily loaded map engine against its own (after `pnpm build`) |
 
 ## Continuous integration
 
