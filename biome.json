@@ -15,7 +15,8 @@
 			"!apps/web/scripts/fixtures",
 			"!packages/icons/generated",
 			"!packages/icons/svg",
-			"!apps/web/app/features/maps/geometry"
+			"!apps/web/app/features/maps/geometry",
+			"!apps/web/app/server/db/migrations"
 		]
 	},
 	"formatter": {
