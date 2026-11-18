@@ -53,15 +53,17 @@ export default function PreviewShell() {
 		heading.focus();
 	}, [pathname]);
 
-	// How much of the map's left the panel covers, in pixels: the tokens'
-	// lengths (`.covered` in the CSS) as the browser measures them, also after
-	// the text size changes.
+	// How much of the map the panel covers on the left and the chips at the
+	// top, in pixels: the tokens' lengths (`.covered` in the CSS) as the browser
+	// measures them, also after the text size changes.
 	const measure = useRef<HTMLDivElement>(null);
-	const [covered, setCovered] = useState<number>();
+	const [covered, setCovered] = useState<{ left: number; top: number }>();
 	useEffect(() => {
 		const element = measure.current;
 		if (!element) return;
-		const observer = new ResizeObserver(() => setCovered(element.offsetWidth));
+		const observer = new ResizeObserver(() =>
+			setCovered({ left: element.offsetWidth, top: element.offsetHeight }),
+		);
 		observer.observe(element);
 		return () => observer.disconnect();
 	}, []);
@@ -96,7 +98,7 @@ export default function PreviewShell() {
 					selected={selected}
 					owner
 					onOpenCountry={(iso) => navigate(previewPaths.country(iso))}
-					padding={covered ? { left: covered } : undefined}
+					padding={covered}
 				/>
 			</div>
 		</div>

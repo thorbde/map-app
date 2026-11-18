@@ -21,14 +21,14 @@
 	pointer-events: auto;
 }
 
-/* Never seen: its width is what the panel covers of the map's left side, the
-   panel and the gap on each side of it. The layout measures it for the map's
-   camera. */
+/* Never seen: its width is what the panel covers of the map's left side (the
+   panel and the gap on each side of it), and its height what the row of chips
+   covers at the top. The layout measures it for the map's camera. */
 .covered {
 	position: absolute;
 	visibility: hidden;
 	width: calc(var(--size-panel) + 2 * var(--space-4));
-	height: 0;
+	height: calc(var(--size-control) + 2 * var(--space-4));
 }
 
 .chips {

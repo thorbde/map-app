@@ -49,16 +49,19 @@ async function cameraAtRest(page: Page) {
 	);
 }
 
-/** The middle of the part of the map that the panel doesn't cover. */
+/** The middle of the part of the map that the panel and the chips don't cover. */
 async function clearMiddle(page: Page): Promise<{ x: number; y: number }> {
 	const whole = await map(page).boundingBox();
 	const side = await panel(page).boundingBox();
-	if (!whole || !side) throw new Error("The shell has no size");
-	// The panel, and the same gap to its right as to its left.
-	const covered = side.x + side.width + side.x;
+	const row = await chips(page).boundingBox();
+	if (!whole || !side || !row) throw new Error("The shell has no size");
+	// The panel, and the same gap to its right as to its left; the chips, and
+	// the same gap under them as above.
+	const left = side.x + side.width + side.x;
+	const top = row.y + row.height + row.y;
 	return {
-		x: covered + (whole.width - covered) / 2,
-		y: whole.y + whole.height / 2,
+		x: left + (whole.width - left) / 2,
+		y: top + (whole.height - top) / 2,
 	};
 }
 
@@ -256,13 +259,26 @@ test("clicking a country on the map opens its panel", async ({ page }) => {
 	await expect(map(page)).toHaveAttribute("data-view", `country:${iso}`);
 });
 
-test("views are framed in the part of the map the panel leaves clear", async ({
+test("views are framed in the part of the map the panel and the chips leave clear", async ({
 	page,
 }) => {
 	// The panel covers its own width and the gap on each side: 24 rem + 2 × 16 px.
 	await open(page, "/preview/country/KE");
 	const side = await panel(page).boundingBox();
 	expect(side && side.x + side.width + side.x).toBe(416);
+	// The chips cover their row and the gap above and below: 32 px + 2 × 16 px.
+	const row = await chips(page).boundingBox();
+	expect(row && row.y + row.height + row.y).toBe(64);
+	// The map says where its centre is: for Kenya's view that is the middle of
+	// Kenya, about 38° east on the equator, wherever the panel and chips are.
+	await cameraAtRest(page);
+	const [lng = 0, lat = 0] = (
+		(await map(page).locator("[data-center]").getAttribute("data-center")) ?? ""
+	)
+		.split(",")
+		.map(Number);
+	expect(Math.abs(lng - 38)).toBeLessThan(2);
+	expect(Math.abs(lat - 0.5)).toBeLessThan(2);
 
 	// Kenya: the middle of its view is on its own land. If the camera ignored
 	// the panel, the middle of the clear part would be east of Kenya.
