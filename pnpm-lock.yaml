@@ -20,6 +20,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@thorbde/icons':
+        specifier: workspace:*
+        version: link:../../packages/icons
       '@thorbde/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens

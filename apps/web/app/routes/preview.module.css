@@ -21,6 +21,16 @@
 	pointer-events: auto;
 }
 
+/* Never seen: its width is what the panel covers of the map's left side, the
+   panel and the gap on each side of it. The layout measures it for the map's
+   camera. */
+.covered {
+	position: absolute;
+	visibility: hidden;
+	width: calc(var(--size-panel) + 2 * var(--space-4));
+	height: 0;
+}
+
 .chips {
 	position: absolute;
 	z-index: 1;

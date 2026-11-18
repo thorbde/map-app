@@ -16,6 +16,7 @@
 		"test:e2e": "playwright test"
 	},
 	"dependencies": {
+		"@thorbde/icons": "workspace:*",
 		"@thorbde/tokens": "workspace:*",
 		"@thorbde/ui": "workspace:*",
 		"isbot": "5.2.3",

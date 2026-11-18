@@ -1,5 +1,5 @@
 import { Chip, Chips } from "@thorbde/ui";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	Outlet,
 	Link as RouterLink,
@@ -53,8 +53,22 @@ export default function PreviewShell() {
 		heading.focus();
 	}, [pathname]);
 
+	// How much of the map's left the panel covers, in pixels: the tokens'
+	// lengths (`.covered` in the CSS) as the browser measures them, also after
+	// the text size changes.
+	const measure = useRef<HTMLDivElement>(null);
+	const [covered, setCovered] = useState<number>();
+	useEffect(() => {
+		const element = measure.current;
+		if (!element) return;
+		const observer = new ResizeObserver(() => setCovered(element.offsetWidth));
+		observer.observe(element);
+		return () => observer.disconnect();
+	}, []);
+
 	return (
 		<div className={styles.shell}>
+			<div ref={measure} className={styles.covered} />
 			<div ref={panel} className={styles.panel}>
 				<Outlet />
 			</div>
@@ -82,10 +96,7 @@ export default function PreviewShell() {
 					selected={selected}
 					owner
 					onOpenCountry={(iso) => navigate(previewPaths.country(iso))}
-					// TO COME WITH M1 PR 6: `padding={{ left: … }}`, the panel's
-					// width (`size.panel`) and the gap on each side of it, so the
-					// camera keeps clear of the panel. Until then the map's view
-					// sits partly under it.
+					padding={covered ? { left: covered } : undefined}
 				/>
 			</div>
 		</div>

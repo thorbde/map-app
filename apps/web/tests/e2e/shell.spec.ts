@@ -41,16 +41,31 @@ async function chooseChip(page: Page, name: string) {
 	await expect(chips(page).locator("[aria-current]")).toHaveText([name]);
 }
 
-/**
- * Clicks the middle of the map. Until the camera keeps clear of the panel
- * (M1 PR 6), a view is centred in the whole window, and the panel doesn't
- * reach its middle.
- */
+/** Waits until the camera has stopped: it flies between views. */
+async function cameraAtRest(page: Page) {
+	await expect(map(page).locator("[data-moving]")).toHaveAttribute(
+		"data-moving",
+		"false",
+	);
+}
+
+/** The middle of the part of the map that the panel doesn't cover. */
+async function clearMiddle(page: Page): Promise<{ x: number; y: number }> {
+	const whole = await map(page).boundingBox();
+	const side = await panel(page).boundingBox();
+	if (!whole || !side) throw new Error("The shell has no size");
+	// The panel, and the same gap to its right as to its left.
+	const covered = side.x + side.width + side.x;
+	return {
+		x: covered + (whole.width - covered) / 2,
+		y: whole.y + whole.height / 2,
+	};
+}
+
+/** Clicks the middle of what the panel leaves clear, once the camera is at rest. */
 async function clickMiddle(page: Page) {
-	const box = await map(page).boundingBox();
-	if (!box) throw new Error("The map has no size");
-	const x = box.x + box.width / 2;
-	const y = box.y + box.height / 2;
+	await cameraAtRest(page);
+	const { x, y } = await clearMiddle(page);
 	await page.mouse.move(x - 80, y - 60);
 	await page.mouse.move(x, y, { steps: 5 });
 	await page.mouse.click(x, y);
@@ -239,6 +254,36 @@ test("clicking a country on the map opens its panel", async ({ page }) => {
 	expect(country?.continent).toBe("africa");
 	await expect(heading(page)).toHaveText(country?.name ?? "");
 	await expect(map(page)).toHaveAttribute("data-view", `country:${iso}`);
+});
+
+test("views are framed in the part of the map the panel leaves clear", async ({
+	page,
+}) => {
+	// The panel covers its own width and the gap on each side: 24 rem + 2 × 16 px.
+	await open(page, "/preview/country/KE");
+	const side = await panel(page).boundingBox();
+	expect(side && side.x + side.width + side.x).toBe(416);
+
+	// Kenya: the middle of its view is on its own land. If the camera ignored
+	// the panel, the middle of the clear part would be east of Kenya.
+	await clickMiddle(page);
+	// Give a wrong click the time to show up.
+	await page.waitForTimeout(500);
+	await expect(page).toHaveURL("/preview/country/KE");
+	await expect(heading(page)).toHaveText("Kenya");
+
+	// The world fits beside the panel: only ocean is under the panel's column.
+	await page.goto("/preview");
+	await mapReady(page);
+	await cameraAtRest(page);
+	const column = await panel(page).boundingBox();
+	if (!column) throw new Error("The panel has no size");
+	await page.mouse.click(
+		column.x + column.width / 2,
+		column.y + column.height + 150,
+	);
+	await page.waitForTimeout(500);
+	await expect(page).toHaveURL("/preview");
 });
 
 test("by keyboard alone, a country in every continent is reached from the world", async ({

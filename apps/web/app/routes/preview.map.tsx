@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSearchParams } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { type Continent, countries } from "../features/countries";
 import { CountryMap, type MapView } from "../features/maps";
 import type { Route } from "./+types/preview.map";
@@ -10,6 +10,8 @@ import styles from "./preview.map.module.css";
 //
 // The map is driven by the address:
 //   /preview/map?view=continent:europe&written=SE,DK&selected=SE&owner=1
+//
+//   &panel=416   frames views as if something that wide covered the left of the map
 
 export function meta(_: Route.MetaArgs) {
 	return [{ title: "Map preview" }, { name: "robots", content: "noindex" }];
@@ -29,6 +31,19 @@ function parseView(value: string | null): MapView {
 	return { kind: "world" };
 }
 
+// Views to move between, so the camera's flight can be looked at and tested
+// before the shell's own links exist.
+const places = [
+	["World", "world"],
+	["Europe", "continent:europe"],
+	["Africa", "continent:africa"],
+	["Oceania", "continent:oceania"],
+	["Sweden", "country:SE"],
+	["Denmark", "country:DK"],
+	["Kenya", "country:KE"],
+	["Brazil", "country:BR"],
+] as const;
+
 export default function MapPreview() {
 	const [params] = useSearchParams();
 	const [opened, setOpened] = useState<string | null>(null);
@@ -37,6 +52,7 @@ export default function MapPreview() {
 		.split(",")
 		.filter((iso) => isos.has(iso));
 	const selected = params.get("selected") ?? undefined;
+	const panel = Number(params.get("panel"));
 
 	return (
 		<main className={styles.page}>
@@ -46,12 +62,24 @@ export default function MapPreview() {
 				selected={selected && isos.has(selected) ? selected : undefined}
 				owner={params.get("owner") === "1"}
 				onOpenCountry={setOpened}
+				padding={panel > 0 ? { left: panel } : undefined}
 			/>
 			<div className={styles.status}>
 				<h1 className={styles.title}>Map preview</h1>
 				<p>
 					Opened: <output>{opened ?? "nothing yet"}</output>
 				</p>
+				<ul className={styles.places}>
+					{places.map(([name, view]) => {
+						const to = new URLSearchParams(params);
+						to.set("view", view);
+						return (
+							<li key={view}>
+								<Link to={`?${to}`}>{name}</Link>
+							</li>
+						);
+					})}
+				</ul>
 			</div>
 		</main>
 	);
