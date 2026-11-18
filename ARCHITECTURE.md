@@ -47,7 +47,7 @@ packages/
     src/fonts.css         the self-hosted fonts (ADR 0017): "@thorbde/ui/fonts.css"
     src/components/<Name>/  <Name>.tsx, <Name>.module.css, <Name>.stories.tsx (the stories are its tests, ADR 0015)
     src/foundations/      Storybook pages that show the tokens
-    src/proposals/        stories that show proposed designs and their alternatives in use, with real content, for Thor's review; never shipped or exported
+    src/proposals/        stories that show a design in use with real content, and pieces not yet built as components, for Thor's review; never shipped or exported
     src/playgrounds/      Storybook playgrounds for design decisions (fonts, colour, type scale); never shipped or tested
 docs/
   METHOD.md               The writing method (product content)

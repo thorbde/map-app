@@ -123,13 +123,22 @@ export const senegal = {
 export const southAfrica = {
 	name: "South Africa",
 	region: "Southern Africa",
+	capitals: ["Bloemfontein", "Cape Town", "Pretoria"],
+	languages: [
+		"Afrikaans",
+		"English",
+		"Northern Sotho",
+		"Sesotho",
+		"South African Sign Language",
+		"Southern Ndebele",
+		"Swazi",
+		"Tsonga",
+		"Tswana",
+		"Venda",
+		"Xhosa",
+		"Zulu",
+	],
 	facts: [
-		{ label: "Capitals", value: "Bloemfontein, Cape Town, Pretoria" },
-		{
-			label: "Languages",
-			value:
-				"Afrikaans, English, Northern Sotho, Sesotho, South African Sign Language, Southern Ndebele, Swazi, Tsonga, Tswana, Venda, Xhosa, Zulu",
-		},
 		{ label: "Population", value: "62.0 million (2022)" },
 		{ label: "Government", value: "Parliamentary republic" },
 	],
@@ -141,15 +150,6 @@ export const southAfrica = {
 		"Namibia",
 		"Zimbabwe",
 	],
-};
-
-/** A plain list of links, as the panels list countries. */
-export const linkList: CSSProperties = {
-	display: "grid",
-	gap: "var(--space-1)",
-	margin: 0,
-	padding: 0,
-	listStyle: "none",
 };
 
 const land: CSSProperties = {

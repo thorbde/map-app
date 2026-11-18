@@ -20,3 +20,11 @@ export {
 	PanelSection,
 	type PanelSectionProps,
 } from "./components/Panel/Panel";
+export {
+	Tag,
+	TagLink,
+	type TagLinkProps,
+	TagList,
+	type TagListProps,
+	type TagProps,
+} from "./components/Tag/Tag";

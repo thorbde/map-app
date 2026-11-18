@@ -43,3 +43,30 @@
 .secondary:not([data-disabled]):hover {
 	background: var(--color-bg-subtle-hover);
 }
+
+/* Reads as an inline link (underlined, like Link), but is a button. */
+.link {
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: none;
+	color: var(--color-text-link);
+	font: inherit;
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+	cursor: pointer;
+}
+
+.link:not([data-disabled]):hover {
+	color: var(--color-text-link-hover);
+}
+
+.link:focus-visible {
+	outline: 2px solid var(--color-focus);
+	outline-offset: 2px;
+}
+
+.link[data-disabled] {
+	cursor: not-allowed;
+	opacity: var(--opacity-disabled);
+}

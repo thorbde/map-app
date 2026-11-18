@@ -1,9 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { senegal, southAfrica } from "../../proposals/content";
+import { Tag, TagList } from "../Tag/Tag";
 import { FactBox } from "./FactBox";
-
-// PROPOSAL (M1 PR 5), awaiting Thor's review.
 
 const meta = {
 	title: "Components/FactBox",
@@ -40,7 +39,31 @@ export const ShortValues: Story = {
 	},
 };
 
-/** South Africa: three capitals and twelve languages. Long values wrap beside their label. */
+/** South Africa: three capitals and twelve languages, as tags. The first three, then "9 more". */
 export const LongValues: Story = {
-	args: { facts: southAfrica.facts },
+	args: {
+		facts: [
+			{
+				label: "Capitals",
+				value: (
+					<TagList limit={3}>
+						{southAfrica.capitals.map((name) => (
+							<Tag key={name}>{name}</Tag>
+						))}
+					</TagList>
+				),
+			},
+			{
+				label: "Languages",
+				value: (
+					<TagList limit={3}>
+						{southAfrica.languages.map((name) => (
+							<Tag key={name}>{name}</Tag>
+						))}
+					</TagList>
+				),
+			},
+			...southAfrica.facts,
+		],
+	},
 };

@@ -1,12 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { CSSProperties } from "react";
 import { expect, within } from "storybook/test";
-import { africa, linkList, senegal } from "../../proposals/content";
-import { FactBox } from "../FactBox/FactBox";
-import { Link } from "../Link/Link";
+import { africa, senegal } from "../../proposals/content";
+import { CountryBody } from "../../proposals/panels";
+import { ShapeTiles } from "../../proposals/pieces";
+import { africaShapes } from "../../proposals/shapes";
 import { Panel, PanelSection } from "./Panel";
-
-// PROPOSAL (M1 PR 5), awaiting Thor's review.
 
 const onOcean: CSSProperties = {
 	boxSizing: "border-box",
@@ -14,30 +13,12 @@ const onOcean: CSSProperties = {
 	background: "var(--color-map-ocean)",
 };
 
-const countryBody = (
-	<>
-		<FactBox facts={senegal.facts} />
-		<PanelSection title="Neighbours">
-			<ul style={linkList}>
-				{senegal.neighbours.map((name) => (
-					<li key={name}>
-						<Link href="#">{name}</Link>
-					</li>
-				))}
-			</ul>
-		</PanelSection>
-	</>
-);
+const countryBody = <CountryBody country={senegal} />;
 
+const shape = (name: string) => africaShapes[name]?.d ?? "";
 const africaBody = africa.map(({ region, countries }) => (
 	<PanelSection key={region} title={region}>
-		<ul style={linkList}>
-			{countries.map((name) => (
-				<li key={name}>
-					<Link href="#">{name}</Link>
-				</li>
-			))}
-		</ul>
+		<ShapeTiles items={countries.map((name) => ({ name, d: shape(name) }))} />
 	</PanelSection>
 ));
 

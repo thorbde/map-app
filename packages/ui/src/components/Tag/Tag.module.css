@@ -1,0 +1,58 @@
+.list {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--space-1) var(--space-2);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	font-size: var(--font-size-xs);
+	line-height: var(--space-5);
+}
+
+.item {
+	display: flex;
+}
+
+/* Can't be pressed, so not a pill: square corners, regular weight, no shadow. */
+.tag {
+	display: inline-block;
+	padding: 0 var(--space-2);
+	border-radius: var(--radius-sm);
+	background: var(--color-bg-surface);
+	color: var(--color-text-default);
+	font-size: var(--font-size-xs);
+	line-height: var(--space-5);
+}
+
+/* Can be pressed, so a pill (DESIGN.md), and bold as the chips and buttons are.
+   24 px tall with a mouse, the smallest target WCAG 2.2 allows; taller on touch. */
+.tagLink {
+	display: inline-flex;
+	align-items: center;
+	min-height: var(--space-6);
+	padding: 0 var(--space-3);
+	border-radius: var(--radius-full);
+	background: var(--color-bg-subtle);
+	color: var(--color-text-default);
+	font-size: var(--font-size-xs);
+	font-weight: var(--font-weight-bold);
+	line-height: var(--font-line-height-tight);
+	text-decoration: none;
+	transition: background-color var(--duration-fast) var(--easing-standard);
+}
+
+@media (pointer: coarse) {
+	.tagLink {
+		min-height: var(--space-8);
+	}
+}
+
+.tagLink:hover {
+	background: var(--color-bg-subtle-hover);
+}
+
+.tagLink:focus-visible {
+	outline: 2px solid var(--color-focus);
+	outline-offset: 2px;
+}

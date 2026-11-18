@@ -4,8 +4,6 @@ import { expect, userEvent, within } from "storybook/test";
 import { chipNames } from "../../proposals/content";
 import { Chip, Chips } from "./Chips";
 
-// PROPOSAL (M1 PR 5), awaiting Thor's review.
-
 const onOcean: CSSProperties = {
 	padding: "var(--space-6)",
 	background: "var(--color-map-ocean)",
