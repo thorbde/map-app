@@ -42,10 +42,25 @@ Look up current docs for these libraries instead of relying on memory. Their API
 
 ## How to work
 
-1. **Plan first.** For anything bigger than a small fix, write a short plan: files, approach, risks, tests. **Wait for approval** before writing code.
+### Working faster (Thor, 2026-11-18)
+
+After two days the app had a map and components but no sign-in, writing or publishing. Thor decided to work faster. These four rules win over anything older in `docs/specs/` that says otherwise.
+
+1. **Product before polish.** The next stretch is a thin end-to-end slice: sign in → write one essay → publish → the country fills in on the map, with rough UI composed from existing `@thorbde/ui` components. Polish comes after the loop works. The plan is `docs/specs/slice.md`.
+2. **Design review per whole screen, not per component.** One Storybook page or preview per screen, one round of feedback.
+3. **Two tracks for PRs.**
+   - **Strict:** accounts, privacy, access control, the database and migrations, and anything under `packages/`. Plan first and wait for approval, open as a draft, the automated review, and Thor merges.
+   - **Fast:** everything else (UI in `apps/web`, docs). No waiting for plan approval on small slices. The lead session may merge once CI is green and the automated review has no open findings.
+   - **All hard rules below stay as they are,** on both tracks.
+   - **"Before you build" applies on both tracks.** A fast-track plan still starts with "What already exists". If it would build our own version of something that exists, it needs the ADR that rule 2 asks for, and the PR moves to the strict track: Thor approves the plan before code.
+4. **Workers are short-lived:** one per PR, at medium effort, one message to the lead when done or blocked, archived at merge.
+
+### Steps
+
+1. **Plan first.** For anything bigger than a small fix, write a short plan: files, approach, risks, tests. On the strict track, **wait for approval** before writing code. On the fast track, send the plan to the lead and carry on.
 2. **Small PRs.** One vertical slice per branch (`feat/…`, `fix/…`, `chore/…`). If a PR touches more than ~15 files or more than one feature, split it.
 3. **Fill in the PR template** (`.github/pull_request_template.md`) honestly, including risks and screenshots for UI changes.
-   **Open PRs as drafts.** Mark a PR ready for review only when the definition of done is met: that starts the automated Claude review (ADR 0009). Fix or answer its findings before asking Thor to merge.
+   **Open PRs as drafts.** Mark a PR ready for review only when the definition of done is met: that starts the automated Claude review (ADR 0009). Fix or answer its findings before the merge (Thor's on the strict track, the lead's on the fast one).
 4. **Update the docs in the same PR.** If the structure changes, update `ARCHITECTURE.md`. If a decision is made, add an ADR.
 5. **Definition of done:** `pnpm check` is green, the e2e tests touching the feature pass, the docs are updated, and the PR description is complete.
 

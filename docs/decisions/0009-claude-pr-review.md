@@ -15,6 +15,7 @@ Agents write the code and Thor reviews it. KICKOFF.md asked for a second agent w
 - **What it checks:** security and privacy first (ADRs 0003, 0004, 0007), then correctness, then CLAUDE.md's hard rules and the ADRs, then missing tests and docs. No style nits.
 - **Output:** inline comments on the lines concerned, plus one summary comment with a verdict.
 - **It's advice, not a gate.** It is not a required status check, and Thor still merges.
+  - **Amended by Thor, 2026-11-18:** Thor merges strict-track PRs (accounts, privacy, access control, database and migrations, `packages/`). On other PRs the lead session may merge once CI is green and this review has no open findings (`CLAUDE.md`, "Working faster").
 
 ## Alternatives considered
 - **Code Review (managed):** Team and Enterprise plans only.
