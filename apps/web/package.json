@@ -19,6 +19,7 @@
 		"db:check": "drizzle-kit generate && git diff --exit-code -- app/server/db/migrations && test -z \"$(git ls-files --others --exclude-standard -- app/server/db/migrations)\""
 	},
 	"dependencies": {
+		"@thorbde/icons": "workspace:*",
 		"@thorbde/tokens": "workspace:*",
 		"@thorbde/ui": "workspace:*",
 		"drizzle-orm": "0.45.4",
