@@ -43,7 +43,7 @@ A throwaway spike (2026-11-16) showed one MapLibre map drawing our own country s
 
 ## What views and controls found (M1 PR 6)
 What MapLibre already does is used as it is:
-- **Moving between views** is MapLibre's `flyTo` (or `easeTo`), given the centre and zoom from our own framing maths (above: `fitBounds` doesn't suit Equal Earth). Both work with the custom projection.
+- **Moving between views** is MapLibre's `flyTo`, given the centre and zoom from our own framing maths (above: `fitBounds` doesn't suit Equal Earth). It works with the custom projection. Thor chose it over `easeTo`, a straight line in 320 ms, on the PR's preview (2026-11-18).
 - **Reduced motion** is MapLibre's: every camera animation, the zoom buttons' and the keyboard's included, is instant when the visitor prefers reduced motion. We add nothing.
 - **Keyboard:** MapLibre's keyboard handler: arrow keys pan, plus and minus zoom, once the canvas has focus. Rotation is off.
 - **What covers the map** (the panel): MapLibre's camera `padding` keeps the centre in the middle of the uncovered part, also while the viewer zooms. Our maths only works out the zoom that fits there.
@@ -51,7 +51,7 @@ What MapLibre already does is used as it is:
 
 Two things are our own, each for a reason:
 - **The zoom buttons are not MapLibre's `NavigationControl`.** It works, but its buttons are MapLibre's markup and look: 29 px squares with MapLibre's icon images. Making them ours would mean overriding its CSS and swapping its images, against `DESIGN.md` and "compose from `@thorbde/ui` and our own icons". So two `IconButton`s call `zoomIn()` and `zoomOut()`, and are disabled at the ends of the zoom range, as the control's are. About 20 lines.
-- **`flyTo`'s `maxDuration` doesn't cap a flight: a longer one becomes a jump.** So a flight has a fixed duration instead of MapLibre's distance-based one.
+- **`flyTo`'s `maxDuration` doesn't cap a flight: a longer one becomes a jump.** So a flight has a fixed duration, 1.2 s, instead of MapLibre's distance-based one.
 
 **The map's first complete drawing is waited for at most 5 seconds.** The map has started by then; if it never comes to rest it is shown as it is, and the page doesn't stay on "Loading the map".
 

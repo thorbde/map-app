@@ -370,7 +370,12 @@ test("the camera travels to a new view, and arrives where the view is", async ({
 	await watchCamera(page);
 
 	await page.getByRole("link", { name: "Kenya" }).click();
-	// It takes a moment: the camera is seen on the move.
+	// The camera sets off (the page first has to follow the link), and takes a
+	// moment to get there.
+	await expect(map(page).locator("[data-zoom]")).toHaveAttribute(
+		"data-moving",
+		"true",
+	);
 	expect(await timeOnTheMove(page)).toBeGreaterThan(300);
 	const arrived = await camera(page);
 
@@ -414,8 +419,8 @@ test("with reduced motion the camera is at the new view at once", async ({
 test("a view is framed in the part of the map that a panel doesn't cover", async ({
 	page,
 }) => {
-	// As the shell will: a panel 24 rem wide over the left of the map.
-	const PANEL = 384;
+	// As the shell will: its panel, and the gap beside it, over the left of the map.
+	const PANEL = 416;
 	await openPreview(page, `view=country:KE&owner=1&panel=${PANEL}`);
 	const box = await map(page).boundingBox();
 	if (!box) throw new Error("The map has no size");

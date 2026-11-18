@@ -2,12 +2,7 @@ import { MinusIcon, PlusIcon } from "@thorbde/icons";
 import { IconButton } from "@thorbde/ui";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { countries } from "../../countries";
-import type {
-	CameraMove,
-	MapEngine,
-	MapState,
-	ZoomRoom,
-} from "../map-engine.client";
+import type { MapEngine, MapState, ZoomRoom } from "../map-engine.client";
 import type { MapPadding, MapView } from "../views";
 import styles from "./CountryMap.module.css";
 
@@ -28,8 +23,6 @@ type CountryMapProps = {
 	 * zoom buttons keep clear of it.
 	 */
 	padding?: MapPadding;
-	/** TEMPORARY (M1 PR 6): how the camera moves, for Thor to choose on the preview page. */
-	move?: CameraMove;
 };
 
 const names = Object.fromEntries(
@@ -48,7 +41,6 @@ export function CountryMap({
 	owner,
 	onOpenCountry,
 	padding,
-	move,
 }: CountryMapProps) {
 	const container = useRef<HTMLDivElement>(null);
 	const engine = useRef<MapEngine | null>(null);
@@ -62,7 +54,7 @@ export function CountryMap({
 
 	// The latest props, for the engine to read when it has loaded and when the
 	// viewer clicks, without setting the map up again.
-	const state: MapState = { view, written, selected, owner, padding, move };
+	const state: MapState = { view, written, selected, owner, padding };
 	const latest = useRef({ state, onOpenCountry });
 	latest.current = { state, onOpenCountry };
 

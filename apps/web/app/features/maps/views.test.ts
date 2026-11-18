@@ -216,7 +216,7 @@ describe("the camera", () => {
 	});
 
 	describe("when a panel covers part of the map", () => {
-		const PANEL = 384; // 24 rem
+		const PANEL = 416; // the shell's panel and the gaps beside it
 		const covered = { left: PANEL, top: 56 };
 
 		it("fits every view in the part that isn't covered", () => {

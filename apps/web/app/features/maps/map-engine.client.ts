@@ -34,14 +34,7 @@ export type MapState = {
 	owner: boolean;
 	/** How much of the map is covered at each edge, in CSS pixels. */
 	padding?: MapPadding;
-	/**
-	 * TEMPORARY (M1 PR 6): how the camera moves between views, for Thor to
-	 * choose between on the preview page. Removed when he has.
-	 */
-	move?: CameraMove;
 };
-
-export type CameraMove = { how: "fly" | "ease"; ms?: number };
 
 /** Whether the map can zoom further in each direction. */
 export type ZoomRoom = { canZoomIn: boolean; canZoomOut: boolean };
@@ -73,11 +66,13 @@ const START_TIMEOUT_MS = 20_000;
 const FIRST_DRAWING_TIMEOUT_MS = 5_000;
 
 /**
- * How long the camera takes between two views. MapLibre makes every move
- * instant by itself when the visitor prefers reduced motion.
+ * How long the camera takes to fly from one view to the next (DESIGN.md,
+ * "Controls on the map"). A fixed time, because MapLibre's `maxDuration`
+ * doesn't cap a flight: it turns a longer one into a jump (ADR 0021).
+ * MapLibre makes the move instant by itself when the visitor prefers reduced
+ * motion.
  */
 const FLY_MS = 1_200;
-const EASE_MS = 320;
 
 /** The closest the camera gets: close enough to look at a city. */
 const MAX_ZOOM = 12;
@@ -463,13 +458,8 @@ export async function createMapEngine(
 				return;
 			}
 			limitZoomOut();
-			// flyTo pulls back and comes in again on the way; easeTo goes straight.
-			// Both are instant when the visitor prefers reduced motion.
-			if (next.move?.how === "ease") {
-				map.easeTo({ ...camera(), duration: next.move.ms ?? EASE_MS });
-			} else {
-				map.flyTo({ ...camera(), duration: next.move?.ms ?? FLY_MS });
-			}
+			// The camera pulls back and comes in again on the way.
+			map.flyTo({ ...camera(), duration: FLY_MS });
 			reportZoomRoom();
 		},
 		zoomIn() {

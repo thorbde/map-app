@@ -59,7 +59,7 @@ The tokens are the source of truth (`packages/tokens/tokens/`, ADR 0014). This i
   - 6 px (`radius.sm`) for small things like focus outlines on text.
 - **Controls:** 32 px tall with a mouse, 40 px on touch screens.
 - **Shadow:** one, `shadow.raised`, and only on things that float over the map: panels, dialogs, the tab bar.
-- **Motion:** 120, 200 or 320 ms, with `easing.standard`.
+- **Motion:** 120, 200 or 320 ms, with `easing.standard`. The map's camera has its own timing ("Controls on the map").
 - **Icons:** our own (`docs/design/icons.md`). 16, 20 or 24 px.
 
 **Labels on the map.** 12 px, sentence case.
@@ -69,11 +69,11 @@ The tokens are the source of truth (`packages/tokens/tokens/`, ADR 0014). This i
 - **Which names show:** by Natural Earth's zooms and ranks, as on Google Earth: the prominent countries first, more as the viewer zooms in. Where two would overlap, the lower-ranked one gives way until there is room. A written country is named at every zoom and goes before every unwritten one; the selected country is always named.
 - **No marker dots.** A country too small to click is opened by its name.
 
-**Controls on the map** (proposed in M1 PR 6; not yet approved by Thor).
+**Controls on the map** (Thor, 2026-11-18).
 - **Zoom buttons:** two round icon buttons (`IconButton`), 32 px (40 px on touch), white with `shadow.raised` like the continent chips, the icon at 20 px in `color.text.default`; hover `color.bg.subtle`. A button that can't be pressed keeps its white and fades its icon.
 - **Where:** bottom right, `space.4` from the edges, zoom in over zoom out, `space.2` apart. Clear of the panel (left) and the chips (top).
 - **Focus on the map:** a 2 px ring in `color.focus`, drawn just inside the map's edge.
-- **The camera between views** (the world, a continent, a country): it travels, as feedback to the viewer's choice. Thor chooses between two on the PR's preview: pulling back and coming in again in 1.2 s, or a straight line in 320 ms. Instant with `prefers-reduced-motion`.
+- **The camera between views** (the world, a continent, a country) flies: it pulls back and comes in again, in 1.2 s, as feedback to the viewer's choice. This is the one motion longer than 320 ms. Zooming with the buttons or the keyboard keeps MapLibre's own timing. All of it is instant with `prefers-reduced-motion`.
 
 ## Never
 
