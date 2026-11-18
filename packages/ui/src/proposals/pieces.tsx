@@ -195,3 +195,11 @@ export function Values({
 		</ul>
 	);
 }
+
+/** A value that can't be pressed, small and square-cornered. Not a chip. */
+export function Tag({ children }: { children: ReactNode }) {
+	return <span className={styles.tag}>{children}</span>;
+}
+
+/** The class that collapses a Chips group to its current chip (a sketch). */
+export const collapsing = styles.collapsing;

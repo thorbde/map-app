@@ -182,14 +182,15 @@
 	list-style: none;
 }
 
-/* A tag can't be pressed, so it is not a pill: square corners, regular weight. */
+/* A tag can't be pressed, so it is not a chip: small (12 px text, 20 px tall),
+   square corners, regular weight, no shadow. */
 .tag {
 	display: inline-block;
 	padding: 0 var(--space-2);
 	border-radius: var(--radius-sm);
 	background: var(--color-bg-surface);
-	font-size: var(--font-size-sm);
-	line-height: var(--space-6);
+	font-size: var(--font-size-xs);
+	line-height: var(--space-5);
 }
 
 /* The control that shows the rest: a button that reads as a link. */
@@ -217,4 +218,15 @@
 .more:focus-visible {
 	outline: 2px solid var(--color-focus);
 	outline-offset: 2px;
+}
+
+/* --- A sketch: the continent chips collapsed to the current one. The rest
+   show while the pointer is over the group or the keyboard focus is in it. --- */
+.collapsing li:not(:has([aria-current="page"])) {
+	display: none;
+}
+
+.collapsing:hover li,
+.collapsing:focus-within li {
+	display: flex;
 }
