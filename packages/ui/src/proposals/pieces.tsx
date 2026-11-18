@@ -51,13 +51,18 @@ type Item = { name: string; detail?: string };
 export function ShapeTiles({
 	items,
 	columns = 3,
+	dense = false,
 }: {
 	items: readonly (Item & { d: string; written?: boolean })[];
 	columns?: number;
+	/** Smaller outlines and tighter spacing, for many countries. */
+	dense?: boolean;
 }) {
 	return (
 		<ul
-			className={styles.tiles}
+			className={[styles.tiles, dense && styles.dense]
+				.filter(Boolean)
+				.join(" ")}
 			style={{ "--columns": columns } as CSSProperties}
 		>
 			{items.map(({ name, detail, d, written }) => (
@@ -84,3 +89,6 @@ export function ShapeTiles({
 		</ul>
 	);
 }
+
+/** The class that collapses a Chips group to its current chip (a sketch). */
+export const collapsing = styles.collapsing;

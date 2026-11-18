@@ -40,12 +40,18 @@ export const World: Story = {
 	),
 };
 
-const continent = (description: string, written: ReadonlySet<string>) => (
+const continent = (
+	description: string,
+	written: ReadonlySet<string>,
+	columns = 4,
+) => (
 	<Shell current="Africa">
 		<Panel title="Africa" description={description}>
 			{africa.map(({ region, countries }) => (
 				<PanelSection key={region} title={region}>
 					<ShapeTiles
+						dense
+						columns={columns}
 						items={countries.map((name) => ({
 							name,
 							d: shape(name),
@@ -58,16 +64,29 @@ const continent = (description: string, written: ReadonlySet<string>) => (
 	</Shell>
 );
 
-/** A continent: Africa's 55 countries as their outlines, by region. As M1 shows it: nothing written yet. */
+/** A continent, four to a row: Africa's 55 countries as small outlines, by region. As M1 shows it: nothing written yet. */
 export const Continent: Story = {
+	name: "Continent, four to a row",
 	render: () => continent("55 countries in 5 regions", new Set()),
 	play: async ({ canvasElement }) => {
 		const panel = within(canvasElement).getByRole("main", { name: "Africa" });
-		await expect(within(panel).getAllByRole("link")).toHaveLength(55);
+		const links = within(panel).getAllByRole("link");
+		await expect(links).toHaveLength(55);
+		// Every tile is a comfortable target: well over 24 px each way.
+		for (const link of links) {
+			const { width, height } = link.getBoundingClientRect();
+			await expect(Math.min(width, height)).toBeGreaterThanOrEqual(48);
+		}
 	},
 };
 
-/** The same with five countries written: where it leads once there are essays. */
+/** The same, five to a row: denser, and long names break more. */
+export const ContinentFive: Story = {
+	name: "Continent, five to a row",
+	render: () => continent("55 countries in 5 regions", new Set(), 5),
+};
+
+/** Four to a row with five countries written: where it leads once there are essays. */
 export const ContinentSomeWritten: Story = {
 	name: "Continent, some written",
 	render: () =>
