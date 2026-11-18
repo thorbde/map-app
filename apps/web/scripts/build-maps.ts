@@ -415,7 +415,7 @@ async function outlineOf(
 	geometry: MapCountryFeature["geometry"],
 	{ clip, keepShapes }: { clip?: readonly number[]; keepShapes: boolean },
 ): Promise<string> {
-	const out = await mapshaper.applyCommands(
+	const simplified = await mapshaper.applyCommands(
 		[
 			"-i land.json",
 			// A continent is its countries merged. A country's pieces of land
@@ -429,7 +429,8 @@ async function outlineOf(
 			// keep-shapes: no piece of land is simplified away, however small it
 			// is in its box (Kiribati's atolls).
 			`-simplify resolution=${OUTLINE_RESOLUTION}${keepShapes ? " keep-shapes" : ""}`,
-			`-o outline.svg format=svg width=${OUTLINE_BOX} height=${OUTLINE_BOX} margin=0 precision=1`,
+			"-each 'piece = this.id'",
+			"-o simplified.json format=geojson",
 		].join(" "),
 		{
 			"land.json": JSON.stringify({
@@ -439,11 +440,36 @@ async function outlineOf(
 			}),
 		},
 	);
-	// One path for each piece of land, joined into one. None at all when
-	// everything was too small to draw at this size.
-	return [...String(out["outline.svg"]).matchAll(/<path d="([^"]*)"/g)]
-		.map(([, path]) => path)
-		.join(" ");
+	type Piece = { properties: { piece: number } };
+	let pieces = (
+		JSON.parse(String(simplified["simplified.json"])) as { features: Piece[] }
+	).features;
+
+	// mapshaper fits the box around every piece, and leaves out of the SVG any
+	// piece too small to draw at whole-number coordinates (four of Kiribati's
+	// eight atolls). So the box is fitted again around the pieces that are
+	// drawn, until all of them are: the outline is then truly centred.
+	for (;;) {
+		const out = await mapshaper.applyCommands(
+			`-i pieces.json -o outline.svg format=svg id-field=piece width=${OUTLINE_BOX} height=${OUTLINE_BOX} margin=0 precision=1`,
+			{
+				"pieces.json": JSON.stringify({
+					type: "FeatureCollection",
+					features: pieces,
+				}),
+			},
+		);
+		const paths = [
+			...String(out["outline.svg"]).matchAll(
+				/<path d="([^"]*)"[^>]* id="(\d+)"/g,
+			),
+		];
+		const drawn = new Set(paths.map(([, , id]) => Number(id)));
+		if (drawn.size === pieces.length) {
+			return paths.map(([, path]) => path).join(" ");
+		}
+		pieces = pieces.filter((piece) => drawn.has(piece.properties.piece));
+	}
 }
 
 const continentIds = Object.keys(CONTINENT_FRAMES) as Continent[];
