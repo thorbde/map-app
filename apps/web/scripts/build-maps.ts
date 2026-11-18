@@ -1,11 +1,13 @@
 // Builds the map geometry (docs/specs/mvp.md §2, ADR 0020, ADR 0021):
 // Natural Earth's own files → country shapes per ISO code, as GeoJSON that
 // MapLibre draws. Writes one detailed file of the whole world,
-// app/features/maps/geometry/world.json.
+// app/features/maps/geometry/world.json, and from the same shapes the small
+// outlines on the panels' tiles, app/features/maps/geometry/outlines/*.json.
 //
 // What comes from where:
 // - Shapes, codes, label points, label zooms and ranks: Natural Earth, as it is.
-// - Cutting, merging, simplifying and rounding: mapshaper.
+// - Cutting, merging, simplifying and rounding: mapshaper. For the outlines
+//   also the projection and the fitting to a box.
 // - Ours: the border choices below, and which fields go in the file.
 //
 // Run with `pnpm build:maps`, and commit the result. `pnpm maps:check` fails
@@ -22,12 +24,26 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 import mapshaper from "mapshaper";
-import { countries } from "../app/features/countries/countries.ts";
+import {
+	type Continent,
+	countries,
+	regions,
+} from "../app/features/countries/countries.ts";
 import type {
 	MapCountryFeature,
 	MapFile,
 	MapNeutralFeature,
 } from "../app/features/maps/map-file.ts";
+import {
+	type ContinentOutlines,
+	type CountryOutlines,
+	OUTLINE_BOX,
+	OUTLINE_FILE_BUDGET_BYTES,
+} from "../app/features/maps/outline-file.ts";
+import {
+	CONTINENT_FRAMES,
+	landNearName,
+} from "../app/features/maps/outline-land.ts";
 
 // --- The source: Natural Earth, pinned --------------------------------------------
 
@@ -380,3 +396,168 @@ console.log(
 if (size > BUDGET_BYTES) {
 	throw new Error("world.json is over its size budget");
 }
+
+// --- The outlines on the panels' tiles --------------------------------------------
+//
+// The same shapes, with every border choice above already made, drawn small:
+// each country, and each continent, as an SVG path fitted to a box 100 × 100.
+// mapshaper projects, simplifies, fits and writes the path. Which land is
+// shown is the map's own views (outline-land.ts).
+
+/**
+ * How much detail an outline keeps: mapshaper simplifies for a drawing this
+ * many pixels across. The tiles are 32 to 48 px.
+ */
+const OUTLINE_RESOLUTION = 100;
+
+/** One outline: these shapes in Equal Earth, as the map draws them. */
+async function outlineOf(
+	geometry: MapCountryFeature["geometry"],
+	{ clip, keepShapes }: { clip?: readonly number[]; keepShapes: boolean },
+): Promise<string> {
+	const out = await mapshaper.applyCommands(
+		[
+			"-i land.json",
+			// A continent is its countries merged. A country's pieces of land
+			// stay pieces of their own, so that keep-shapes protects each one.
+			keepShapes ? "-explode" : "-dissolve",
+			clip ? `-clip bbox=${clip.join(",")}` : "",
+			// Equal Earth with the map's centre in the middle: longitudes are
+			// shifted so that the centre is 0, and then run from -180 to 180.
+			`-affine shift=${-CENTRE_LONGITUDE},0`,
+			"-proj +proj=eqearth",
+			// keep-shapes: no piece of land is simplified away, however small it
+			// is in its box (Kiribati's atolls).
+			`-simplify resolution=${OUTLINE_RESOLUTION}${keepShapes ? " keep-shapes" : ""}`,
+			`-o outline.svg format=svg width=${OUTLINE_BOX} height=${OUTLINE_BOX} margin=0 precision=1`,
+		].join(" "),
+		{
+			"land.json": JSON.stringify({
+				type: "Feature",
+				properties: {},
+				geometry,
+			}),
+		},
+	);
+	// One path for each piece of land, joined into one. None at all when
+	// everything was too small to draw at this size.
+	return [...String(out["outline.svg"]).matchAll(/<path d="([^"]*)"/g)]
+		.map(([, path]) => path)
+		.join(" ");
+}
+
+const continentIds = Object.keys(CONTINENT_FRAMES) as Continent[];
+const countryOutlines = new Map<string, string>();
+for (const feature of countryFeatures) {
+	countryOutlines.set(
+		feature.properties.iso,
+		await outlineOf(
+			{ type: "MultiPolygon", coordinates: landNearName(feature) },
+			{ keepShapes: true },
+		),
+	);
+}
+
+const outlineFiles: Record<string, CountryOutlines | ContinentOutlines> = {};
+const continentOutlines: Partial<ContinentOutlines> = {};
+for (const continent of continentIds) {
+	const isos = countries
+		.filter((country) => country.continent === continent)
+		.map((country) => country.iso)
+		.sort();
+	outlineFiles[continent] = Object.fromEntries(
+		isos.map((iso) => [iso, countryOutlines.get(iso) ?? ""]),
+	);
+	// The continent: its countries merged, inside its view's box. Islands too
+	// small to see at this size are left to the simplifying.
+	continentOutlines[continent] = await outlineOf(
+		{
+			type: "MultiPolygon",
+			coordinates: countryFeatures
+				.filter((feature) => isos.includes(feature.properties.iso))
+				.flatMap((feature) => feature.geometry.coordinates),
+		},
+		{ clip: CONTINENT_FRAMES[continent], keepShapes: false },
+	);
+}
+outlineFiles.continents = continentOutlines as ContinentOutlines;
+
+const outlinesDir = resolve(outDir, "outlines");
+mkdirSync(outlinesDir, { recursive: true });
+const kilobytes = (bytes: number) => `${(bytes / 1000).toFixed(1)} KB`;
+for (const [name, outlines] of Object.entries(outlineFiles)) {
+	for (const [key, outline] of Object.entries(outlines)) {
+		if (!outline) throw new Error(`No outline for ${key}`);
+	}
+	const text = `${JSON.stringify(outlines)}\n`;
+	const gzipped = gzipSync(text, { level: 9 }).length;
+	writeFileSync(resolve(outlinesDir, `${name}.json`), text);
+	console.log(
+		`outlines/${name}.json: ${kilobytes(gzipped)} gzipped ` +
+			`(budget ${kilobytes(OUTLINE_FILE_BUDGET_BYTES)}), ${kilobytes(text.length)} on disk, ` +
+			`${Object.keys(outlines).length} outlines`,
+	);
+	if (gzipped > OUTLINE_FILE_BUDGET_BYTES) {
+		throw new Error(`outlines/${name}.json is over its size budget`);
+	}
+}
+
+// --- The same outlines for Storybook (a proposal, not shipped) --------------------
+//
+// The design system can't import from the app (ADR 0008), so the stories that
+// show the outlines to Thor get a copy with the names beside them. It goes
+// when the tile is a real component that the app feeds.
+
+/** Shown both ways in the "hard cases" story: the land near the name, and all of it. */
+const HARD_CASES = [
+	...[
+		"SC",
+		"MV",
+		"KI",
+		"TV",
+		"VA",
+		"MC",
+		"NR",
+		"FJ",
+		"ID",
+		"RU",
+		"CV",
+		"ST",
+		"KM",
+	],
+	// Not asked for, but where showing only the land near the name costs most.
+	...["DK", "IT", "GB", "JP", "PH", "US", "PT", "NO", "NZ"],
+];
+
+const storyData = {
+	continents: continentIds.map((continent) => ({
+		id: continent,
+		d: continentOutlines[continent] ?? "",
+		countries: countries
+			.filter((country) => country.continent === continent)
+			.map(({ iso, name, region }) => ({
+				iso,
+				name,
+				region: regions[region].name,
+				d: countryOutlines.get(iso) ?? "",
+			})),
+	})),
+	hardCases: await Promise.all(
+		HARD_CASES.map(async (iso) => {
+			const feature = countryFeatures.find(
+				(each) => each.properties.iso === iso,
+			);
+			if (!feature) throw new Error(`No ${iso}`);
+			return {
+				iso,
+				name: countries.find((country) => country.iso === iso)?.name ?? iso,
+				d: countryOutlines.get(iso) ?? "",
+				allLand: await outlineOf(feature.geometry, { keepShapes: true }),
+			};
+		}),
+	),
+};
+writeFileSync(
+	resolve(here, "../../../packages/ui/src/proposals/outlines.generated.json"),
+	`${JSON.stringify(storyData, null, "\t")}\n`,
+);
