@@ -126,6 +126,21 @@ Not borders, but recorded, because they decide what a viewer reads first.
 - **The Vatican's shape comes from the coarser 50m file,** as before: the finest file has it squashed to a sliver. The coarser shape is a rough hexagon a kilometre across, drawn 1.3 km west of where the Vatican is. It is cut out of Italy, so the two don't overlap.
 - **Budget:** 2.5 MB gzipped (confirmed by Thor, 2026-11-17). The build fails over it. Today: 1.98 MB gzipped, 6.6 MB on disk.
 
+### The outlines on the panels' tiles (2026-11-18)
+
+The world panel shows the six continents, and a continent panel its countries, each as a small outline of itself (Thor, 2026-11-18).
+
+- **The outlines are one more output of the same build,** from the same shapes: every border choice above is in them, and none is made twice. Crimea is in Ukraine's outline, Somaliland in Somalia's, Western Sahara has its own. **Risk: high, as for the map.**
+- **mapshaper does the work:** it projects each shape to Equal Earth (the map's projection, same centre), simplifies it for a drawing 100 px across, fits and centres it in a box 100 × 100, and writes the SVG path. Ours is only which land goes in. A piece of land too small to draw at whole-number coordinates is left out, and the box is fitted around what is drawn.
+- **Which land goes in is the map's own views, not a new rule.** A country is the land its country view frames (`countryBounds` in `views.ts`): the piece of land its name is on, or, for the eight names beside or between their land, the land within 150 km. A continent is its countries merged, inside its continent view's box (`CONTINENT_BOUNDS`). `outline-land.ts` holds both so that the build script can read them, and a test fails if they and `views.ts` differ.
+- **What that leaves out, on purpose and to be judged by Thor in Storybook** (`Proposals/Outlines`, "Hard cases", three ways side by side): islands and parts away from the named land. The United States is shown without Alaska and Hawaii, Norway without Svalbard, Portugal without the Azores; but also Indonesia as Sumatra alone, Denmark as Jutland, Italy without Sicily and Sardinia, the United Kingdom without Northern Ireland, Japan as Honshu. **Northern Ireland's absence is a side effect of the rule and not a position; risk: high.** With all the land instead, 25 or so countries become specks in their box (Norway, Portugal, the United States, the Seychelles).
+- **Europe's outline ends at 50° E,** with a straight edge through Russia, as its view does. French Guiana is not in South America's (it is neutral land).
+- **Kiribati is faint:** eight thin atolls over 400 km, four of them too small to draw at this size. Less simplification, another simplification method and finer coordinates were tried in mapshaper; none changes it, because the atolls themselves are slivers.
+- **Seven files, generated and committed,** in `app/features/maps/geometry/outlines/`: one per continent (its countries by ISO code) and `continents.json`. `pnpm maps:check` covers them. Coordinates are whole numbers.
+- **Budget: 18 KB gzipped per file.** The build, a test and `pnpm size` check it. Today the largest is Europe: 14.9 KB gzipped, 42 KB on disk. All seven together are 58 KB gzipped.
+- **They are read on the server** (`outlines.server.ts`) and arrive in the panel's HTML. They are never part of the page's JavaScript.
+- **Why not Natural Earth's small-scale files** (1:110 million), which are already this coarse: they leave out the smallest countries, and none of our border choices are in them.
+
 ## Alternatives considered
 - **Building the files in CI instead of committing them:** a cleaner repo, but a border could change with no visible diff (when the data package is updated, for example), and every build would have one more step that can fail.
 - **Drawing every disputed area as neutral:** looks even-handed, but a grey Crimea or a grey Kashmir is a position too, and it leaves holes in countries people write about.
