@@ -68,6 +68,10 @@ app/
   routes.ts               the route table
   entry.server.tsx        server rendering (streams HTML)
   routes/                 React Router route modules (thin)
+    preview.tsx           the map shell's layout route: the map and the continent chips, mounted once (ADR 0010)
+    preview.world.tsx, preview.continent.tsx, preview.country.tsx   its child routes: each a loader and a panel
+    preview.paths.ts      the shell's temporary addresses, in one place
+    preview.map.tsx       the map component's own test page
   features/
     auth/                 Better Auth setup, onboarding, username rules
     profiles/             profile, settings, visibility, export, delete account
@@ -80,7 +84,13 @@ app/
       labels.ts           which country names show at which zoom, and which gives way: Natural Earth's zooms and ranks, handed to MapLibre
       views.ts            what the map can show (world, continent, country) and where the camera goes for it
       components/CountryMap.tsx  the map component
-    countries/            static country data, region lists and reference facts (no DB, ADR 0012)
+    countries/            static country data, region lists and reference facts (no DB, ADR 0012),
+                          and the panels that show them
+      panels.server.ts    the data behind the world, continent and country panels; the facts stay on the server
+      format.ts           how facts read in the fact box
+      schema.ts           what an address may name (zod)
+      components/         WorldPanel, ContinentPanel, CountryPanel; PlaceList is the one place that decides
+                          how a list of places looks (plain links until the shape tiles exist)
   server/
     access.server.ts      canViewProfile / canViewEssay, see ADR 0003
     db/
@@ -176,9 +186,10 @@ D1 has no interactive transactions. "Atomic" below means one `db.batch([...])`: 
   3. return the stored `rendered_html`
 - **Map shell (ADR 0010):**
   1. the shell's layout route renders `<CountryMap>` once and keeps it mounted; it loads MapLibre lazily and draws our own country shapes (ADR 0021)
-  2. each child route's loader returns the panel's data plus the map view (world, continent or country) and, through `access.server.ts`, the list of written ISO codes the viewer may see
+  2. each child route's loader checks its address and returns the panel's data plus the map view (world, continent or country) and, through `access.server.ts`, the list of written ISO codes the viewer may see. The layout reads the view from the deepest matching route. (In M1 there is no user data: the shell is at `/preview`, everyone counts as the owner and nothing is written)
   3. the map geometry is one static hashed asset, the whole world in detail (ADR 0020); written and selected countries are coloured through MapLibre, with colours read from the tokens
   4. clicking a country navigates: for the owner, to the editor or the essay; for visitors, only written countries respond. The panel lists the same countries as real links
+  5. the panel is the page's `<main>` and comes before the chips and the map; after a link is followed, focus moves to the new panel's heading. The camera keeps clear of the panel and the chips through MapLibre's `padding`
 
 ## Environments
 

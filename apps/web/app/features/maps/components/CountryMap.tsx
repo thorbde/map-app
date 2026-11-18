@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { countries } from "../../countries";
-import type { MapEngine, MapState } from "../map-engine.client";
+import type { MapClear, MapEngine, MapState } from "../map-engine.client";
 import type { MapView } from "../views";
 import styles from "./CountryMap.module.css";
 
@@ -15,7 +15,20 @@ type CountryMapProps = {
 	owner: boolean;
 	/** Called when the viewer clicks a country they may open. */
 	onOpenCountry: (iso: string) => void;
+	/**
+	 * What floats over the map's left and top, as CSS lengths:
+	 * `{ left: "var(--size-panel)" }`.
+	 * The camera keeps what it shows clear of it. Read when the camera moves.
+	 */
+	clear?: MapClear;
 };
+
+/** A view as one word, for the engine's change check and for `data-view`. */
+function viewName(view: MapView): string {
+	if (view.kind === "continent") return `continent:${view.continent}`;
+	if (view.kind === "country") return `country:${view.iso}`;
+	return "world";
+}
 
 const names = Object.fromEntries(
 	countries.map((country) => [country.iso, country.name]),
@@ -32,16 +45,19 @@ export function CountryMap({
 	selected,
 	owner,
 	onOpenCountry,
+	clear,
 }: CountryMapProps) {
 	const container = useRef<HTMLDivElement>(null);
 	const engine = useRef<MapEngine | null>(null);
 	const [status, setStatus] = useState<"loading" | "ready" | "unavailable">(
 		"loading",
 	);
+	// The view the map engine was last given: what the map is showing.
+	const [shown, setShown] = useState<string>();
 
 	// The latest props, for the engine to read when it has loaded and when the
 	// viewer clicks, without setting the map up again.
-	const state: MapState = { view, written, selected, owner };
+	const state: MapState = { view, written, selected, owner, clear };
 	const latest = useRef({ state, onOpenCountry });
 	latest.current = { state, onOpenCountry };
 
@@ -67,6 +83,7 @@ export function CountryMap({
 				engine.current = created;
 				// Props may have changed while the map was loading.
 				created.update(latest.current.state);
+				setShown(viewName(latest.current.state.view));
 				setStatus("ready");
 			})
 			.catch(() => {
@@ -81,15 +98,22 @@ export function CountryMap({
 		};
 	}, []);
 
-	const viewKey = JSON.stringify(view);
+	const viewKey = viewName(view);
 	const writtenKey = written.join(",");
 	// biome-ignore lint/correctness/useExhaustiveDependencies: the keys stand in for `view` and `written`, which are new objects on every render.
 	useEffect(() => {
-		engine.current?.update(latest.current.state);
+		if (!engine.current) return;
+		engine.current.update(latest.current.state);
+		setShown(viewKey);
 	}, [viewKey, writtenKey, selected, owner]);
 
 	return (
-		<section className={styles.map} aria-label="World map" data-status={status}>
+		<section
+			className={styles.map}
+			aria-label="World map"
+			data-status={status}
+			data-view={shown}
+		>
 			<div ref={container} className={styles.canvas} />
 			{status === "loading" && <p className={styles.note}>Loading the map</p>}
 			{status === "unavailable" && (

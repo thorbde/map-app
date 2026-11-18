@@ -1,0 +1,30 @@
+/* The map shell (ADR 0010): the map fills the window; the panel and the
+   continent chips float over it. The phone layout is M1 PR 7. */
+.shell {
+	position: fixed;
+	inset: 0;
+}
+
+/* The panel's column, on the left. It is as tall as the window so a long panel
+   scrolls inside itself; the map under the part a short panel leaves empty
+   stays clickable. */
+.panel {
+	position: absolute;
+	z-index: 1;
+	inset: var(--space-4) auto var(--space-4) var(--space-4);
+	display: flex;
+	align-items: flex-start;
+	pointer-events: none;
+}
+
+.panel > * {
+	pointer-events: auto;
+}
+
+.chips {
+	position: absolute;
+	z-index: 1;
+	inset-block-start: var(--space-4);
+	inset-inline-start: calc(var(--size-panel) + 2 * var(--space-4));
+	max-width: calc(100% - var(--size-panel) - 3 * var(--space-4));
+}

@@ -15,6 +15,16 @@ export type Continent =
 	| "south-america"
 	| "oceania";
 
+/** The continents, in the order the app lists them. */
+export const continents = {
+	africa: { name: "Africa" },
+	europe: { name: "Europe" },
+	asia: { name: "Asia" },
+	"north-america": { name: "North America" },
+	"south-america": { name: "South America" },
+	oceania: { name: "Oceania" },
+} as const satisfies Record<Continent, { name: string }>;
+
 export const regions = {
 	"north-africa": { name: "North Africa", continent: "africa" },
 	"west-africa": { name: "West Africa", continent: "africa" },

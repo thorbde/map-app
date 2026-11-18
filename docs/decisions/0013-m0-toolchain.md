@@ -173,6 +173,12 @@ In `apps/web`, as a dependency. It is the first package that is shipped to the b
 - **Vite has to be told to bundle MapLibre's worker file** (`?worker&url`, then `setWorkerUrl`). Without that it isn't served, and the map never starts.
 - **e2e tests need WebGL.** Headless Chromium has no graphics card, so `playwright.config.ts` tells it to draw in software.
 
+### Added in M1 PR 5 (the app shell)
+
+| Package | Version | Where it runs | Why | Size |
+|---|---|---|---|---|
+| `zod` | 4.6.6 | Server only so far: the loaders, which check what an address names | `CLAUDE.md` asks for zod at every boundary, and the shell's routes are the first boundary in the app. The version is the one already in the lockfile (a tool brings it in). Writing the two checks by hand was the alternative: smaller, but every later boundary (forms, JSON columns, env) needs zod anyway | 7.5 MB unpacked. None of it is in any page's JavaScript: the loaders are stripped from the browser's code (checked with `pnpm size`) |
+
 ### Planned, not yet installed
 Recorded here so the sizes are known before code depends on them (ADR 0006):
 
