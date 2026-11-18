@@ -2,6 +2,7 @@
 export { ArrowLeftIcon } from "./ArrowLeftIcon";
 export { ArrowRightIcon } from "./ArrowRightIcon";
 export { CheckIcon } from "./CheckIcon";
+export { ChevronRightIcon } from "./ChevronRightIcon";
 export { CloseIcon } from "./CloseIcon";
 export { EditIcon } from "./EditIcon";
 export { ErrorIcon } from "./ErrorIcon";
