@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
-import { Chip, Chips } from "../components/Chips/Chips";
+import { Chip } from "../components/Chips/Chips";
+import { CollapsingChips } from "../components/Chips/CollapsingChips";
 import { chipNames, FakeMap } from "./content";
 import styles from "./pieces.module.css";
 
@@ -7,7 +8,7 @@ import styles from "./pieces.module.css";
 // continent panels, and the stand-in shell the stories sit in. The tiles become
 // a real component when the outlines have a build step of their own.
 
-/** The panel and the continent chips where the shell would put them, over a stand-in map. */
+/** The panel and the continent control where the shell would put them, over a stand-in map. */
 export function Shell({
 	current,
 	children,
@@ -27,20 +28,23 @@ export function Shell({
 			>
 				{children}
 			</div>
-			<Chips
+			<CollapsingChips
 				label="Continents"
+				current={current}
 				style={{
 					position: "absolute",
 					inset:
 						"var(--space-4) var(--space-4) auto calc(var(--size-panel) + 2 * var(--space-4))",
 				}}
 			>
-				{chipNames.map((name) => (
-					<Chip key={name} href="#country" current={name === current}>
-						{name}
-					</Chip>
-				))}
-			</Chips>
+				{chipNames
+					.filter((name) => name !== current)
+					.map((name) => (
+						<Chip key={name} href="#">
+							{name}
+						</Chip>
+					))}
+			</CollapsingChips>
 		</FakeMap>
 	);
 }
@@ -89,6 +93,3 @@ export function ShapeTiles({
 		</ul>
 	);
 }
-
-/** The class that collapses a Chips group to its current chip (a sketch). */
-export const collapsing = styles.collapsing;

@@ -68,38 +68,3 @@
 	padding: var(--space-2) 0;
 	border-radius: var(--radius-sm);
 }
-
-/* --- A SKETCH: the continent chips collapsed to the current one. The rest
-   slide out while the pointer is over the group or the keyboard focus is in
-   it. The current chip is shown first. --- */
-.collapsing ul {
-	gap: 0;
-}
-
-.collapsing li {
-	max-width: 12rem;
-	margin-inline-end: var(--space-2);
-	transition:
-		max-width var(--duration-normal) var(--easing-standard),
-		margin var(--duration-normal) var(--easing-standard),
-		opacity var(--duration-normal) var(--easing-standard),
-		visibility 0s;
-}
-
-.collapsing li:has([aria-current="page"]) {
-	order: -1;
-}
-
-.collapsing:not(:hover, :focus-within) li:not(:has([aria-current="page"])) {
-	max-width: 0;
-	margin-inline-end: 0;
-	opacity: 0;
-	visibility: hidden;
-	transition-delay: 0s, 0s, 0s, var(--duration-normal);
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.collapsing li {
-		transition: none;
-	}
-}

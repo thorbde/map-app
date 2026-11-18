@@ -7,6 +7,10 @@ export {
 	type ChipsProps,
 } from "./components/Chips/Chips";
 export {
+	CollapsingChips,
+	type CollapsingChipsProps,
+} from "./components/Chips/CollapsingChips";
+export {
 	Dialog,
 	DialogClose,
 	type DialogProps,
