@@ -50,18 +50,18 @@ export const Truncated: Story = {
 		const canvas = within(canvasElement);
 		const more = canvas.getByRole("button", { name: "9 more" });
 		await expect(more).toHaveAttribute("aria-expanded", "false");
-		await expect(canvas.queryByText("Zulu")).not.toBeInTheDocument();
+		await expect(canvas.getByText("Zulu")).not.toBeVisible();
 		// By keyboard: Tab reaches the button, Enter shows all twelve, and focus
 		// stays on the button, which now offers to show fewer.
 		await userEvent.tab();
 		await expect(more).toHaveFocus();
 		await userEvent.keyboard("{Enter}");
-		await expect(canvas.getByText("Zulu")).toBeInTheDocument();
+		await expect(canvas.getByText("Zulu")).toBeVisible();
 		const fewer = canvas.getByRole("button", { name: "Show fewer" });
 		await expect(fewer).toHaveFocus();
 		await expect(fewer).toHaveAttribute("aria-expanded", "true");
 		await userEvent.keyboard("{Enter}");
-		await expect(canvas.queryByText("Zulu")).not.toBeInTheDocument();
+		await expect(canvas.getByText("Zulu")).not.toBeVisible();
 	},
 };
 

@@ -72,21 +72,30 @@ export function TagList({
 	const listId = useId();
 	const tags = Children.toArray(children);
 	const hidden = limit === undefined ? 0 : tags.length - limit;
-	const shown = open || hidden <= 0 ? tags : tags.slice(0, limit);
 	return (
 		<ul
 			{...props}
 			id={listId}
 			className={[styles.list, className].filter(Boolean).join(" ")}
 		>
-			{shown.map((tag, index) => (
-				// biome-ignore lint/suspicious/noArrayIndexKey: the tags keep their order.
-				<li key={index} className={styles.item}>
+			{tags.map((tag, index) => (
+				<li
+					// biome-ignore lint/suspicious/noArrayIndexKey: the tags keep their order.
+					key={index}
+					className={[
+						styles.item,
+						// Held back with CSS, not left out, so that every value is in the
+						// page: with JavaScript off they all show (Tag.module.css).
+						!open && limit !== undefined && index >= limit && styles.extra,
+					]
+						.filter(Boolean)
+						.join(" ")}
+				>
 					{tag}
 				</li>
 			))}
 			{hidden > 0 && (
-				<li className={styles.item}>
+				<li className={[styles.item, styles.more].join(" ")}>
 					<Button
 						variant="link"
 						aria-expanded={open}
