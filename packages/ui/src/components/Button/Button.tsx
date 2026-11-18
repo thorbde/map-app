@@ -3,8 +3,12 @@ import styles from "./Button.module.css";
 
 export interface ButtonProps
 	extends Omit<BaseButton.Props, "className" | "render"> {
-	/** `primary` for the main action on a screen, `secondary` for the rest. */
-	variant?: "primary" | "secondary";
+	/**
+	 * `primary` for the main action on a screen, `secondary` for the rest.
+	 * `link` reads as a link in text, for a small action inside content, such as
+	 * "9 more" after a list. It is still a button: it does something on the page.
+	 */
+	variant?: "primary" | "secondary" | "link";
 	className?: string;
 }
 
@@ -17,7 +21,11 @@ export function Button({
 	return (
 		<BaseButton
 			{...props}
-			className={[styles.button, styles[variant], className]
+			className={[
+				variant === "link" ? styles.link : styles.button,
+				variant !== "link" && styles[variant],
+				className,
+			]
 				.filter(Boolean)
 				.join(" ")}
 		/>

@@ -21,6 +21,10 @@
 				"$description": "The dark header block on panels.",
 				"$value": "{color.teal.950}"
 			},
+			"tag": {
+				"$description": "A tag that can't be pressed, on the pale fact box: one step darker than the box (DESIGN.md).",
+				"$value": "{color.teal.100}"
+			},
 			"backdrop": {
 				"$description": "Behind a dialog: deep teal at half opacity.",
 				"$value": {
@@ -126,6 +130,13 @@
 			"$description": "The same on touch screens (pointer: coarse), where controls need more room to tap. @thorbde/ui/base.css swaps it in.",
 			"$value": {
 				"value": 2.5,
+				"unit": "rem"
+			}
+		},
+		"panel": {
+			"$description": "The width of the floating panel over the map (ADR 0010). The map's camera keeps this much of its left side clear.",
+			"$value": {
+				"value": 24,
 				"unit": "rem"
 			}
 		},

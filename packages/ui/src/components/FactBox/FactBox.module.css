@@ -1,0 +1,28 @@
+.box {
+	display: grid;
+	gap: var(--space-3);
+	margin: 0;
+	padding: var(--space-4);
+	border-radius: var(--radius-md);
+	background: var(--color-bg-subtle);
+	color: var(--color-text-default);
+}
+
+/* The label above its value, so the value has the box's full width. */
+.fact {
+	display: grid;
+	gap: var(--space-1);
+}
+
+.label {
+	color: var(--color-text-muted);
+	font-size: var(--font-size-xs);
+	line-height: var(--font-line-height-tight);
+}
+
+.value {
+	min-width: 0;
+	margin: 0;
+	font-size: var(--font-size-sm);
+	overflow-wrap: anywhere;
+}
