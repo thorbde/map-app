@@ -33,6 +33,20 @@
 	font-size: var(--font-size-sm);
 }
 
+/* On the dark block, links and the focus ring are white: the usual link colour
+   is 2.2:1 there and the usual focus colour 2.8:1. */
+.header a {
+	color: var(--color-text-on-inverse);
+}
+
+.header a:hover {
+	color: var(--color-text-on-inverse-muted);
+}
+
+.header :focus-visible {
+	outline-color: var(--color-text-on-inverse);
+}
+
 .body {
 	display: grid;
 	gap: var(--space-6);
