@@ -9,11 +9,8 @@
 	color: var(--color-text-link-hover);
 }
 
-/* While focused, the ring marks the link, so the underline steps aside: a ring
-   with a line through its lower edge reads as a mistake. */
 .inline:focus-visible {
 	outline: 2px solid var(--color-focus);
 	outline-offset: 2px;
 	border-radius: var(--radius-sm);
-	text-decoration: none;
 }
