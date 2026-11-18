@@ -11,7 +11,7 @@
 		"build:facts": "node scripts/build-facts.ts",
 		"size": "node scripts/check-bundle-size.mjs",
 		"build:maps": "node scripts/build-maps.ts",
-		"maps:check": "pnpm build:maps && git diff --exit-code -- app/features/maps/geometry",
+		"maps:check": "pnpm build:maps && git diff --exit-code -- app/features/maps/geometry ../../packages/ui/src/proposals/outlines.generated.json",
 		"test": "vitest run",
 		"test:e2e": "playwright test"
 	},
