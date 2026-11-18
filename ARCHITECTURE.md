@@ -78,8 +78,9 @@ app/
       map-engine.client.ts  everything that touches MapLibre; loaded lazily by the map component, never on the server (ADR 0021)
       equal-earth.ts      the Equal Earth projection, registered with MapLibre (and with its workers: equal-earth.worker.ts)
       labels.ts           which country names show at which zoom, and which gives way: Natural Earth's zooms and ranks, handed to MapLibre
-      views.ts            what the map can show (world, continent, country) and where the camera goes for it
-      components/CountryMap.tsx  the map component
+      views.ts            what the map can show (world, continent, country) and where the camera goes for it, clear of whatever covers the map (the `padding` prop)
+      wait.ts             waiting for something, but not for ever (the map's first drawing)
+      components/CountryMap.tsx  the map component, with its zoom buttons
     countries/            static country data, region lists and reference facts (no DB, ADR 0012)
   server/
     access.server.ts      canViewProfile / canViewEssay, see ADR 0003
@@ -177,8 +178,9 @@ D1 has no interactive transactions. "Atomic" below means one `db.batch([...])`: 
 - **Map shell (ADR 0010):**
   1. the shell's layout route renders `<CountryMap>` once and keeps it mounted; it loads MapLibre lazily and draws our own country shapes (ADR 0021)
   2. each child route's loader returns the panel's data plus the map view (world, continent or country) and, through `access.server.ts`, the list of written ISO codes the viewer may see
-  3. the map geometry is one static hashed asset, the whole world in detail (ADR 0020); written and selected countries are coloured through MapLibre, with colours read from the tokens
-  4. clicking a country navigates: for the owner, to the editor or the essay; for visitors, only written countries respond. The panel lists the same countries as real links
+  3. when the view changes, MapLibre moves the camera there with its own animation, and instantly for a visitor who prefers reduced motion; the shell says how much of the map its panel covers (`padding`), and views are framed in the rest
+  4. the map geometry is one static hashed asset, the whole world in detail (ADR 0020); written and selected countries are coloured through MapLibre, with colours read from the tokens
+  5. clicking a country navigates: for the owner, to the editor or the essay; for visitors, only written countries respond. The panel lists the same countries as real links
 
 ## Environments
 
