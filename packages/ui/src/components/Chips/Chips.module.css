@@ -55,6 +55,7 @@
 
 .trigger {
 	composes: chip;
+	gap: var(--space-1);
 	border: 0;
 	background: var(--color-bg-inverse);
 	color: var(--color-text-on-inverse);

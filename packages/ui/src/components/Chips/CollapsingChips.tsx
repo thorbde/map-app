@@ -17,9 +17,17 @@ export interface CollapsingChipsProps
 	current: ReactNode;
 	/** The other views, as `Chip` links. They slide out when the control opens. */
 	children: ReactNode;
+	/** Shown after `current` in the closed control's chip, to say that it opens: an icon, or a count. */
+	indicator?: ReactNode;
 	/** Start open. */
 	defaultOpen?: boolean;
 }
+
+/**
+ * How long the pointer rests on the control before it opens, in ms, so that a
+ * pointer sweeping across on its way elsewhere doesn't flash it open.
+ */
+const HOVER_DELAY = 150;
 
 /**
  * Chips that collapse into the current one, to leave the map free. The rest
@@ -33,6 +41,7 @@ export interface CollapsingChipsProps
 export function CollapsingChips({
 	label,
 	current,
+	indicator,
 	children,
 	defaultOpen = false,
 	className,
@@ -45,6 +54,7 @@ export function CollapsingChips({
 	// Just closed on purpose (Escape, or a chip was chosen): stay closed until
 	// the pointer or the focus has left.
 	const held = useRef(false);
+	const hoverTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
 	const close = () => {
 		held.current = true;
@@ -78,10 +88,13 @@ export function CollapsingChips({
 			onPointerEnter={(event) => {
 				if (event.pointerType !== "mouse") return;
 				hovering.current = true;
-				if (!held.current) setOpen(true);
+				hoverTimer.current = setTimeout(() => {
+					if (hovering.current && !held.current) setOpen(true);
+				}, HOVER_DELAY);
 			}}
 			onPointerLeave={(event) => {
 				if (event.pointerType !== "mouse") return;
+				clearTimeout(hoverTimer.current);
 				hovering.current = false;
 				held.current = false;
 				// Stay open only while the keyboard focus is inside; a chip that was
@@ -102,6 +115,7 @@ export function CollapsingChips({
 				}}
 			>
 				{current}
+				{indicator}
 			</Collapsible.Trigger>
 			<Collapsible.Panel
 				keepMounted
