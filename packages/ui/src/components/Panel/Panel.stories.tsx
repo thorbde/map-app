@@ -77,20 +77,22 @@ export const LongAndScrolling: Story = {
 	decorators: [(Story) => <div style={{ height: 560 }}>{Story()}</div>],
 };
 
+const headerLinks = (
+	<>
+		<Link href="#">West Africa</Link>
+		<Link href="#">Africa</Link>
+	</>
+);
+
 /**
- * Links in the line under the title, on the dark header: white and underlined,
- * pale teal on hover, with a white focus ring. The first link has the keyboard
- * focus here.
+ * Links under the title, on the dark header: white and underlined, spaced
+ * apart, pale teal on hover. Here the first has the keyboard focus: a white
+ * ring that clears the text, the title above and the next link; the underline
+ * steps aside while the ring is there.
  */
-export const LinksInTheHeader: Story = {
-	name: "Links in the header",
-	args: {
-		description: (
-			<>
-				<Link href="#">West Africa</Link>, <Link href="#">Africa</Link>
-			</>
-		),
-	},
+export const HeaderFirstLinkFocused: Story = {
+	name: "Header: first link focused",
+	args: { description: headerLinks },
 	play: async ({ canvasElement }) => {
 		await userEvent.tab();
 		await expect(
@@ -99,59 +101,51 @@ export const LinksInTheHeader: Story = {
 	},
 };
 
+/** The second link focused. */
+export const HeaderSecondLinkFocused: Story = {
+	name: "Header: second link focused",
+	args: { description: headerLinks },
+	play: async ({ canvasElement }) => {
+		await userEvent.tab();
+		await userEvent.tab();
+		await expect(
+			within(canvasElement).getByRole("link", { name: "Africa" }),
+		).toHaveFocus();
+	},
+};
+
 /**
- * The focus ring on the dark header, before and after. The shell moves the
- * focus to the panel's title after each navigation. Before: the usual ring,
- * `color.focus`, 2.8:1 against the header. After: white, 14.4:1.
+ * The title focused, as after each navigation, when the shell moves the
+ * keyboard focus to the new panel's heading.
  */
-export const FocusRingOnTheHeader: Story = {
-	name: "Focus ring on the header: before and after",
-	decorators: [],
-	render: () => (
-		<div style={{ display: "flex", flexWrap: "wrap", gap: "var(--space-6)" }}>
-			{(
-				[
-					["Before: color.focus, 2.8:1", "var(--color-focus)"],
-					[
-						"After: color.text.on-inverse, 14.4:1",
-						"var(--color-text-on-inverse)",
-					],
-				] as const
-			).map(([caption, ring]) => (
-				<div key={caption} style={{ display: "grid", gap: "var(--space-2)" }}>
-					<p
-						style={{
-							margin: 0,
-							color: "var(--color-text-muted)",
-							fontSize: "var(--font-size-sm)",
-						}}
-					>
-						{caption}
-					</p>
-					<div
-						style={{
-							width: "var(--size-panel)",
-							padding: "var(--space-5) var(--space-6)",
-							borderRadius: "var(--radius-lg)",
-							background: "var(--color-bg-inverse)",
-							color: "var(--color-text-on-inverse)",
-						}}
-					>
-						<p
-							style={{
-								margin: 0,
-								fontSize: "var(--font-size-xl)",
-								fontWeight: "var(--font-weight-bold)",
-								lineHeight: "var(--font-line-height-tight)",
-								outline: `2px solid ${ring}`,
-								outlineOffset: 2,
-							}}
-						>
-							Senegal
-						</p>
-					</div>
-				</div>
-			))}
-		</div>
-	),
+export const HeaderTitleFocused: Story = {
+	name: "Header: title focused",
+	args: { description: headerLinks },
+	play: async ({ canvasElement }) => {
+		const title = within(canvasElement).getByRole("heading", { level: 1 });
+		// What the shell does: the heading can take focus, but isn't a Tab stop.
+		title.tabIndex = -1;
+		await userEvent.tab();
+		await userEvent.tab({ shift: true });
+		title.focus();
+		await expect(title).toHaveFocus();
+	},
+};
+
+/** A link in the panel's body focused: the same ring in the usual colour, and no underline under it. */
+export const BodyLinkFocused: Story = {
+	name: "Body: link focused",
+	args: {
+		children: (
+			<p>
+				<Link href="#">← All of Africa</Link>
+			</p>
+		),
+	},
+	play: async ({ canvasElement }) => {
+		await userEvent.tab();
+		await expect(
+			within(canvasElement).getByRole("link", { name: "← All of Africa" }),
+		).toHaveFocus();
+	},
 };
