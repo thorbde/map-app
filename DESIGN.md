@@ -69,6 +69,12 @@ The tokens are the source of truth (`packages/tokens/tokens/`, ADR 0014). This i
 - **Which names show:** by Natural Earth's zooms and ranks, as on Google Earth: the prominent countries first, more as the viewer zooms in. Where two would overlap, the lower-ranked one gives way until there is room. A written country is named at every zoom and goes before every unwritten one; the selected country is always named.
 - **No marker dots.** A country too small to click is opened by its name.
 
+**Controls on the map** (proposed in M1 PR 6; not yet approved by Thor).
+- **Zoom buttons:** two round icon buttons (`IconButton`), 32 px (40 px on touch), white with `shadow.raised` like the continent chips, the icon at 20 px in `color.text.default`; hover `color.bg.subtle`. A button that can't be pressed keeps its white and fades its icon.
+- **Where:** bottom right, `space.4` from the edges, zoom in over zoom out, `space.2` apart. Clear of the panel (left) and the chips (top).
+- **Focus on the map:** a 2 px ring in `color.focus`, drawn just inside the map's edge.
+- **The camera between views** (the world, a continent, a country): it travels, as feedback to the viewer's choice. Thor chooses between two on the PR's preview: pulling back and coming in again in 1.2 s, or a straight line in 320 ms. Instant with `prefers-reduced-motion`.
+
 ## Never
 
 Each of these is a known tell of a design nobody decided on. The "instead" is what we do.
