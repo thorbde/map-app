@@ -8,5 +8,20 @@
 	// Runs the Worker near its data source (the database, from M2). ADR 0001.
 	"placement": { "mode": "smart" },
 	"observability": { "enabled": true },
-	"upload_source_maps": true
+	"upload_source_maps": true,
+	// Local only: pnpm dev, the tests and pnpm db:migrate select this with the environment "local".
+	// The deployed config (the top level) has no database until previews get one (M2 PR 2), and
+	// the production database is named only in its own section (ADR 0006).
+	"env": {
+		"local": {
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "memogra-local",
+					"database_id": "memogra-local",
+					"migrations_dir": "app/server/db/migrations"
+				}
+			]
+		}
+	}
 }
