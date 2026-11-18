@@ -197,18 +197,3 @@ export function FakeMap({ children }: { children?: ReactNode }) {
 		</div>
 	);
 }
-
-/** A small muted caption over a variant, in stories that compare alternatives. */
-export function Caption({ children }: { children: ReactNode }) {
-	return (
-		<p
-			style={{
-				margin: 0,
-				color: "var(--color-text-muted)",
-				fontSize: "var(--font-size-sm)",
-			}}
-		>
-			{children}
-		</p>
-	);
-}
