@@ -39,7 +39,6 @@ export function CountryPanel({
 						>
 							{region.name}
 						</Link>
-						{", "}
 						<Link render={<RouterLink to={toContinent} />}>
 							{continent.name}
 						</Link>
