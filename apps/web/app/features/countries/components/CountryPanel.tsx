@@ -9,7 +9,6 @@ import {
 } from "@thorbde/ui";
 import { Link as RouterLink } from "react-router";
 import type { CountryPanelData, PanelPaths } from "../panel-types";
-import styles from "./CountryPanel.module.css";
 
 /** Several values of one fact are tags, three and then "N more" (DESIGN.md). */
 const SHOWN_VALUES = 3;
@@ -30,21 +29,20 @@ export function CountryPanel({
 			description={
 				// A continent that is one region with its own name is named once.
 				region.name === continent.name ? (
-					<RouterLink className={styles.onHeader} to={toContinent}>
-						{continent.name}
-					</RouterLink>
+					<Link render={<RouterLink to={toContinent} />}>{continent.name}</Link>
 				) : (
 					<>
-						<RouterLink
-							className={styles.onHeader}
-							to={paths.continent(continent.id, region.id)}
+						<Link
+							render={
+								<RouterLink to={paths.continent(continent.id, region.id)} />
+							}
 						>
 							{region.name}
-						</RouterLink>
+						</Link>
 						{", "}
-						<RouterLink className={styles.onHeader} to={toContinent}>
+						<Link render={<RouterLink to={toContinent} />}>
 							{continent.name}
-						</RouterLink>
+						</Link>
 					</>
 				)
 			}
