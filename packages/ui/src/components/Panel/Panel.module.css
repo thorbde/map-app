@@ -39,6 +39,9 @@
 	min-height: 0;
 	overflow-y: auto;
 	padding: var(--space-6);
+	/* The panel's text is 14 px: it sits with the 12 px tags and labels. Essay
+	   text sets its own size. */
+	font-size: var(--font-size-sm);
 }
 
 .body > * {

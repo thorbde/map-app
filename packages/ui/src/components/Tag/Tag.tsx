@@ -15,7 +15,7 @@ export interface TagProps extends ComponentProps<"span"> {}
 /**
  * A short value that can't be pressed, such as one of a country's languages.
  * Small and square-cornered, so it is never taken for a chip (DESIGN.md).
- * It is white: made for the pale fact box.
+ * Its colour is made for the pale fact box: one step darker than the box.
  */
 export function Tag({ className, children, ...props }: TagProps) {
 	return (

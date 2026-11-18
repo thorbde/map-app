@@ -33,6 +33,7 @@ The tokens are the source of truth (`packages/tokens/tokens/`, ADR 0014). This i
 | Page (the ocean) | `#D3EEF5` |
 | Panels and dialogs | `#FFFFFF` |
 | Quiet blocks (the fact box), secondary buttons | `#DFF5F0`, hover `#CEE9E3` |
+| Tags in the fact box | `#CEE9E3` |
 | Header block on panels | `#0B2F2C` |
 | Text | `#0B2F2C`, muted `#4A6663` |
 | Links | `#096A60` |
@@ -66,7 +67,9 @@ The tokens are the source of truth (`packages/tokens/tokens/`, ADR 0014). This i
 - **The panel:** white, `radius.lg`, `shadow.raised`, 24 rem wide (`size.panel`). Its header block is `color.bg.inverse` with the title at 25 px, 700, and an optional line under it at 14 px in `color.text.on-inverse-muted`. No hairline edge: the shadow alone.
 - **Continent chips:** links. 32 px tall (40 px on touch), pill, 14 px, 700, white with `shadow.raised` because they float over the map. The current one is `color.bg.inverse` with white text. No hairline edge.
 - **Tags that are links** (a country's neighbours): 24 px tall (32 px on touch), pill, 12 px, 700, `color.bg.subtle`, no shadow. Clearly smaller than a chip.
-- **Tags that can't be pressed** (several values of one fact): 20 px tall, square corners, 12 px, 400, white, in the fact box only. More than three are held back behind a button that reads as a link: "9 more", then "Show fewer".
+- **Tags that can't be pressed** (several values of one fact): 20 px tall and always one line, square corners, 12 px, 400, `color.bg.tag` (one step darker than the fact box), in the fact box only. More than three are held back behind a button that reads as a link: "9 more", then "Show fewer".
+- **Text in a panel is 14 px** (`font.size.sm`): fact values, links, and the `h2`s (700). Labels and tags are 12 px. Only the title in the header block is larger. Essay text keeps its own size.
+- **The fact box:** each label (12 px, `color.text.muted`) sits above its value (14 px), so a value has the box's full width.
 - **The world and continent panels show countries as their own outlines,** with the name under each, not as a list of links.
 
 **Labels on the map.** 12 px, sentence case.
@@ -88,7 +91,7 @@ Each of these is a known tell of a design nobody decided on. The "instead" is wh
 | **Italics in the interface** | Italics exist only inside essay text, where the writer put them |
 | **Tracked-out capitals:** small uppercase labels with wide letter-spacing, "eyebrow" labels above headings | Sentence case and normal letter-spacing everywhere. Hierarchy comes from size and weight. A label is small, muted text |
 | **Card grids, cards inside cards,** a soft-shadowed box as the default container | A panel is the container (ADR 0010). Inside it, separate things with space, a hairline, or one pale teal block for reference data (the fact box) |
-| **Decorative pills and badges:** tag chips, "New" or "AI" badges, benefit words as chips | **If it looks like a pill, it does something:** pills are buttons, button-links, chips and tags that are links. Information that can't be pressed is plain text. **One exception (Thor, 2026-11-18): several short values of one fact in the fact box,** such as a country's languages, are set as tags: 12 px, regular weight, square corners (`radius.sm`), white on the pale block. Never a pill, never bold, and nowhere else |
+| **Decorative pills and badges:** tag chips, "New" or "AI" badges, benefit words as chips | **If it looks like a pill, it does something:** pills are buttons, button-links, chips and tags that are links. Information that can't be pressed is plain text. **One exception (Thor, 2026-11-18): several short values of one fact in the fact box,** such as a country's languages, are set as tags: 12 px, regular weight, square corners (`radius.sm`), one step darker than the pale block (`color.bg.tag`). Never a pill, never bold, and nowhere else |
 | **Tickers, marquees, looping or ambient animation** | Motion only as feedback to something the user did, or to mark a moment (publishing, a milestone). It respects `prefers-reduced-motion` |
 | **Emoji in interface text or as icons** | Words, and our own icons |
 | **Gradients, glassy blur, glow** | Flat colour |

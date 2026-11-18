@@ -8,27 +8,21 @@
 	color: var(--color-text-default);
 }
 
-/* The label beside its value; long values wrap under themselves, not under the label. */
-.beside .fact {
-	display: grid;
-	grid-template-columns: 6rem minmax(0, 1fr);
-	gap: var(--space-3);
-	align-items: baseline;
-}
-
-/* The label above its value: the value gets the box's full width. */
-.above .fact {
+/* The label above its value, so the value has the box's full width. */
+.fact {
 	display: grid;
 	gap: var(--space-1);
 }
 
 .label {
 	color: var(--color-text-muted);
-	font-size: var(--font-size-sm);
+	font-size: var(--font-size-xs);
+	line-height: var(--font-line-height-tight);
 }
 
 .value {
 	min-width: 0;
 	margin: 0;
+	font-size: var(--font-size-sm);
 	overflow-wrap: anywhere;
 }

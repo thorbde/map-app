@@ -21,6 +21,10 @@
 				"$description": "The dark header block on panels.",
 				"$value": "{color.teal.950}"
 			},
+			"tag": {
+				"$description": "A tag that can't be pressed, on the pale fact box: one step darker than the box (DESIGN.md).",
+				"$value": "{color.teal.100}"
+			},
 			"backdrop": {
 				"$description": "Behind a dialog: deep teal at half opacity.",
 				"$value": {
