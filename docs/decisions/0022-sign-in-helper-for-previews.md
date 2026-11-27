@@ -33,5 +33,6 @@ Nothing of ours is built for it: our part is the settings and the deploy.
 - **Whoever holds `PREVIEW_AUTH_SECRET` can sign in as anyone on previews and on the helper.** Better Auth's docs say to keep it from code you don't trust. Previews are built only from this repository's own branches (forks get no secrets), the same trust as the preview Cloudflare token.
 - **The helper and every preview must run the same Better Auth version.** A PR that upgrades it has no Google sign-in on its preview until it is merged and the helper is redeployed.
 - **The helper runs `main`'s code, not the PR's.** A PR that changes how sign-in works can only be tried with Google once merged. The test-only sign-in (M2 PR 4) covers the rest.
+- **CPU:** the slow tail of requests is over the free plan's 10 ms (P99 45 ms on the first preview). Previews stay on the free plan; the measurements and the decision are in ADR 0013.
 - **Google's consent screen stays in "Testing"** with Thor as the only test user until invite codes arrive (M2 PR 5), so nobody else can sign in at all.
 - **When previews are renamed** (`map-app-pr-` to `memogra-pr-`), `PREVIEW_ORIGINS` in `auth-helper.yml` changes with them, or the helper refuses to hand sign-ins over.
