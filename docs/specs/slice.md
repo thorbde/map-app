@@ -12,7 +12,7 @@
 |---|---|---|
 | 200 countries, facts, map geometry | M1 PRs 1–3 | Merged |
 | `<CountryMap view written selected owner />`, camera, zoom buttons, keyboard | #26, #33 | Merged. `written` already colours countries; `owner` already makes every country clickable |
-| `Panel`, `Chips`, `ShapeTiles`, `FactBox`, `Tag`, `TagLink`, `Button variant="link"` | #30 | Open, ready. Strict track (`packages/`) |
+| `Panel`, `Chips`, `ShapeTiles`, `FactBox`, `Tag`, `TagLink`, `Button variant="link"` | #30 | Merged (2026-11-27) |
 | Country and continent outlines for the tiles | #34 | Open, ready. Strict track (touches `packages/ui` stories) |
 | The shell: one layout route keeps the map mounted; world, continent and country panels at `/preview/…` | #32 | Open, draft, stacked on #30 (holds #34) |
 | Drizzle on a local D1, `getDatabase()`, Better Auth's four tables as migration 0000, `pnpm db:*` | #35 (M2 PR 1) | Open, draft. Strict track |
