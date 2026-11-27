@@ -12,4 +12,8 @@ export default [
 		route(":continent", "routes/preview.continent.tsx"),
 		route("country/:iso", "routes/preview.country.tsx"),
 	]),
+	// Sign-in (features/auth): Better Auth's routes, and the two forms' actions.
+	route("api/auth/*", "routes/api.auth.ts"),
+	route("auth/sign-in", "routes/auth.sign-in.ts"),
+	route("auth/sign-out", "routes/auth.sign-out.ts"),
 ] satisfies RouteConfig;

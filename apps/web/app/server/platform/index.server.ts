@@ -33,6 +33,53 @@ export function readSettings(source: unknown): Settings {
 	);
 }
 
+// What sign-in needs (features/auth). Checked apart from the database, the first time sign-in is
+// used, so pages that don't use it keep working without these settings.
+//   BETTER_AUTH_URL       this deploy's own address, e.g. http://localhost:5173
+//   AUTH_PROXY_URL        previews only: the helper Google answers to (ADR 0022). Unset elsewhere
+//   AUTH_TRUSTED_ORIGINS  the helper only: the preview addresses it may hand a sign-in to, comma-separated
+const url = z.url({ protocol: /^https?$/ });
+const authSettingsSchema = z.object({
+	BETTER_AUTH_SECRET: z.string().min(32, "must be at least 32 characters"),
+	BETTER_AUTH_URL: url,
+	GOOGLE_CLIENT_ID: z.string().min(1),
+	GOOGLE_CLIENT_SECRET: z.string().min(1),
+	AUTH_PROXY_URL: url.optional(),
+	AUTH_TRUSTED_ORIGINS: z
+		.string()
+		.optional()
+		.transform((value) =>
+			(value ?? "")
+				.split(",")
+				.map((origin) => origin.trim())
+				.filter(Boolean),
+		),
+});
+
+export type AuthSettings = z.infer<typeof authSettingsSchema>;
+
+// Checks the sign-in settings and stops with a message naming each one that is missing or wrong.
+// Never echoes a value: some of them are secrets.
+export function readAuthSettings(source: unknown): AuthSettings {
+	const result = authSettingsSchema.safeParse(source);
+	if (result.success) return result.data;
+	const given = (typeof source === "object" && source) || {};
+	const problems = result.error.issues.map((issue) => {
+		const name = issue.path.join(".");
+		return `${name}: ${name in given ? issue.message : "missing"}`;
+	});
+	throw new Error(
+		`The sign-in settings are missing or wrong. ${problems.join("; ")}. Locally they go in apps/web/.dev.vars (see .dev.vars.example); on previews the deploy sets them (ADR 0022).`,
+	);
+}
+
+let authSettings: AuthSettings | undefined;
+
+export function getAuthSettings(): AuthSettings {
+	authSettings ??= readAuthSettings(env);
+	return authSettings;
+}
+
 let database: Database | undefined;
 
 // The Drizzle client. The settings are checked the first time something asks for the database,

@@ -187,6 +187,21 @@ The database (ADR 0006). Decided by Thor on 2026-11-18: Drizzle's stable line, n
 - **Better Auth's tables** come from its CLI, run outside the repo (better-auth 1.7.26, `pnpm dlx auth@latest generate`); `better-auth` itself is added in M2 PR 3.
 - **No new tool for the test database:** `@cloudflare/vitest-plugin` already has `readD1Migrations` and `applyD1Migrations`, and gives every test file its own storage.
 
+### Added in M2 PR 3 (sign in with Google)
+Sign-in (ADR 0007, ADR 0022).
+
+| Package | Version | Why | Size |
+|---|---|---|---|
+| `better-auth` | 1.7.28 | Server only (the Worker): the routes under `/api/auth/*`, Google sign-in, sessions and their cookies, rate limiting, its Drizzle adapter, and on previews its OAuth Proxy plugin | 3.5 MB of built files (`dist/`); about 270 KB gzipped in the Worker bundle. Nothing reaches the browser: the forms post to our routes, so `better-auth/client` isn't used |
+
+- **What it provides:** everything sign-in needs, with no code of ours beyond the settings. Its CLI writes its tables as a Drizzle schema (`pnpm dlx auth@1.7.28 generate`); at 1.7.28 the four tables of migration 0000 are unchanged, and `rate_limit` is new (migration 0001).
+- **What it leaves out or does by default that we don't want:** it stores Google's tokens and the picture's address (emptied by hooks, ADR 0007); rate limiting is off outside production and kept in memory (switched on, kept in the database); it reads the visitor's address from `X-Forwarded-For`, which a Worker doesn't get (set to `cf-connecting-ip`). Usage data is off by default and switched off explicitly.
+- **The Worker bundle (measured 2026-11-27):** 552 KB gzipped (2.6 MB raw), from wrangler's dry run. Far under the 3 MB gzipped limit of the free plan.
+- **CPU per request is over the free plan's 10 ms in the slow tail** (measured by Thor on the preview `map-app-pr-38`, 2026-11-27, 42 requests including real Google sign-ins and sign-outs): P50 5.8 ms, P90 25.9 ms, P99 45.0 ms. The slow requests are most likely cold starts (loading the bundle) and the sign-in steps that encrypt, decrypt and sign; not yet confirmed per path.
+  - **Decided (Thor, 2026-11-27): previews stay on the free plan.** Only Thor signs in there, Cloudflare doesn't stop every request over the limit, and sign-in worked at these numbers. If a request fails with error 1102 ("Worker exceeded CPU limit"), trying again is enough.
+  - **Revisit in M5,** before anyone else signs in on production, which runs the same code: Workers Paid (about 5 USD a month, 30 s of CPU per request), or a cheaper fix found by then, such as a smaller bundle.
+- **The helper and every preview must run the same version** (ADR 0022). Upgrading Better Auth is its own PR, and Google sign-in on that PR's preview waits until it is merged.
+
 **The map engine** (ADR 0021), added in M1 PR 4:
 
 | Package | Version today | Where it runs | Size |

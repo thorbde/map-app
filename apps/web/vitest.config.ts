@@ -16,7 +16,16 @@ export default defineConfig(async () => {
 		plugins: [
 			cloudflareTest({
 				wrangler: { configPath: "./wrangler.jsonc", environment: "local" },
-				miniflare: { bindings: { TEST_MIGRATIONS: migrations } },
+				miniflare: {
+					bindings: {
+						TEST_MIGRATIONS: migrations,
+						// Made-up sign-in settings for the tests: no real Google client, no real secret.
+						BETTER_AUTH_SECRET: "test-only-secret-not-used-anywhere-else",
+						BETTER_AUTH_URL: "http://localhost",
+						GOOGLE_CLIENT_ID: "test-client-id",
+						GOOGLE_CLIENT_SECRET: "test-client-secret",
+					},
+				},
 			}),
 			reactRouter(),
 		],
@@ -27,6 +36,9 @@ export default defineConfig(async () => {
 				"tests/integration/**/*.test.ts",
 			],
 			setupFiles: ["./tests/setup/database.ts"],
+			// A test file's first request loads the whole server build into workerd; with Better
+			// Auth that takes about 6 s here, over Vitest's 5 s default. The assertions are unchanged.
+			testTimeout: 20_000,
 		},
 	};
 });
