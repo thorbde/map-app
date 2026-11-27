@@ -305,6 +305,9 @@ test("views are framed in the part of the map the panel and the chips leave clea
 test("by keyboard alone, a country in every continent is reached from the world", async ({
 	page,
 }) => {
+	// Six continents, each walked by Tab: about 20 s alone, more when the other
+	// tests run beside it, so it has twice the default time. No check is changed.
+	test.setTimeout(60_000);
 	// One per continent: the last country its page lists, the furthest Tab away.
 	for (const [id, name] of Object.entries(CONTINENTS)) {
 		const last = countries.filter((each) => each.continent === id).at(-1);
