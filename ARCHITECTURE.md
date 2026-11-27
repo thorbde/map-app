@@ -75,6 +75,10 @@ app/
     maps/                 map components, geometry loading, written-state colouring
       geometry/world.json the generated map file: every country, at one level of detail (committed; checked by pnpm maps:check, ADR 0020)
       map-file.ts         the format of that file
+      geometry/outlines/  the generated outlines on the panels' tiles: one small file per continent, and one of the six continents (committed; same check)
+      outline-file.ts     the format of those files, and their size budget
+      outline-land.ts     which land an outline shows: a country's main body with its nearby islands, starting from the map's own views
+      outlines.server.ts  reads the outlines on the server, for a panel's loader: they arrive in the HTML, never as JavaScript
       map-engine.client.ts  everything that touches MapLibre; loaded lazily by the map component, never on the server (ADR 0021)
       equal-earth.ts      the Equal Earth projection, registered with MapLibre (and with its workers: equal-earth.worker.ts)
       labels.ts           which country names show at which zoom, and which gives way: Natural Earth's zooms and ranks, handed to MapLibre
@@ -97,8 +101,8 @@ app/
 public/
   licenses/               licence texts that must be served with the code (MapLibre's)
 scripts/
-  check-bundle-size.mjs   the size budgets: each page's first load, and the lazily loaded map engine (ADR 0013, ADR 0021)
-  build-maps.ts           Natural Earth's own files → mapshaper → country shapes and label fields as GeoJSON in features/maps/geometry/ (border choices: ADR 0020)
+  check-bundle-size.mjs   the size budgets: each page's first load, the lazily loaded map engine, and the outline files (ADR 0013, ADR 0020, ADR 0021)
+  build-maps.ts           Natural Earth's own files → mapshaper → country shapes and label fields as GeoJSON in features/maps/geometry/, and from the same shapes the tiles' outlines (border choices: ADR 0020)
   build-facts.ts          Wikidata + overrides → features/countries/facts.ts (monthly scheduled PR, reviewed before merge)
   facts-rules.ts          the pure rules behind it: picking values, validation, keeping the old value when Wikidata's is unusable
   wikidata-ids.ts         the Wikidata item for each country

@@ -1,11 +1,13 @@
 // Builds the map geometry (docs/specs/mvp.md §2, ADR 0020, ADR 0021):
 // Natural Earth's own files → country shapes per ISO code, as GeoJSON that
 // MapLibre draws. Writes one detailed file of the whole world,
-// app/features/maps/geometry/world.json.
+// app/features/maps/geometry/world.json, and from the same shapes the small
+// outlines on the panels' tiles, app/features/maps/geometry/outlines/*.json.
 //
 // What comes from where:
 // - Shapes, codes, label points, label zooms and ranks: Natural Earth, as it is.
-// - Cutting, merging, simplifying and rounding: mapshaper.
+// - Cutting, merging, simplifying and rounding: mapshaper. For the outlines
+//   also the projection and the fitting to a box.
 // - Ours: the border choices below, and which fields go in the file.
 //
 // Run with `pnpm build:maps`, and commit the result. `pnpm maps:check` fails
@@ -22,12 +24,27 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 import mapshaper from "mapshaper";
-import { countries } from "../app/features/countries/countries.ts";
+import {
+	type Continent,
+	countries,
+	regions,
+} from "../app/features/countries/countries.ts";
 import type {
 	MapCountryFeature,
 	MapFile,
 	MapNeutralFeature,
 } from "../app/features/maps/map-file.ts";
+import {
+	type ContinentOutlines,
+	type CountryOutlines,
+	OUTLINE_BOX,
+	OUTLINE_FILE_BUDGET_BYTES,
+} from "../app/features/maps/outline-file.ts";
+import {
+	CONTINENT_FRAMES,
+	landInReach,
+	outlineCentre,
+} from "../app/features/maps/outline-land.ts";
 
 // --- The source: Natural Earth, pinned --------------------------------------------
 
@@ -138,10 +155,12 @@ const VATICAN = "VA";
 /**
  * Label points that differ from Natural Earth's.
  * - Kiribati's is on Kiritimati, 3,000 km east of the capital and on the far
- *   side of the map's edge. Ours is on Tarawa, the capital.
+ *   side of the map's edge. Ours is on South Tarawa, the capital: on its land,
+ *   not in the lagoon, so that the country view and the outline frame Tarawa
+ *   and not the eight atolls within 150 km of the lagoon (ADR 0020).
  */
 const LABEL_OVERRIDES: Record<string, [lng: number, lat: number]> = {
-	KI: [173, 1.4],
+	KI: [173.1, 1.365],
 };
 
 // --- Reading the source -----------------------------------------------------------
@@ -380,3 +399,198 @@ console.log(
 if (size > BUDGET_BYTES) {
 	throw new Error("world.json is over its size budget");
 }
+
+// --- The outlines on the panels' tiles --------------------------------------------
+//
+// The same shapes, with every border choice above already made, drawn small:
+// each country, and each continent, as an SVG path fitted to a box 100 × 100.
+// mapshaper projects, simplifies, fits and writes the path. Which land is
+// shown is in outline-land.ts: a country's main body with its nearby islands.
+
+/**
+ * How much detail an outline keeps: mapshaper simplifies for a drawing this
+ * many pixels across. The tiles are 32 to 48 px. (96, not 100: drawn in
+ * their own projections, Europe's outlines are fuller and its file would
+ * be over its budget.)
+ */
+const OUTLINE_RESOLUTION = 96;
+
+/** One outline: these shapes, projected around their own centre. */
+async function outlineOf(
+	geometry: MapCountryFeature["geometry"],
+	{ clip, keepShapes }: { clip?: readonly number[]; keepShapes: boolean },
+): Promise<string> {
+	// A continent is centred on its view's box, a country on its land.
+	const [lng, lat] = clip
+		? [
+				((clip[0] ?? 0) + (clip[2] ?? 0)) / 2,
+				((clip[1] ?? 0) + (clip[3] ?? 0)) / 2,
+			]
+		: outlineCentre(geometry.coordinates);
+	const simplified = await mapshaper.applyCommands(
+		[
+			"-i land.json",
+			// A continent is its countries merged. A country's pieces of land
+			// stay pieces of their own, so that keep-shapes protects each one.
+			keepShapes ? "-explode" : "-dissolve",
+			clip ? `-clip bbox=${clip.join(",")}` : "",
+			// Each outline in a projection of its own, centred on its land: a
+			// world projection shears land far from its centre (Australia, in
+			// Equal Earth centred on Europe). Lambert azimuthal equal-area keeps
+			// areas, and shapes near the centre, as atlases draw one country.
+			// The land is first shifted so that its centre is at 0°: mapshaper
+			// reads longitudes past 180° (Fiji, Tonga) as not longitudes at all.
+			`-affine shift=${-lng},0`,
+			`-proj +proj=laea +lon_0=0 +lat_0=${lat}`,
+			// keep-shapes: no piece of land is simplified away, however small it
+			// is in its box (Kiribati's atolls).
+			`-simplify resolution=${OUTLINE_RESOLUTION}${keepShapes ? " keep-shapes" : ""}`,
+			"-each 'piece = this.id'",
+			"-o simplified.json format=geojson",
+		].join(" "),
+		{
+			"land.json": JSON.stringify({
+				type: "Feature",
+				properties: {},
+				geometry,
+			}),
+		},
+	);
+	type Piece = { properties: { piece: number } };
+	let pieces = (
+		JSON.parse(String(simplified["simplified.json"])) as { features: Piece[] }
+	).features;
+
+	// mapshaper fits the box around every piece, and leaves out of the SVG any
+	// piece too small to draw at whole-number coordinates (four of Kiribati's
+	// eight atolls). So the box is fitted again around the pieces that are
+	// drawn, until all of them are: the outline is then truly centred.
+	for (;;) {
+		const out = await mapshaper.applyCommands(
+			`-i pieces.json -o outline.svg format=svg id-field=piece width=${OUTLINE_BOX} height=${OUTLINE_BOX} margin=0 precision=1`,
+			{
+				"pieces.json": JSON.stringify({
+					type: "FeatureCollection",
+					features: pieces,
+				}),
+			},
+		);
+		const paths = [
+			...String(out["outline.svg"]).matchAll(
+				/<path d="([^"]*)"[^>]* id="(\d+)"/g,
+			),
+		];
+		const drawn = new Set(paths.map(([, , id]) => Number(id)));
+		if (drawn.size === pieces.length) {
+			return paths.map(([, path]) => path).join(" ");
+		}
+		pieces = pieces.filter((piece) => drawn.has(piece.properties.piece));
+	}
+}
+
+const continentIds = Object.keys(CONTINENT_FRAMES) as Continent[];
+const countryOutlines = new Map<string, string>();
+for (const feature of countryFeatures) {
+	countryOutlines.set(
+		feature.properties.iso,
+		await outlineOf(
+			{ type: "MultiPolygon", coordinates: landInReach(feature) },
+			{ keepShapes: true },
+		),
+	);
+}
+
+const outlineFiles: Record<string, CountryOutlines | ContinentOutlines> = {};
+const continentOutlines: Partial<ContinentOutlines> = {};
+for (const continent of continentIds) {
+	const isos = countries
+		.filter((country) => country.continent === continent)
+		.map((country) => country.iso)
+		.sort();
+	outlineFiles[continent] = Object.fromEntries(
+		isos.map((iso) => [iso, countryOutlines.get(iso) ?? ""]),
+	);
+	// The continent: its countries merged, inside its view's box. Islands too
+	// small to see at this size are left to the simplifying.
+	continentOutlines[continent] = await outlineOf(
+		{
+			type: "MultiPolygon",
+			coordinates: countryFeatures
+				.filter((feature) => isos.includes(feature.properties.iso))
+				.flatMap((feature) => feature.geometry.coordinates),
+		},
+		{ clip: CONTINENT_FRAMES[continent], keepShapes: false },
+	);
+}
+outlineFiles.continents = continentOutlines as ContinentOutlines;
+
+const outlinesDir = resolve(outDir, "outlines");
+mkdirSync(outlinesDir, { recursive: true });
+const kilobytes = (bytes: number) => `${(bytes / 1000).toFixed(1)} KB`;
+for (const [name, outlines] of Object.entries(outlineFiles)) {
+	for (const [key, outline] of Object.entries(outlines)) {
+		if (!outline) throw new Error(`No outline for ${key}`);
+	}
+	const text = `${JSON.stringify(outlines)}\n`;
+	const gzipped = gzipSync(text, { level: 9 }).length;
+	writeFileSync(resolve(outlinesDir, `${name}.json`), text);
+	console.log(
+		`outlines/${name}.json: ${kilobytes(gzipped)} gzipped ` +
+			`(budget ${kilobytes(OUTLINE_FILE_BUDGET_BYTES)}), ${kilobytes(text.length)} on disk, ` +
+			`${Object.keys(outlines).length} outlines`,
+	);
+	if (gzipped > OUTLINE_FILE_BUDGET_BYTES) {
+		throw new Error(`outlines/${name}.json is over its size budget`);
+	}
+}
+
+// --- The same outlines for Storybook (a proposal, not shipped) --------------------
+//
+// The design system can't import from the app (ADR 0008), so the stories that
+// show the outlines to Thor get a copy with the names beside them. It goes
+// when the tile is a real component that the app feeds.
+
+/** The countries in the "hard cases" story: small, scattered and very large. */
+const HARD_CASES = [
+	...[
+		"SC",
+		"MV",
+		"KI",
+		"TV",
+		"VA",
+		"MC",
+		"NR",
+		"FJ",
+		"ID",
+		"RU",
+		"CV",
+		"ST",
+		"KM",
+	],
+	...["DK", "IT", "GB", "JP", "PH", "GR", "FR", "US", "NO", "PT", "ES", "NZ"],
+	...["MH", "FM", "TO", "PW"],
+];
+
+const storyData = {
+	continents: continentIds.map((continent) => ({
+		id: continent,
+		d: continentOutlines[continent] ?? "",
+		countries: countries
+			.filter((country) => country.continent === continent)
+			.map(({ iso, name, region }) => ({
+				iso,
+				name,
+				region: regions[region].name,
+				d: countryOutlines.get(iso) ?? "",
+			})),
+	})),
+	hardCases: HARD_CASES.map((iso) => ({
+		iso,
+		name: countries.find((country) => country.iso === iso)?.name ?? iso,
+		d: countryOutlines.get(iso) ?? "",
+	})),
+};
+writeFileSync(
+	resolve(here, "../../../packages/ui/src/proposals/outlines.generated.json"),
+	`${JSON.stringify(storyData, null, "\t")}\n`,
+);
