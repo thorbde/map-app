@@ -3,8 +3,8 @@
 # - the deployed Worker config (the top level of wrangler.jsonc) or any environment but
 #   "local" and "production" binds a database: a preview gets its own only in CI;
 # - the "local" environment binds anything but memogra-local;
-# - a workflow or CI script names a memogra-… database other than memogra-pr-<number> or
-#   memogra-local;
+# - a workflow or CI script names a memogra-… database other than memogra-pr-<number>,
+#   memogra-main (the sign-in helper's, in the Previews account, ADR 0022) or memogra-local;
 # - the guard in preview-database.sh accepts a name it should refuse, or refuses a valid one.
 # Runs in `pnpm check`. Needs no secrets and no network.
 set -euo pipefail
@@ -32,25 +32,25 @@ fi
 
 # This script is left out: its test names are meant to be refused.
 # The preview workflow writes memogra-pr-${{ ... }}, which this sees as "memogra-pr-".
-unexpected="$(grep -rhoE --exclude=check-database-names.sh 'memogra-[A-Za-z0-9_-]+' .github | grep -vxE 'memogra-pr-([0-9]+)?|memogra-local' | sort -u || true)"
+unexpected="$(grep -rhoE --exclude=check-database-names.sh 'memogra-[A-Za-z0-9_-]+' .github | grep -vxE 'memogra-pr-([0-9]+)?|memogra-main|memogra-local' | sort -u || true)"
 if [ -n "$unexpected" ]; then
   echo "::error::.github names databases that previews must never touch: $(echo "$unexpected" | tr '\n' ' ')" >&2
   fail=1
 fi
 
 guard=.github/scripts/preview-database.sh
-for name in memogra-pr-1 memogra-pr-123; do
+for name in memogra-pr-1 memogra-pr-123 memogra-main; do
   if ! bash "$guard" validate "$name" > /dev/null 2>&1; then
     echo "::error::$guard refuses the valid name $name." >&2
     fail=1
   fi
 done
-for name in map-app-pr-1 memogra-pr- memogra-pr-1x "memogra-pr-1;x" memogra-local memogra-production; do
+for name in map-app-pr-1 memogra-pr- memogra-pr-1x "memogra-pr-1;x" memogra-local memogra-production memogra-main2 memogra-mainx; do
   if bash "$guard" validate "$name" > /dev/null 2>&1; then
     echo "::error::$guard accepts $name, which it must refuse." >&2
     fail=1
   fi
 done
 
-[ "$fail" -eq 0 ] && echo "Database names: previews can only reach memogra-pr-<number>."
+[ "$fail" -eq 0 ] && echo "Database names: previews can only reach memogra-pr-<number>, and the helper memogra-main."
 exit "$fail"

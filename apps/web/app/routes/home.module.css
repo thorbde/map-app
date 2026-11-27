@@ -1,0 +1,8 @@
+/* Rough placement until the shell (#32) gives the panel its place over the map. */
+.page {
+	padding: var(--space-6);
+}
+
+.error {
+	color: var(--color-text-error);
+}

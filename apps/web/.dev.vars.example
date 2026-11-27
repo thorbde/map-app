@@ -1,0 +1,8 @@
+# Copy to .dev.vars (never committed) to sign in with Google on `pnpm dev`.
+# The Google client is the preview one (docs/specs/m2.md, "What you create yourself"); it
+# accepts http://localhost:5173/api/auth/callback/google. No AUTH_PROXY_URL here: locally,
+# Google answers directly.
+BETTER_AUTH_SECRET=
+BETTER_AUTH_URL=http://localhost:5173
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=

@@ -8,7 +8,7 @@
 #   preview-database.sh delete <name>
 #       Deletes the database. One that is already gone is fine.
 #
-# Refuses any name but memogra-pr-<number>, before it calls Cloudflare, so a mistake in a
+# Refuses any name but memogra-pr-<number> and memogra-main (the sign-in helper's, ADR 0022), before it calls Cloudflare, so a mistake in a
 # workflow can't touch another database. Wrangler runs through npx at WRANGLER_VERSION, so the
 # repo's dependencies are never installed next to the token. Needs WRANGLER_VERSION,
 # CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN in the environment (validate needs none).
@@ -23,8 +23,8 @@ usage() {
 command="$1"
 name="$2"
 
-if ! [[ "$name" =~ ^memogra-pr-[0-9]+$ ]]; then
-  echo "::error::Refusing the database name '$name': previews may only use memogra-pr-<number> (ADR 0006)." >&2
+if ! [[ "$name" =~ ^memogra-(pr-[0-9]+|main)$ ]]; then
+  echo "::error::Refusing the database name '$name': previews may only use memogra-pr-<number>, and the sign-in helper memogra-main (ADR 0006, ADR 0022)." >&2
   exit 2
 fi
 

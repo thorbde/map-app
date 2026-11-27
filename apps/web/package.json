@@ -22,6 +22,7 @@
 		"@thorbde/icons": "workspace:*",
 		"@thorbde/tokens": "workspace:*",
 		"@thorbde/ui": "workspace:*",
+		"better-auth": "1.7.28",
 		"drizzle-orm": "0.45.4",
 		"isbot": "5.2.3",
 		"maplibre-gl": "6.18.0",

@@ -1,0 +1,94 @@
+# The sign-in helper for PR previews (ADR 0022): memogra-main, a copy of main at one fixed
+# address in the Previews account. Google answers only there, and Better Auth's OAuth Proxy
+# hands each sign-in back to the preview that started it. The helper writes no account; its
+# own database holds only its rate-limit counts, and its own sign-ins if it is used directly
+# (the fallback: Google sign-in on a fixed copy of main only).
+#
+# Same rules as preview.yml: built with no secrets in reach, deployed with the preview token
+# only, so it can't reach production. Every preview must run the same Better Auth version as
+# the helper; a PR that upgrades it has no Google sign-in until it is merged and this runs.
+
+name: Sign-in helper
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: auth-helper
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  HELPER_WORKER: memogra-main
+  HELPER_DATABASE: memogra-main
+  HELPER_URL: https://memogra-main.previews-d21.workers.dev
+  # The previews it may hand a sign-in to: this repository's preview Workers only.
+  PREVIEW_ORIGINS: https://map-app-pr-*.previews-d21.workers.dev
+  WRANGLER_VERSION: 4.162.0
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - uses: actions/upload-artifact@v7
+        with:
+          name: helper-build
+          path: apps/web/build
+          include-hidden-files: true
+          retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_PREVIEW_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PREVIEW_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: |
+            .github/scripts
+            apps/web/app/server/db/migrations
+      - uses: actions/download-artifact@v8
+        with:
+          name: helper-build
+          path: apps/web/build
+      - name: Create, migrate and bind the helper's database
+        run: |
+          bash .github/scripts/preview-database.sh deploy "$HELPER_DATABASE" \
+            apps/web/app/server/db/migrations apps/web/build/server/wrangler.json
+      - name: Deploy the helper, with the sign-in settings
+        env:
+          BETTER_AUTH_SECRET: ${{ secrets.PREVIEW_AUTH_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ secrets.PREVIEW_GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.PREVIEW_GOOGLE_CLIENT_SECRET }}
+        run: |
+          secrets_file="$(bash .github/scripts/auth-secrets.sh)"
+          trap 'rm -f "$secrets_file"' EXIT
+          url=$(bash .github/scripts/deploy-worker.sh \
+            --config apps/web/build/server/wrangler.json --name "$HELPER_WORKER" \
+            --secrets-file "$secrets_file" \
+            --var "BETTER_AUTH_URL:${HELPER_URL}" --var "AUTH_TRUSTED_ORIGINS:${PREVIEW_ORIGINS}")
+          if [ "$url" != "$HELPER_URL" ]; then
+            echo "::error::The helper is at $url, not $HELPER_URL, which is the address registered with Google." >&2
+            exit 1
+          fi
+          echo "The sign-in helper is at $url" >> "$GITHUB_STEP_SUMMARY"

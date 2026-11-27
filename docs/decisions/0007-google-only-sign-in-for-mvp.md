@@ -25,4 +25,5 @@ The MVP is invite-only, for a handful of people. Email and password sign-in brin
 ## Consequences
 - Everyone needs a Google account. Some privacy-minded people won't want that. That's acceptable for an invite-only MVP.
 - **Email + password moves to the roadmap,** before open sign-up. Better Auth adds it as a normal feature PR, and Resend and Turnstile return with it.
-- The account data we hold is smaller: name, email and avatar URL from Google, no password hashes.
+- The account data we hold is smaller: **name and email from Google, nothing else** (m2.md, question 5; updated 2026-11-27 in M2 PR 3). No profile picture, no password hashes, and none of Google's tokens: we never call Google after sign-in. Better Auth stores the picture's address and the tokens by default and has no switch for the tokens, so two hooks in `features/auth/auth.server.ts` empty them before each `user` and `account` row is written. A test checks it.
+- **Rate limiting is on in every environment,** not only in production (Better Auth's default), with the counts in the `rate_limit` table: a Worker keeps nothing in memory between requests. 10 sign-ins a minute per visitor address (`cf-connecting-ip`), 100 a minute for the other auth routes.

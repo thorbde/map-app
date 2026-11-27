@@ -1,6 +1,6 @@
 // The Drizzle schema: every table. Names are camelCase here and snake_case in the database.
 //
-// The four Better Auth tables below are exactly what its CLI generates for better-auth 1.7.26
+// The four Better Auth tables below are exactly what its CLI generates for better-auth 1.7.26 (unchanged at 1.7.28)
 // (`pnpm dlx auth@latest generate`, see the PR that added them). Don't edit them by hand: Better
 // Auth reads and writes these columns itself. The SQLite clock default on created_at and
 // updated_at is the one named exception to ADR 0006's "no SQLite-only functions" rule.
@@ -92,6 +92,15 @@ export const verification = sqliteTable(
 	},
 	(table) => [index("verification_identifier_idx").on(table.identifier)],
 );
+
+// Better Auth's rate-limit counts (`rateLimit.storage: "database"`), as its CLI generates them
+// for better-auth 1.7.28 (M2 PR 3). A Worker keeps nothing in memory between requests.
+export const rateLimit = sqliteTable("rate_limit", {
+	id: text("id").primaryKey(),
+	key: text("key").notNull().unique(),
+	count: integer("count").notNull(),
+	lastRequest: integer("last_request").notNull(),
+});
 
 export const userRelations = relations(user, ({ many }) => ({
 	sessions: many(session),
