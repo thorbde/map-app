@@ -3,7 +3,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"dev": "react-router dev",
+		"dev": "CLOUDFLARE_ENV=local react-router dev",
 		"build": "react-router build",
 		"preview": "pnpm build && vite preview",
 		"typegen": "wrangler types && react-router typegen",
@@ -13,12 +13,16 @@
 		"build:maps": "node scripts/build-maps.ts",
 		"maps:check": "pnpm build:maps && git diff --exit-code -- app/features/maps/geometry ../../packages/ui/src/proposals/outlines.generated.json",
 		"test": "vitest run",
-		"test:e2e": "playwright test"
+		"test:e2e": "playwright test",
+		"db:generate": "drizzle-kit generate",
+		"db:migrate": "wrangler d1 migrations apply DB --local --env local",
+		"db:check": "drizzle-kit generate && git diff --exit-code -- app/server/db/migrations && test -z \"$(git ls-files --others --exclude-standard -- app/server/db/migrations)\""
 	},
 	"dependencies": {
 		"@thorbde/icons": "workspace:*",
 		"@thorbde/tokens": "workspace:*",
 		"@thorbde/ui": "workspace:*",
+		"drizzle-orm": "0.45.4",
 		"isbot": "5.2.3",
 		"maplibre-gl": "6.18.0",
 		"react": "19.3.1",
@@ -36,6 +40,7 @@
 		"@types/react": "19.3.0",
 		"@types/react-dom": "19.3.0",
 		"d3-geo": "3.1.2",
+		"drizzle-kit": "0.31.11",
 		"mapshaper": "0.8.4",
 		"typescript": "6.0.3",
 		"vite": "8.3.8",

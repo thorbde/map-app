@@ -86,9 +86,9 @@ const headerLinks = (
 
 /**
  * Links under the title, on the dark header: white and underlined, spaced
- * apart, pale teal on hover. Here the first has the keyboard focus: a white
- * ring that clears the text, the title above and the next link; the underline
- * steps aside while the ring is there.
+ * apart, pale teal on hover. Here the first has the keyboard focus: the link
+ * unchanged, underline included, with a white ring around it (2 px, 2 px
+ * away, small corners) that clears the title above and the next link.
  */
 export const HeaderFirstLinkFocused: Story = {
 	name: "Header: first link focused",
@@ -132,7 +132,7 @@ export const HeaderTitleFocused: Story = {
 	},
 };
 
-/** A link in the panel's body focused: the same ring in the usual colour, and no underline under it. */
+/** A link in the panel's body focused: the link unchanged, with the same ring in the usual colour. */
 export const BodyLinkFocused: Story = {
 	name: "Body: link focused",
 	args: {

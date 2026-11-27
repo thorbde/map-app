@@ -42,7 +42,8 @@ import {
 } from "../app/features/maps/outline-file.ts";
 import {
 	CONTINENT_FRAMES,
-	landNearName,
+	landInReach,
+	outlineCentre,
 } from "../app/features/maps/outline-land.ts";
 
 // --- The source: Natural Earth, pinned --------------------------------------------
@@ -154,10 +155,12 @@ const VATICAN = "VA";
 /**
  * Label points that differ from Natural Earth's.
  * - Kiribati's is on Kiritimati, 3,000 km east of the capital and on the far
- *   side of the map's edge. Ours is on Tarawa, the capital.
+ *   side of the map's edge. Ours is on South Tarawa, the capital: on its land,
+ *   not in the lagoon, so that the country view and the outline frame Tarawa
+ *   and not the eight atolls within 150 km of the lagoon (ADR 0020).
  */
 const LABEL_OVERRIDES: Record<string, [lng: number, lat: number]> = {
-	KI: [173, 1.4],
+	KI: [173.1, 1.365],
 };
 
 // --- Reading the source -----------------------------------------------------------
@@ -402,19 +405,28 @@ if (size > BUDGET_BYTES) {
 // The same shapes, with every border choice above already made, drawn small:
 // each country, and each continent, as an SVG path fitted to a box 100 × 100.
 // mapshaper projects, simplifies, fits and writes the path. Which land is
-// shown is the map's own views (outline-land.ts).
+// shown is in outline-land.ts: a country's main body with its nearby islands.
 
 /**
  * How much detail an outline keeps: mapshaper simplifies for a drawing this
- * many pixels across. The tiles are 32 to 48 px.
+ * many pixels across. The tiles are 32 to 48 px. (96, not 100: drawn in
+ * their own projections, Europe's outlines are fuller and its file would
+ * be over its budget.)
  */
-const OUTLINE_RESOLUTION = 100;
+const OUTLINE_RESOLUTION = 96;
 
-/** One outline: these shapes in Equal Earth, as the map draws them. */
+/** One outline: these shapes, projected around their own centre. */
 async function outlineOf(
 	geometry: MapCountryFeature["geometry"],
 	{ clip, keepShapes }: { clip?: readonly number[]; keepShapes: boolean },
 ): Promise<string> {
+	// A continent is centred on its view's box, a country on its land.
+	const [lng, lat] = clip
+		? [
+				((clip[0] ?? 0) + (clip[2] ?? 0)) / 2,
+				((clip[1] ?? 0) + (clip[3] ?? 0)) / 2,
+			]
+		: outlineCentre(geometry.coordinates);
 	const simplified = await mapshaper.applyCommands(
 		[
 			"-i land.json",
@@ -422,10 +434,14 @@ async function outlineOf(
 			// stay pieces of their own, so that keep-shapes protects each one.
 			keepShapes ? "-explode" : "-dissolve",
 			clip ? `-clip bbox=${clip.join(",")}` : "",
-			// Equal Earth with the map's centre in the middle: longitudes are
-			// shifted so that the centre is 0, and then run from -180 to 180.
-			`-affine shift=${-CENTRE_LONGITUDE},0`,
-			"-proj +proj=eqearth",
+			// Each outline in a projection of its own, centred on its land: a
+			// world projection shears land far from its centre (Australia, in
+			// Equal Earth centred on Europe). Lambert azimuthal equal-area keeps
+			// areas, and shapes near the centre, as atlases draw one country.
+			// The land is first shifted so that its centre is at 0°: mapshaper
+			// reads longitudes past 180° (Fiji, Tonga) as not longitudes at all.
+			`-affine shift=${-lng},0`,
+			`-proj +proj=laea +lon_0=0 +lat_0=${lat}`,
 			// keep-shapes: no piece of land is simplified away, however small it
 			// is in its box (Kiribati's atolls).
 			`-simplify resolution=${OUTLINE_RESOLUTION}${keepShapes ? " keep-shapes" : ""}`,
@@ -478,7 +494,7 @@ for (const feature of countryFeatures) {
 	countryOutlines.set(
 		feature.properties.iso,
 		await outlineOf(
-			{ type: "MultiPolygon", coordinates: landNearName(feature) },
+			{ type: "MultiPolygon", coordinates: landInReach(feature) },
 			{ keepShapes: true },
 		),
 	);
@@ -534,7 +550,7 @@ for (const [name, outlines] of Object.entries(outlineFiles)) {
 // show the outlines to Thor get a copy with the names beside them. It goes
 // when the tile is a real component that the app feeds.
 
-/** Shown three ways in the "hard cases" story, for Thor to choose between. */
+/** The countries in the "hard cases" story: small, scattered and very large. */
 const HARD_CASES = [
 	...[
 		"SC",
@@ -552,48 +568,8 @@ const HARD_CASES = [
 		"KM",
 	],
 	...["DK", "IT", "GB", "JP", "PH", "GR", "FR", "US", "NO", "PT", "ES", "NZ"],
+	...["MH", "FM", "TO", "PW"],
 ];
-
-/**
- * A possible middle way, in the story only: the land the name is on, and all
- * land within 150 km of land already in, and so on outward. Islands that
- * belong together stay together; land far off on its own is left out.
- */
-function landInReach(feature: MapCountryFeature) {
-	const KM_PER_DEGREE = 111.2;
-	const REACH_KM = 150;
-	// A few hundred points of each coast are enough to measure a gap with.
-	const sample = (ring: [number, number][]) =>
-		ring.filter((_, i) => i % Math.ceil(ring.length / 300) === 0);
-	const pieces = feature.geometry.coordinates.map((polygon) => ({
-		polygon,
-		points: sample(polygon[0] ?? []),
-	}));
-	const near = (a: [number, number][], b: [number, number][]) =>
-		a.some(([lngA, latA]) =>
-			b.some(
-				([lngB, latB]) =>
-					Math.hypot(
-						(lngA - lngB) * Math.cos((((latA + latB) / 2) * Math.PI) / 180),
-						latA - latB,
-					) *
-						KM_PER_DEGREE <
-					REACH_KM,
-			),
-		);
-	const named = new Set(landNearName(feature));
-	let reached = pieces.filter((piece) => named.has(piece.polygon));
-	let rest = pieces.filter((piece) => !named.has(piece.polygon));
-	for (let edge = reached; edge.length > 0; ) {
-		const next = rest.filter((piece) =>
-			edge.some((from) => near(piece.points, from.points)),
-		);
-		rest = rest.filter((piece) => !next.includes(piece));
-		reached = [...reached, ...next];
-		edge = next;
-	}
-	return reached.map((piece) => piece.polygon);
-}
 
 const storyData = {
 	continents: continentIds.map((continent) => ({
@@ -608,24 +584,11 @@ const storyData = {
 				d: countryOutlines.get(iso) ?? "",
 			})),
 	})),
-	hardCases: await Promise.all(
-		HARD_CASES.map(async (iso) => {
-			const feature = countryFeatures.find(
-				(each) => each.properties.iso === iso,
-			);
-			if (!feature) throw new Error(`No ${iso}`);
-			return {
-				iso,
-				name: countries.find((country) => country.iso === iso)?.name ?? iso,
-				d: countryOutlines.get(iso) ?? "",
-				inReach: await outlineOf(
-					{ type: "MultiPolygon", coordinates: landInReach(feature) },
-					{ keepShapes: true },
-				),
-				allLand: await outlineOf(feature.geometry, { keepShapes: true }),
-			};
-		}),
-	),
+	hardCases: HARD_CASES.map((iso) => ({
+		iso,
+		name: countries.find((country) => country.iso === iso)?.name ?? iso,
+		d: countryOutlines.get(iso) ?? "",
+	})),
 };
 writeFileSync(
 	resolve(here, "../../../packages/ui/src/proposals/outlines.generated.json"),
