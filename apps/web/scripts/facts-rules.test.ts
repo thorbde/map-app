@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { countries } from "../app/features/countries/countries.ts";
+import { facts } from "../app/features/countries/facts.ts";
 import { factOverrides } from "../app/features/countries/facts-overrides.ts";
 import type { CountryFacts } from "../app/features/countries/facts-types.ts";
-import { countries, facts } from "../app/features/countries/index.ts";
 import {
 	buildFacts,
 	factFields,

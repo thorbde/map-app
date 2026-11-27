@@ -24,6 +24,14 @@ The first design sketches were a traditional website: a header, then a page with
 - **Accessibility:** the panel is the page's `<main>` and comes first in the reading and focus order. The map is a labelled navigation region whose countries are links. Map controls (zoom, continent chips) are real buttons and links.
 - **Privacy is unchanged (ADR 0003).** The geometry is static and cacheable. Which countries are written, and the names in the panels, are viewer-dependent data that goes through `access.server.ts` and is never shared-cached.
 
+## As built in M1 PR 5 (2026-11-18)
+
+- **Temporary addresses.** Until profiles arrive (M4) the shell lives at `/preview` (the world), `/preview/:continent` and `/preview/country/:iso`, with everyone counted as the owner and nothing written (`docs/specs/m1.md`, question 1). An address that names no continent or country in the list is a 404. ISO codes are written as the country list writes them (`SN`, not `sn`).
+- **Who says what the map shows.** Each child route's loader checks its address (zod) and returns the panel's data and the map view. The layout route reads the view from the deepest matching route (React Router's `useMatches`) and hands it to `<CountryMap>`, which is never unmounted.
+- **The camera keeps clear of the panel and the chips** through `<CountryMap padding>` (M1 PR 6, ADR 0021), which hands it to MapLibre. The layout route measures what the panel covers on the left, its width (`size.panel`) and the gap on each side (`space.4`), and what the chips cover at the top (`size.control` and the same gaps), from an unseen element sized with those tokens, so the number is never written down twice.
+- **Focus after a link: our own, about ten lines** in the layout route. React Router moves no focus on a client-side navigation, and has no option for it, so after the address changes the layout focuses the new panel's `h1` (`tabindex="-1"`). A screen reader then reads the new heading, and Tab carries on into the panel. Two cases are left alone: the first page load (the browser starts at the top), and a country opened from the map (focus stays on the map, for the keyboard use that comes in M1 PR 6). What established products do: GitHub and GOV.UK's single-page flows focus the new page's heading or main region in the same way.
+- **The chip of a country's continent is the current one** on that country's page.
+
 ## Alternatives considered
 - **A traditional page layout** (the first sketches): simpler, but the map becomes decoration instead of the way you use the app.
 - **MapLibre GL or Leaflet:** built for tiled street maps, and far heavier (hundreds of KB of JavaScript), which would break the JavaScript budget (ADR 0013). We only need ~200 country shapes.
