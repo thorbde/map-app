@@ -49,8 +49,8 @@ After two days the app had a map and components but no sign-in, writing or publi
 1. **Product before polish.** The next stretch is a thin end-to-end slice: sign in → write one essay → publish → the country fills in on the map, with rough UI composed from existing `@thorbde/ui` components. Polish comes after the loop works. The plan is `docs/specs/slice.md`.
 2. **Design review per whole screen, not per component.** One Storybook page or preview per screen, one round of feedback.
 3. **Two tracks for PRs.**
-   - **Strict:** accounts, privacy, access control, the database and migrations, and anything under `packages/`. Plan first and wait for approval, open as a draft, the automated review, and Thor merges.
-   - **Fast:** everything else (UI in `apps/web`, docs). No waiting for plan approval on small slices. The lead session may merge once CI is green and the automated review has no open findings.
+   - **Strict:** accounts, privacy, access control, the database and migrations, anything under `packages/`, and the files that hold Thor's rules and decisions: `CLAUDE.md`, `DESIGN.md`, `ARCHITECTURE.md` and `docs/decisions/` (Thor, 2026-11-27). Plan first and wait for approval, open as a draft, the automated review, and Thor merges.
+   - **Fast:** everything else (UI in `apps/web`, the specs in `docs/specs/` and other docs). No waiting for plan approval on small slices. The lead session may merge once CI is green and the automated review has no open findings.
    - **All hard rules below stay as they are,** on both tracks.
    - **"Before you build" applies on both tracks.** A fast-track plan still starts with "What already exists". If it would build our own version of something that exists, it needs the ADR that rule 2 asks for, and the PR moves to the strict track: Thor approves the plan before code.
 4. **Workers are short-lived:** one per PR, at medium effort, one message to the lead when done or blocked, archived at merge.
