@@ -34,6 +34,10 @@ env:
   # npx so they never install the PR's dependencies next to the token.
   WRANGLER_VERSION: 4.162.0
   COMMENT_MARKER: "<!-- preview-deploy -->"
+  # The Previews account's workers.dev subdomain: every preview's address ends in it.
+  PREVIEW_HOSTS: previews-d21.workers.dev
+  # Google answers previews only here, and hands the sign-in back (ADR 0022, auth-helper.yml).
+  AUTH_HELPER_URL: https://memogra-main.previews-d21.workers.dev
 
 jobs:
   build:
@@ -78,11 +82,26 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           name: preview-build
-      - name: Deploy the app
+      - name: Deploy the app, with the sign-in settings
         id: app
+        env:
+          # The preview Google client and secret (m2.md, "What you create yourself"). They go to
+          # Cloudflare as Worker secrets, through a file that is deleted straight after.
+          BETTER_AUTH_SECRET: ${{ secrets.PREVIEW_AUTH_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ secrets.PREVIEW_GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.PREVIEW_GOOGLE_CLIENT_SECRET }}
         run: |
+          own_url="https://${APP_WORKER}.${PREVIEW_HOSTS}"
+          secrets_file="$(bash .github/scripts/auth-secrets.sh)"
+          trap 'rm -f "$secrets_file"' EXIT
           url=$(bash .github/scripts/deploy-worker.sh \
-            --config apps/web/build/server/wrangler.json --name "$APP_WORKER")
+            --config apps/web/build/server/wrangler.json --name "$APP_WORKER" \
+            --secrets-file "$secrets_file" \
+            --var "BETTER_AUTH_URL:${own_url}" --var "AUTH_PROXY_URL:${AUTH_HELPER_URL}")
+          if [ "$url" != "$own_url" ]; then
+            echo "::error::The preview is at $url, not $own_url: update PREVIEW_HOSTS, or sign-in sends people to the wrong place." >&2
+            exit 1
+          fi
           echo "url=$url" >> "$GITHUB_OUTPUT"
       - name: Deploy Storybook (static files only)
         id: storybook

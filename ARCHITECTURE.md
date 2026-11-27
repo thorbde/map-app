@@ -70,6 +70,9 @@ app/
   routes/                 React Router route modules (thin)
   features/
     auth/                 Better Auth setup, onboarding, username rules
+      auth.server.ts      Better Auth's settings: Google, the Drizzle adapter, rate limiting in the database, the OAuth Proxy on previews (ADR 0022), and the hooks that keep only name and email (ADR 0007)
+      session.server.ts   sign in, sign out and getViewer() for routes; the forms post to our routes, which call Better Auth's own endpoints
+      index.server.ts     the front door
     profiles/             profile, settings, visibility, export, delete account
     essays/               drafts, publishing, versions, rendering, editor
     maps/                 map components, geometry loading, written-state colouring
@@ -92,7 +95,8 @@ app/
     platform/             Cloudflare adapters; nothing else may import Workers APIs
       worker.ts           the Worker entry (wrangler's "main"): hands requests to React Router
       index.server.ts     the ONLY file other code may import from platform/: getDatabase() checks the
-                          settings (zod) the first time it's called and returns the Drizzle client
+                          settings (zod) the first time it's called and returns the Drizzle client;
+                          getAuthSettings() does the same for the sign-in settings
   lib/                    Shared pure utilities (errors, dates, zod helpers). No feature logic.
 public/
   licenses/               licence texts that must be served with the code (MapLibre's)
@@ -149,7 +153,7 @@ features/essays/
 
 Stored in D1 (SQLite). To keep a later move to Postgres cheap (ADR 0006): IDs are generated in the app, timestamps are integers (Unix ms), JSON columns are text validated by zod, and all access goes through Drizzle.
 
-- **Better Auth tables:** user, session, account, verification.
+- **Better Auth tables:** user, session, account, verification, and rate_limit (its rate-limit counts, migration 0001). We keep name and email; `user.image` and the token columns of `account` stay empty (ADR 0007).
 - **profile:**
   - `user_id`, `username` (unique, reserved list), `display_name`, `bio`
   - `visibility` (`public` | `private`)
@@ -190,7 +194,7 @@ D1 has no interactive transactions. "Atomic" below means one `db.batch([...])`: 
 
 | Env | Where | Database |
 |---|---|---|
-| local | `pnpm dev` (workerd) | Local D1 `memogra-local` (a SQLite file under `.wrangler/`), set up with `pnpm db:migrate`. It is bound as `DB` only in the `local` environment of `wrangler.jsonc`, which `pnpm dev`, the tests and `pnpm db:migrate` select; the deployed config has no database until M2 PR 2 |
+| local | `pnpm dev` (workerd). Google sign-in needs `apps/web/.dev.vars` (`.dev.vars.example` lists the settings); Google answers `localhost:5173` directly | Local D1 `memogra-local` (a SQLite file under `.wrangler/`), set up with `pnpm db:migrate`. It is bound as `DB` only in the `local` environment of `wrangler.jsonc`, which `pnpm dev`, the tests and `pnpm db:migrate` select; the deployed config has no database until M2 PR 2 |
 | tests | Vitest in workerd (`@cloudflare/vitest-plugin`); Playwright against `vite preview` | An isolated D1 per test file, migrations applied by `tests/setup/database.ts`. Playwright's build has no database yet |
-| preview | Two Workers per PR in the **separate Previews account**, deleted when the PR closes: the app (`map-app-pr-<number>`) and Storybook (`map-app-storybook-pr-<number>`). Storybook for `main` stays at `map-app-storybook` | A D1 per PR (`map-app-pr-<number>`, from M2), created by CI and deleted when the PR closes. Can't reach production (ADR 0006). |
+| preview | Two Workers per PR in the **separate Previews account**, deleted when the PR closes: the app (`map-app-pr-<number>`) and Storybook (`map-app-storybook-pr-<number>`). Storybook for `main` stays at `map-app-storybook`. **Sign-in:** Google answers only the fixed helper `memogra-main`, a copy of `main` deployed by `auth-helper.yml`, which hands each sign-in to its preview (Better Auth's OAuth Proxy, ADR 0022). The sign-in settings are Worker secrets and vars set at deploy | A D1 per PR (`map-app-pr-<number>`, from M2), created by CI and deleted when the PR closes. Can't reach production (ADR 0006). |
 | production | `main` → `wrangler deploy` (CI only, GitHub `production` environment) | The production D1 (EU jurisdiction) |

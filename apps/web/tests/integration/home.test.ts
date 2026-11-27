@@ -7,5 +7,6 @@ it("renders the home page on the server", async () => {
 
 	expect(response.status).toBe(200);
 	expect(response.headers.get("content-type")).toBe("text/html");
-	expect(await response.text()).toContain("<h1>Hello</h1>");
+	// The heading is the Panel's h1, which carries an id and a class.
+	expect(await response.text()).toMatch(/<h1 [^>]*>Hello<\/h1>/);
 });
