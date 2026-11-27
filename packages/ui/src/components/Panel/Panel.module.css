@@ -1,0 +1,88 @@
+.panel {
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	width: var(--size-panel);
+	max-width: 100%;
+	max-height: 100%;
+	overflow: hidden; /* the header block follows the rounded corners */
+	border-radius: var(--radius-lg);
+	background: var(--color-bg-surface);
+	color: var(--color-text-default);
+	box-shadow: var(--shadow-raised);
+}
+
+.header {
+	display: grid;
+	/* Room for a focus ring around the title or a link under it. */
+	gap: var(--space-3);
+	/* The title's focus ring hugs the title, not the header's whole width. */
+	justify-items: start;
+	padding: var(--space-5) var(--space-6);
+	background: var(--color-bg-inverse);
+	color: var(--color-text-on-inverse);
+}
+
+.title {
+	margin: 0;
+	font-size: var(--font-size-xl);
+	font-weight: var(--font-weight-bold);
+	line-height: var(--font-line-height-tight);
+}
+
+/* Links in it stand apart, each with room for its focus ring: they are written
+   one after the other, with no comma between. */
+.description {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-1) var(--space-3);
+	margin: 0;
+	color: var(--color-text-on-inverse-muted);
+	font-size: var(--font-size-sm);
+}
+
+/* On the dark block, links and the focus ring are white: the usual link colour
+   is 2.2:1 there and the usual focus colour 2.8:1. */
+.header a {
+	color: var(--color-text-on-inverse);
+}
+
+.header a:hover {
+	color: var(--color-text-on-inverse-muted);
+}
+
+.header :focus-visible {
+	outline: 2px solid var(--color-text-on-inverse);
+	outline-offset: 2px;
+	border-radius: var(--radius-sm);
+}
+
+.body {
+	display: grid;
+	gap: var(--space-6);
+	min-height: 0;
+	overflow-y: auto;
+	padding: var(--space-6);
+	/* The panel's text is 14 px: it sits with the 12 px tags and labels. Essay
+	   text sets its own size. */
+	font-size: var(--font-size-sm);
+}
+
+.body > * {
+	margin: 0;
+}
+
+.section {
+	display: grid;
+	gap: var(--space-2);
+}
+
+.section > * {
+	margin: 0;
+}
+
+.sectionTitle {
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-bold);
+	line-height: var(--font-line-height-tight);
+}
