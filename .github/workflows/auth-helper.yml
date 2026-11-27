@@ -12,7 +12,10 @@ name: Sign-in helper
 
 on:
   push:
-    branches: [main]
+    # TEMPORARY: feat/m2-google-sign-in deploys the helper once before merge, so Thor can try
+    # Google on that PR's preview (agreed in the plan; workflow_dispatch only works once this
+    # file is on main). Removed again before the PR is marked ready.
+    branches: [main, feat/m2-google-sign-in]
   workflow_dispatch:
 
 concurrency:

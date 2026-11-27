@@ -78,6 +78,10 @@ app/
     maps/                 map components, geometry loading, written-state colouring
       geometry/world.json the generated map file: every country, at one level of detail (committed; checked by pnpm maps:check, ADR 0020)
       map-file.ts         the format of that file
+      geometry/outlines/  the generated outlines on the panels' tiles: one small file per continent, and one of the six continents (committed; same check)
+      outline-file.ts     the format of those files, and their size budget
+      outline-land.ts     which land an outline shows: a country's main body with its nearby islands, starting from the map's own views
+      outlines.server.ts  reads the outlines on the server, for a panel's loader: they arrive in the HTML, never as JavaScript
       map-engine.client.ts  everything that touches MapLibre; loaded lazily by the map component, never on the server (ADR 0021)
       equal-earth.ts      the Equal Earth projection, registered with MapLibre (and with its workers: equal-earth.worker.ts)
       labels.ts           which country names show at which zoom, and which gives way: Natural Earth's zooms and ranks, handed to MapLibre
@@ -101,8 +105,8 @@ app/
 public/
   licenses/               licence texts that must be served with the code (MapLibre's)
 scripts/
-  check-bundle-size.mjs   the size budgets: each page's first load, and the lazily loaded map engine (ADR 0013, ADR 0021)
-  build-maps.ts           Natural Earth's own files → mapshaper → country shapes and label fields as GeoJSON in features/maps/geometry/ (border choices: ADR 0020)
+  check-bundle-size.mjs   the size budgets: each page's first load, the lazily loaded map engine, and the outline files (ADR 0013, ADR 0020, ADR 0021)
+  build-maps.ts           Natural Earth's own files → mapshaper → country shapes and label fields as GeoJSON in features/maps/geometry/, and from the same shapes the tiles' outlines (border choices: ADR 0020)
   build-facts.ts          Wikidata + overrides → features/countries/facts.ts (monthly scheduled PR, reviewed before merge)
   facts-rules.ts          the pure rules behind it: picking values, validation, keeping the old value when Wikidata's is unusable
   wikidata-ids.ts         the Wikidata item for each country
@@ -196,5 +200,5 @@ D1 has no interactive transactions. "Atomic" below means one `db.batch([...])`: 
 |---|---|---|
 | local | `pnpm dev` (workerd). Google sign-in needs `apps/web/.dev.vars` (`.dev.vars.example` lists the settings); Google answers `localhost:5173` directly | Local D1 `memogra-local` (a SQLite file under `.wrangler/`), set up with `pnpm db:migrate`. It is bound as `DB` only in the `local` environment of `wrangler.jsonc`, which `pnpm dev`, the tests and `pnpm db:migrate` select; the deployed config has no database until M2 PR 2 |
 | tests | Vitest in workerd (`@cloudflare/vitest-plugin`); Playwright against `vite preview` | An isolated D1 per test file, migrations applied by `tests/setup/database.ts`. Playwright's build has no database yet |
-| preview | Two Workers per PR in the **separate Previews account**, deleted when the PR closes: the app (`map-app-pr-<number>`) and Storybook (`map-app-storybook-pr-<number>`). Storybook for `main` stays at `map-app-storybook`. **Sign-in:** Google answers only the fixed helper `memogra-main`, a copy of `main` deployed by `auth-helper.yml`, which hands each sign-in to its preview (Better Auth's OAuth Proxy, ADR 0022). The sign-in settings are Worker secrets and vars set at deploy | A D1 per PR (`map-app-pr-<number>`, from M2), created by CI and deleted when the PR closes. Can't reach production (ADR 0006). |
+| preview | Two Workers per PR in the **separate Previews account**, deleted when the PR closes: the app (`map-app-pr-<number>`) and Storybook (`map-app-storybook-pr-<number>`). Storybook for `main` stays at `map-app-storybook`. **Sign-in:** Google answers only the fixed helper `memogra-main`, a copy of `main` deployed by `auth-helper.yml` with its own D1 `memogra-main`, which hands each sign-in to its preview (Better Auth's OAuth Proxy, ADR 0022). The sign-in settings are Worker secrets and vars set at deploy | A D1 per PR (`memogra-pr-<number>`, in the EU), created and migrated by CI and deleted when the PR closes. Can't reach production (ADR 0006). |
 | production | `main` → `wrangler deploy` (CI only, GitHub `production` environment) | The production D1 (EU jurisdiction) |

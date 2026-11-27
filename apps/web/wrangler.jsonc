@@ -10,8 +10,8 @@
 	"observability": { "enabled": true },
 	"upload_source_maps": true,
 	// Local only: pnpm dev, the tests and pnpm db:migrate select this with the environment "local".
-	// The deployed config (the top level) has no database until previews get one (M2 PR 2), and
-	// the production database is named only in its own section (ADR 0006).
+	// The deployed config (the top level) has no database: CI binds a preview's own, memogra-pr-<n>,
+	// and the production database is named only in its own section (ADR 0006, pnpm db:names).
 	"env": {
 		"local": {
 			"d1_databases": [
