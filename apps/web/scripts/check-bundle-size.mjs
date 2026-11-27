@@ -1,5 +1,6 @@
 // Checks each page's first-load JavaScript against the budget in ADR 0013, and
-// the lazily loaded map engine against its own limit (ADR 0021).
+// the lazily loaded map engine against its own limit (ADR 0021), and the
+// outline files that arrive in the panels' HTML against theirs (ADR 0020).
 //
 // For every leaf route, the first load is: the client entry, plus the route
 // chunks of the route and all its parent layouts, plus everything those import
@@ -8,9 +9,10 @@
 // Run after `pnpm build`. Exits with 1 when a page is over budget.
 
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
+import { OUTLINE_FILE_BUDGET_BYTES } from "../app/features/maps/outline-file.ts";
 
 const BUDGET_BYTES = 150_000; // 150 KB gzipped, in Vite's units (1 KB = 1000 bytes)
 
@@ -157,9 +159,25 @@ if (served !== licence) {
 	);
 }
 
+// --- The outlines on the panels' tiles --------------------------------------------
+
+// They are read on the server and arrive in a panel's HTML, so they are not
+// in the build: the committed files are measured.
+const outlinesDir = "app/features/maps/geometry/outlines";
+for (const name of readdirSync(outlinesDir).sort()) {
+	const bytes = gzipSync(readFileSync(join(outlinesDir, name)), {
+		level: 9,
+	}).length;
+	const over = bytes > OUTLINE_FILE_BUDGET_BYTES;
+	failed ||= over;
+	console.log(
+		`${over ? "✗" : "✓"} outlines/${name}, in the panel's HTML: ${kb(bytes)} of ${kb(OUTLINE_FILE_BUDGET_BYTES)}`,
+	);
+}
+
 if (failed) {
 	console.error(
-		"\nOver a size budget (ADR 0013, ADR 0021), or a check above failed. Find what changed in the list above.",
+		"\nOver a size budget (ADR 0013, ADR 0020, ADR 0021), or a check above failed. Find what changed in the list above.",
 	);
 	process.exit(1);
 }

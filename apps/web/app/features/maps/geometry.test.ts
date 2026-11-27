@@ -88,12 +88,11 @@ describe("map geometry: every country is there", () => {
 			atSea.push(iso);
 			expect(kmToLand(feature.geometry, label), iso).toBeLessThan(150);
 		}
-		// Antigua & Barbuda, Equatorial Guinea, Kiribati (hand-set on Tarawa, which
-		// is narrower than the file's detail), New Zealand, São Tomé & Príncipe,
+		// Antigua & Barbuda, Equatorial Guinea, New Zealand, São Tomé & Príncipe,
 		// Trinidad & Tobago, St Vincent & the Grenadines. And the Vatican: its
 		// label is where the Vatican is, and its shape, from the coarser data, is
 		// drawn 1.3 km to the west.
-		expect(atSea).toEqual(["AG", "GQ", "KI", "NZ", "ST", "TT", "VA", "VC"]);
+		expect(atSea).toEqual(["AG", "GQ", "NZ", "ST", "TT", "VA", "VC"]);
 	});
 
 	it("carries Natural Earth's label zooms and rank for every country", () => {
@@ -114,8 +113,8 @@ describe("map geometry: every country is there", () => {
 		expect(country("LU")?.properties.labelRank).toBe(6);
 	});
 
-	it("labels Kiribati on Tarawa, its capital", () => {
-		expect(country("KI")?.properties.label).toEqual([173, 1.4]);
+	it("labels Kiribati on Tarawa, its capital, on its land", () => {
+		expect(country("KI")?.properties.label).toEqual([173.1, 1.365]);
 	});
 
 	it("has enough detail to look at a country: Denmark's coast has over a thousand points", () => {
