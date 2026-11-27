@@ -18,6 +18,8 @@
   /* Hover on subtle areas, such as the secondary button. */
   --color-bg-subtle-hover: var(--color-teal-100);
   --color-bg-surface: var(--color-neutral-0);
+  /* A tag that can't be pressed, on the pale fact box: one step darker than the box (DESIGN.md). */
+  --color-bg-tag: var(--color-teal-100);
   /* Around inputs. Reaches 3:1 against white (WCAG 1.4.11), unlike the default border. */
   --color-border-control: var(--color-teal-grey-400);
   --color-border-default: var(--color-neutral-200);
@@ -111,6 +113,8 @@
   --size-icon-md: 1.25rem;
   /* Icons in small text and inside controls. */
   --size-icon-sm: 1rem;
+  /* The width of the floating panel over the map (ADR 0010). The map's camera keeps this much of its left side clear. */
+  --size-panel: 24rem;
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
