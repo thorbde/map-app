@@ -2,7 +2,6 @@
 export { ArrowLeftIcon } from "./ArrowLeftIcon";
 export { ArrowRightIcon } from "./ArrowRightIcon";
 export { CheckIcon } from "./CheckIcon";
-export { ChevronRightIcon } from "./ChevronRightIcon";
 export { CloseIcon } from "./CloseIcon";
 export { EditIcon } from "./EditIcon";
 export { ErrorIcon } from "./ErrorIcon";
@@ -11,6 +10,7 @@ export { EyeOffIcon } from "./EyeOffIcon";
 export { GlobeIcon } from "./GlobeIcon";
 export { MapIcon } from "./MapIcon";
 export { MapPinIcon } from "./MapPinIcon";
+export { MinusIcon } from "./MinusIcon";
 export { PlusIcon } from "./PlusIcon";
 export { SettingsIcon } from "./SettingsIcon";
 export { TrashIcon } from "./TrashIcon";

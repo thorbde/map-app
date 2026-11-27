@@ -1,0 +1,35 @@
+/* Round, because it can be pressed (DESIGN.md). It floats over the map, so it
+   has the one shadow, like the continent chips. */
+.button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--size-control);
+	height: var(--size-control);
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-full);
+	background: var(--color-bg-surface);
+	color: var(--color-text-default);
+	box-shadow: var(--shadow-raised);
+	cursor: pointer;
+	transition: background-color var(--duration-fast) var(--easing-standard);
+}
+
+.button:not([data-disabled]):hover {
+	background: var(--color-bg-subtle);
+}
+
+.button:focus-visible {
+	outline: 2px solid var(--color-focus);
+	outline-offset: 2px;
+}
+
+/* The icon fades, not the button: a see-through button would show the map. */
+.button[data-disabled] {
+	cursor: not-allowed;
+}
+
+.button[data-disabled] > * {
+	opacity: var(--opacity-disabled);
+}

@@ -5,33 +5,29 @@ export interface PanelProps extends Omit<ComponentProps<"main">, "title"> {
 	/** The panel's heading, in its dark header block. It is the page's `h1`. */
 	title: string;
 	/**
-	 * One short line under the title, such as "West Africa, Africa". It may hold
-	 * `Link`s: on the dark header they are white, with a white focus ring.
+	 * One short line under the title: text, such as "55 countries", or `Link`s
+	 * written one after the other with nothing between, such as the region and
+	 * the continent. The header spaces them and makes them white.
 	 */
 	description?: ReactNode;
-	/**
-	 * The panel is the page's `<main>` (ADR 0010). Use `section` for a second
-	 * panel on the same page.
-	 */
-	as?: "main" | "section";
 }
 
 /**
  * The floating panel over the map: a dark header block with the title, and a
  * body that scrolls when it is taller than the space it is given. It doesn't
- * place itself; whoever uses it decides where it floats.
+ * place itself; whoever uses it decides where it floats. It is the page's
+ * `<main>`, and its title the page's `h1` (ADR 0010): one panel to a page.
  */
 export function Panel({
 	title,
 	description,
-	as: Element = "main",
 	className,
 	children,
 	...props
 }: PanelProps) {
 	const titleId = useId();
 	return (
-		<Element
+		<main
 			aria-labelledby={titleId}
 			{...props}
 			className={[styles.panel, className].filter(Boolean).join(" ")}
@@ -43,7 +39,7 @@ export function Panel({
 				{description && <p className={styles.description}>{description}</p>}
 			</header>
 			<div className={styles.body}>{children}</div>
-		</Element>
+		</main>
 	);
 }
 

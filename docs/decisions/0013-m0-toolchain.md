@@ -173,15 +173,19 @@ In `apps/web`, as a dependency. It is the first package that is shipped to the b
 - **Vite has to be told to bundle MapLibre's worker file** (`?worker&url`, then `setWorkerUrl`). Without that it isn't served, and the map never starts.
 - **e2e tests need WebGL.** Headless Chromium has no graphics card, so `playwright.config.ts` tells it to draw in software.
 
-### Planned, not yet installed
-Recorded here so the sizes are known before code depends on them (ADR 0006):
+### Added in M2 PR 1 (the database foundation)
+The database (ADR 0006). Decided by Thor on 2026-11-18: Drizzle's stable line, not the 1.0 beta.
 
-| Package | Version today | Where it runs | Unpacked size |
+| Package | Version | Why | Size |
 |---|---|---|---|
-| `drizzle-orm` | 0.45.4 | Server only (the Worker) | 10.5 MB (only the D1 parts are bundled) |
-| `drizzle-kit` | 0.31.11 | Development (generates migrations) | 10.3 MB |
+| `drizzle-orm` | 0.45.4 | Server only (the Worker): the schema, queries and `db.batch()` on D1 | 16 MB unpacked; about 19.5 KB gzipped bundled, with our schema |
+| `drizzle-kit` | 0.31.11 | Development: generates migrations from the schema (`pnpm db:generate`, `pnpm db:check`) | 9.8 MB unpacked |
+| `zod` | 4.6.6 | Server only for now: checks the settings, and later every boundary (CLAUDE.md). The same version as thorbde/map-app#32 | 7.5 MB unpacked; about 92 KB gzipped bundled with `import { z } from "zod"` |
 
-Their effect on the Worker bundle is measured when they're added in M2.
+- **The Worker bundle (measured 2026-11-18):** 167.6 KB gzipped (802 KB raw), the same as before, because no route uses the database yet. The platform front door with Drizzle, the schema and zod adds about 112 KB gzipped (529 KB minified) once one does: about 280 KB gzipped, far under the Workers limit (3 MB gzipped on the free plan). Measured by bundling `server/platform/index.server.ts` with esbuild. If the Worker's start-up time matters later, `zod/mini` (the same package) is the smaller form.
+- **Drizzle 1.0 changes the migration folder layout** (one folder per migration instead of `meta/` and a journal). Decide whether to move before M5, when the production database is created; after that, the move has to keep every applied migration's name.
+- **Better Auth's tables** come from its CLI, run outside the repo (better-auth 1.7.26, `pnpm dlx auth@latest generate`); `better-auth` itself is added in M2 PR 3.
+- **No new tool for the test database:** `@cloudflare/vitest-plugin` already has `readD1Migrations` and `applyD1Migrations`, and gives every test file its own storage.
 
 **The map engine** (ADR 0021), added in M1 PR 4:
 

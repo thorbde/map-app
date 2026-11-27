@@ -7,16 +7,16 @@ export {
 	type ChipsProps,
 } from "./components/Chips/Chips";
 export {
-	CollapsingChips,
-	type CollapsingChipsProps,
-} from "./components/Chips/CollapsingChips";
-export {
 	Dialog,
 	DialogClose,
 	type DialogProps,
 } from "./components/Dialog/Dialog";
 export { FactBox, type FactBoxProps } from "./components/FactBox/FactBox";
 export { Field, type FieldProps } from "./components/Field/Field";
+export {
+	IconButton,
+	type IconButtonProps,
+} from "./components/IconButton/IconButton";
 export { Link, type LinkProps } from "./components/Link/Link";
 export {
 	Panel,

@@ -60,13 +60,12 @@ The tokens are the source of truth (`packages/tokens/tokens/`, ADR 0014). This i
   - 6 px (`radius.sm`) for small things like focus outlines on text, and for tags that can't be pressed.
 - **Controls:** 32 px tall with a mouse, 40 px on touch screens.
 - **Shadow:** one, `shadow.raised`, and only on things that float over the map: panels, dialogs, the tab bar.
-- **Motion:** 120, 200 or 320 ms, with `easing.standard`.
+- **Motion:** 120, 200 or 320 ms, with `easing.standard`. The map's camera has its own timing ("Controls on the map").
 - **Icons:** our own (`docs/design/icons.md`). 16, 20 or 24 px.
 
 **The panel, chips and tags** (Thor, 2026-11-18).
 - **The panel:** white, `radius.lg`, `shadow.raised`, 24 rem wide (`size.panel`). Its header block is `color.bg.inverse` with the title at 25 px, 700, and an optional line under it at 14 px in `color.text.on-inverse-muted`. No hairline edge: the shadow alone.
 - **Continent chips:** links. 32 px tall (40 px on touch), pill, 14 px, 700, white with `shadow.raised` because they float over the map. The current one is `color.bg.inverse` with white text. No hairline edge.
-- **The continent chips collapse into the current one** (Thor, 2026-11-18), to leave the map free. The rest slide out beside it in 200 ms (at once with reduced motion) when the pointer is over it, when the keyboard focus arrives, or when it is pressed; the current chip doesn't move.
 - **Tags that are links** (a country's neighbours): 24 px tall (32 px on touch), pill, 12 px, 700, `color.bg.subtle`, no shadow. Clearly smaller than a chip.
 - **Tags that can't be pressed** (several values of one fact): 20 px tall and always one line, square corners, 12 px, 400, `color.bg.tag` (one step darker than the fact box), in the fact box only. More than three are held back behind a button that reads as a link: "9 more", then "Show fewer".
 - **Text in a panel is 14 px** (`font.size.sm`): fact values, links, and the `h2`s (700). Labels and tags are 12 px. Only the title in the header block is larger. Essay text keeps its own size.
@@ -79,6 +78,12 @@ The tokens are the source of truth (`packages/tokens/tokens/`, ADR 0014). This i
 - On the selected country: white, 16 px, 700, inside the shape (6.5:1), with an outline in the selected colour for the letters that reach outside it.
 - **Which names show:** by Natural Earth's zooms and ranks, as on Google Earth: the prominent countries first, more as the viewer zooms in. Where two would overlap, the lower-ranked one gives way until there is room. A written country is named at every zoom and goes before every unwritten one; the selected country is always named.
 - **No marker dots.** A country too small to click is opened by its name.
+
+**Controls on the map** (Thor, 2026-11-18).
+- **Zoom buttons:** two round icon buttons (`IconButton`), 32 px (40 px on touch), white with `shadow.raised` like the continent chips, the icon at 20 px in `color.text.default`; hover `color.bg.subtle`. A button that can't be pressed keeps its white and fades its icon.
+- **Where:** bottom right, `space.4` from the edges, zoom in over zoom out, `space.2` apart. Clear of the panel (left) and the chips (top).
+- **Focus on the map:** a 2 px ring in `color.focus`, drawn just inside the map's edge.
+- **The camera between views** (the world, a continent, a country) flies: it pulls back and comes in again, in 1.2 s, as feedback to the viewer's choice. This is the one motion longer than 320 ms. Zooming with the buttons or the keyboard keeps MapLibre's own timing. All of it is instant with `prefers-reduced-motion`.
 
 ## Never
 
